@@ -1,0 +1,18 @@
+[
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "${ENVIRONMENT}"
+    },
+    {
+        "ParameterKey": "Application",
+        "ParameterValue": "${APPLICATION}"
+    },
+    {
+        "ParameterKey": "Role",
+        "ParameterValue": "${ROLE}"
+    },
+    {
+        "ParameterKey": "Random",
+        "ParameterValue": "${RANDOM}"
+    }
+]

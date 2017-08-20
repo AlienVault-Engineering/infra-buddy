@@ -1,0 +1,138 @@
+{
+    "StackId": "arn:aws:cloudformation:us-west-2:271083817914:stack/prod-otxb-skynet-cluster/f91c13d0-501d-11e7-b35d-50a68a0e328e", 
+    "Status": "CREATE_COMPLETE", 
+    "ChangeSetName": "prod-otxb-skynet-cluster-deploy-cloudformation-change-set", 
+    "Parameters": [
+        {
+            "ParameterValue": "https://s3-us-west-2.amazonaws.com/cf-templates-otxb/prod-otxb-skynet-cluster/1502224690", 
+            "ParameterKey": "ConfigTemplatesPath"
+        }, 
+        {
+            "ParameterValue": "****", 
+            "ParameterKey": "DockerRegistryPass"
+        }, 
+        {
+            "ParameterValue": "10.0.0.0/16", 
+            "ParameterKey": "SSHLocation"
+        }, 
+        {
+            "ParameterValue": "1", 
+            "ParameterKey": "DataDriveSize"
+        }, 
+        {
+            "ParameterValue": "engops@alienvault.com", 
+            "ParameterKey": "DockerRegistryEmail"
+        }, 
+        {
+            "ParameterValue": "https://alienvault-docker-releases-dockerv2-local.jfrog.io", 
+            "ParameterKey": "DockerRegistryURL"
+        }, 
+        {
+            "ParameterValue": "689820222b85901ae1b36314d6ef36be", 
+            "ParameterKey": "DatadogKey"
+        }, 
+        {
+            "ParameterValue": "cf-templates-otxb", 
+            "ParameterKey": "CloudFormationBucket"
+        }, 
+        {
+            "ParameterValue": "4", 
+            "ParameterKey": "DesiredCapacity"
+        }, 
+        {
+            "ParameterValue": "prod-otxb-vpc", 
+            "ParameterKey": "VPCStack"
+        }, 
+        {
+            "ParameterValue": "5", 
+            "ParameterKey": "MaxSize"
+        }, 
+        {
+            "ParameterValue": "prod-otxb-skynet", 
+            "ParameterKey": "KeyName"
+        }, 
+        {
+            "ParameterValue": "cluster", 
+            "ParameterKey": "Role"
+        }, 
+        {
+            "ParameterValue": "1", 
+            "ParameterKey": "MinSize"
+        }, 
+        {
+            "ParameterValue": "prod", 
+            "ParameterKey": "Environment"
+        }, 
+        {
+            "ParameterValue": "****", 
+            "ParameterKey": "UsePrivateDockerRegistry"
+        }, 
+        {
+            "ParameterValue": "otx-dockerrepo-ro", 
+            "ParameterKey": "DockerRegistryUser"
+        }, 
+        {
+            "ParameterValue": "${CLEANUPCONTAINERIMAGE}", 
+            "ParameterKey": "CleanupContainerImage"
+        }, 
+        {
+            "ParameterValue": "otxb.io", 
+            "ParameterKey": "Domain"
+        }, 
+        {
+            "ParameterValue": "t2.large", 
+            "ParameterKey": "InstanceType"
+        }, 
+        {
+            "ParameterValue": "otxb-skynet", 
+            "ParameterKey": "Application"
+        }, 
+        {
+            "ParameterValue": "arn:aws:acm:us-west-2:271083817914:certificate/97dae833-1510-4d06-bd22-6b61c2ad6f07", 
+            "ParameterKey": "CertificateARN"
+        }
+    ], 
+    "Tags": [
+        {
+            "Value": "cluster", 
+            "Key": "Role"
+        }, 
+        {
+            "Value": "prod", 
+            "Key": "Environment"
+        }, 
+        {
+            "Value": "otxb-skynet", 
+            "Key": "Application"
+        }, 
+        {
+            "Value": "prod-otxb-skynet-cluster", 
+            "Key": "System"
+        }
+    ], 
+    "Changes": [
+        {
+            "ResourceChange": {
+                "ResourceType": "AWS::ECS::Service"
+
+            }, 
+            "Type": "Resource"
+        }, 
+        {
+            "ResourceChange": {
+                "ResourceType": "AWS::ECS::TaskDefinition"
+
+            }, 
+            "Type": "Resource"
+        }
+    ], 
+    "CreationTime": "2017-08-08T20:38:13.300Z", 
+    "Capabilities": [
+        "CAPABILITY_IAM", 
+        "CAPABILITY_NAMED_IAM"
+    ], 
+    "StackName": "prod-otxb-skynet-cluster", 
+    "NotificationARNs": [], 
+    "ExecutionStatus": "AVAILABLE",
+    "ChangeSetId": "arn:aws:cloudformation:us-west-2:271083817914:changeSet/prod-otxb-skynet-cluster-deploy-cloudformation-change-set/b906e2e9-b1c7-432a-a1dd-6f93dfa96553"
+}

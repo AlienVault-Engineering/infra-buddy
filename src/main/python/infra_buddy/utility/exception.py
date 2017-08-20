@@ -1,0 +1,3 @@
+
+class NOOPException(Exception):
+    pass

@@ -1,0 +1,65 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Trivial template with nominal asset creation.",
+  "Parameters": {
+    "Environment": {
+      "Description": "The environment parameter for the docker container",
+      "Type": "String"
+    },
+    "Application": {
+      "Description": "The application",
+      "Type": "String"
+    },
+    "Role": {
+      "Description": "The application",
+      "Type": "String"
+    },
+    "Random": {
+      "Description": "Random",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "PublicRead",
+        "BucketName": {
+          "Fn::Sub": "${Environment}-simple-test-bucket-${Random}"
+        },
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": {
+              "Ref": "Application"
+            }
+          },
+          {
+            "Key": "Role",
+            "Value": {
+              "Ref": "Role"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ECSAutoScalingGroup": {
+      "Value": {
+        "Ref": "S3Bucket"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-BucketName"
+        }
+      }
+    }
+  }
+}

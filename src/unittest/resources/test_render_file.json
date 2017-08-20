@@ -1,0 +1,23 @@
+[
+
+    {
+        "ParameterKey": "EnvName",
+        "ParameterValue": "${EnvName}"
+    },
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "${ENVIRONMENT}"
+    },
+    {
+        "ParameterKey": "VPCStack",
+        "ParameterValue": "${VPC_STACK_NAME}"
+    },
+    {
+        "ParameterKey": "ClusterStack",
+        "ParameterValue": "${CLUSTER_STACK_NAME}"
+    },
+    {
+        "ParameterKey": "DesiredCapacity",
+        "ParameterValue": "\\${DESIRED_CAPACITY}"
+    }
+]

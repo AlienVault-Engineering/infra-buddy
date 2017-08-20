@@ -1,0 +1,12 @@
+language: python
+python:
+- '2.7'
+install: 'pip install pybuilder '
+script: pyb install_dependencies package   -P build_number=0.1.${TRAVIS_BUILD_NUMBER}
+deploy:
+  provider: pypi
+  user: alienvault_engineering
+  distributions: sdist
+  server: https://upload.pypi.org/legacy/
+  password:
+    secure: oQooHv9oqjq9gIgis4fw374JP1tvnwQO4yAdbjog+x03UU67OWVusxxUPl0rzn6Q8MgCI8SYLrXJnFR4oI5GKJNqgvw1W+jwNv2SFlqZKUG7vObyssfEJ2AfOEY9/YF1iHWlPUkj0BLxPRXCy89JiFypBH6sF6e+Tm4pGeCONFc+Bhjr49iEseqvRqUwWEulWiIzURr4wYFV24ztrggPeZQxhb/kuEaNH//6La4Go2qfuRwmJZbwH8Xm2ijABnbkCoFX7yawHrnoL8aQK2KTw3BLnQfFMbptA4+dfH5pqjtCbCS3I1w4vuHQnTEnnQDLR2d71Qml9Mg9eZ5KHd0P45yhbEANodkDtOaflTRTxCDz91HsdDm8kLYIWJCuCEzk3M2oCJRtQZJvq0UmfS6saF667aStWcIaCxcJF5mmHkKpMDML110Cf6HRD61q45ur72/a+h+D1nQLAruKZW81dKXcMyjWVct/g/BqaC7caHGLds7ZgAAK4E9b70EVMOerqxsQ8JruBg5JjZmM8AxK2MKrstShlzj8TemZAoZOeOjyBCZWPRaNHt9a5Reo5D39beEFT2aCQZvmZhO4jf39h2Rjr6TfHnSBxgx4kiYDgJNiVFuvgp7mnPspjSdpMM+Grxp10YXoq03Ut0bgjljUw6Og6XDNEUHtu+fyZWxiHeY=
