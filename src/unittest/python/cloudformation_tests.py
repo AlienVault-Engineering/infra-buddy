@@ -4,6 +4,8 @@ import string
 
 from infra_buddy.aws.cloudformation import CloudFormationBuddy
 from infra_buddy.aws.s3 import S3Buddy
+# noinspection PyUnresolvedReferences
+from infra_buddy import commandline
 from infra_buddy.commands.deploy_cloudformation import command
 from infra_buddy.utility.exception import NOOPException
 from testcase_parent import ParentTestCase
