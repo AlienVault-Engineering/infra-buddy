@@ -19,6 +19,12 @@ class DeployContextTestCase(ParentTestCase):
 
     def test_string_render(self):
         deploy_ctx = self.test_deploy_ctx
+        self._validate_deploy_ctx(deploy_ctx)
+        deploy_ctx = DeployContext.create_deploy_context(application="foo-bar", role="baz", environment="dev", defaults=self.default_config)
+        self.assertEqual(deploy_ctx.vpcapp, "foo", "Failed to generate generate_short_app_name")
+
+    def _validate_deploy_ctx(self, deploy_ctx):
+        # type: (DeployContext) -> None
         self.assertEqual(deploy_ctx.cf_bucket_name, "dev-foo-cloudformation-deploy-resources",
                          "Failed to generate CloudFormation bucket")
         self.assertEqual(deploy_ctx.cluster_stack_name, "dev-foo-cluster", "Failed to generate clustername")
@@ -36,12 +42,12 @@ class DeployContextTestCase(ParentTestCase):
         self.assertEqual(deploy_ctx.resource_stack_name, "dev-foo-bar-resources",
                          "Failed to generate generate_resource_stack_name")
         self.assertEqual(deploy_ctx.vpc_stack_name, "dev-foo-vpc", "Failed to generate generate_stack_name")
-        deploy_ctx = DeployContext(application="foo-bar", role="baz", environment="dev", defaults=self.default_config)
-        self.assertEqual(deploy_ctx.vpcapp, "foo", "Failed to generate generate_short_app_name")
 
     def test_default_configure(self):
         try:
-            no_default_ctx = DeployContext(application="foo", role="bar", environment="dev", defaults=None)
+            no_default_ctx = DeployContext.create_deploy_context(application="foo",
+                                                                 role="bar",
+                                                                 environment="dev")
             self.fail("Failed to generate error")
         except:
             pass
@@ -51,7 +57,9 @@ class DeployContextTestCase(ParentTestCase):
         def_region = "us-west-1"
         os.environ.setdefault(REGION, def_region)
         try:
-            no_default_ctx = DeployContext(application="foo", role="bar", environment="dev", defaults=None)
+            no_default_ctx = DeployContext.create_deploy_context(application="foo",
+                                                                 role="bar",
+                                                                 environment="dev")
             region = no_default_ctx.get_region()
             self.assertEqual(region, def_region, "Failed to leverage environment variable")
         finally:
@@ -59,7 +67,7 @@ class DeployContextTestCase(ParentTestCase):
 
     def test_template_render(self):
         deploy_ctx = self.test_deploy_ctx
-        render_file_test = os.path.join(DIRNAME, '../resources/test_render_file.json')
+        render_file_test = self._get_resource_path('test_render_file.json')
         template = deploy_ctx.render_template(render_file_test)
         expected = {
             "EnvName": "${EnvName}",
@@ -73,3 +81,25 @@ class DeployContextTestCase(ParentTestCase):
             for val in load:
                 self.assertEqual(val["ParameterValue"], expected[val["ParameterKey"]], "Did not render template as "
                                                                                        "expected")
+
+    def test_artifact_directory_error_handling(self):
+        try:
+            empty_artifact_directory = self._get_resource_path('artifact_directory_tests/empty_artifact_directory')
+            err_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=empty_artifact_directory,
+                                                                   environment="dev")
+            self.fail("Failed to generate error")
+        except Exception as e:
+            pass
+
+    def test_artifact_directory_service_load(self):
+        artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_service_definition')
+        deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
+                                                               environment="dev",
+                                                               defaults=self.default_config)
+        self._validate_deploy_ctx(deploy_ctx)
+        self.assertListEqual(deploy_ctx.get_service_modifications(),['autoscale'],"Failed to load service modifications")
+        self.assertEqual(deploy_ctx.docker_registry_url,"https://docker.io/my-registry","Failed to load registry-url")
+        self.assertEqual(deploy_ctx['API_PATH'],"bar","Failed to load deployment parameters")
+
+
+

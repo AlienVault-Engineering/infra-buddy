@@ -33,3 +33,7 @@ class S3Buddy(object):
     def get_file_as_string(self, filename):
         key_name = self._get_upload_bucket_key_name(file=None,file_name=filename)
         return self.s3.meta.client.get_object(Bucket=self.deploy_ctx.cf_bucket_name,Key=key_name)['Body'].read()
+
+
+def download_zip_from_s3_url(s3_url):
+    return None

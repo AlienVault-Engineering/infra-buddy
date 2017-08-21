@@ -20,3 +20,7 @@ def warn(msg):
 def banner_warn(msg, data):
     click.secho(msg, fg="yellow")
     click.secho(data, fg="yellow", bg='blue')
+
+
+def error(err_msg):
+    click.secho(err_msg,fg="red")
