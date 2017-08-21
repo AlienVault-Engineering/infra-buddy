@@ -9,24 +9,22 @@ import datetime
 
 from infra_buddy.aws import s3
 from infra_buddy.context.service_definition import ServiceDefinition
+from infra_buddy.context.template_manager import TemplateManager
 from infra_buddy.utility import print_utility
 
-
-SERVICE_MODIFICATIONS = 'SERVICE_MODIFICATIONS'
 DOCKER_REGISTRY = 'DOCKER_REGISTRY_URL'
-SERVICE_TYPE = 'SERVICE_TYPE'
 ROLE = 'ROLE'
 APPLICATION = 'APPLICATION'
 ENVIRONMENT = 'ENVIRONMENT'
 REGION = 'REGION'
 SKIP_ECS = 'SKIP_ECS'
-built_in = [SERVICE_MODIFICATIONS,DOCKER_REGISTRY,SERVICE_TYPE,ROLE,APPLICATION,ENVIRONMENT,REGION,SKIP_ECS]
+built_in = [DOCKER_REGISTRY, ROLE, APPLICATION, ENVIRONMENT, REGION, SKIP_ECS]
 env_variables = OrderedDict()
 env_variables['VPCAPP'] = "{VPCAPP}"
 env_variables['DEPLOY_DATE'] = "{DEPLOY_DATE}"
 env_variables['STACK_NAME'] = "{ENVIRONMENT}-{APPLICATION}-{ROLE}"
-env_variables['EnvName'] = "{STACK_NAME}"  #alias
-env_variables['ECS_SERVICE_STACK_NAME'] = "{STACK_NAME}" #alias
+env_variables['EnvName'] = "{STACK_NAME}"  # alias
+env_variables['ECS_SERVICE_STACK_NAME'] = "{STACK_NAME}"  # alias
 env_variables['VPC_STACK_NAME'] = "{ENVIRONMENT}-{VPCAPP}-vpc"
 env_variables['CF_BUCKET_NAME'] = "{ENVIRONMENT}-{VPCAPP}-cloudformation-deploy-resources"
 env_variables['CF_DEPLOY_RESOURCE_PATH'] = "{STACK_NAME}/{DEPLOY_DATE}"
@@ -46,7 +44,7 @@ class DeployContext(dict):
         self._initalize_defaults(defaults)
 
     @classmethod
-    def create_deploy_context_artifact(cls, artifact_directory,environment, defaults=None):
+    def create_deploy_context_artifact(cls, artifact_directory, environment, defaults=None):
         # type: (str, str) -> DeployContext
         """
         :rtype DeployContext
@@ -54,7 +52,7 @@ class DeployContext(dict):
                 May be a s3 URL pointing at a zip archive
         :param defaults: Path to json file containing default environment settings
         """
-        ret = DeployContext(defaults=defaults,environment=environment)
+        ret = DeployContext(defaults=defaults, environment=environment)
         ret._initialize_artifact_directory(artifact_directory)
         ret._initialize_environment_variables()
         return ret
@@ -69,7 +67,7 @@ class DeployContext(dict):
         :param environment: Environment to deploy
         :param defaults: Path to json file containing default environment settings
         """
-        ret = DeployContext(defaults=defaults,environment=environment)
+        ret = DeployContext(defaults=defaults, environment=environment)
         ret['APPLICATION'] = application
         ret['ROLE'] = role
         ret._initialize_environment_variables()
@@ -79,19 +77,12 @@ class DeployContext(dict):
         # type: (str) -> None
         if artifact_directory.startswith("s3://"):
             artifact_directory = s3.download_zip_from_s3_url(artifact_directory)
-        service_definition_name = os.path.join(artifact_directory, "service.json")
-        if not os.path.exists(service_definition_name):
-            err_msg = "Service definition (service.json) does not exist in artifact directory - {}".format(
-                artifact_directory)
-            print_utility.error(err_msg)
-            raise Exception(err_msg)
-        service_definition = ServiceDefinition(service_definition_name,self['ENVIRONMENT'])
+        service_definition = ServiceDefinition(artifact_directory, self['ENVIRONMENT'])
         self[APPLICATION] = service_definition.application
         self[ROLE] = service_definition.role
-        self[SERVICE_TYPE] = service_definition.service_type
         self[DOCKER_REGISTRY] = service_definition.docker_registry
         self.update(service_definition.deployment_parameters)
-        self[SERVICE_MODIFICATIONS] = service_definition.service_modifications
+        self.service_definition = service_definition
         image_definition = os.path.join(artifact_directory, "containerurl.txt")
         if os.path.exists(image_definition):
             with open(image_definition, 'r') as image:
@@ -104,7 +95,7 @@ class DeployContext(dict):
         self['VPCAPP'] = application if '-' not in application else application[:application.find('-')]
         self['DEPLOY_DATE'] = datetime.datetime.now().strftime("%b_%d_%Y_Time_%H_%M")
         for property_name in built_in:
-            self.__dict__[property_name.lower()] = self.get(property_name,None)
+            self.__dict__[property_name.lower()] = self.get(property_name, None)
         for variable, template in env_variables.iteritems():
             evaluated_template = template.format(**self)
             self[variable] = evaluated_template
@@ -117,6 +108,7 @@ class DeployContext(dict):
                 config = json.load(fp)
                 self.update(config)
         self.update(os.environ)
+        self.template_manager = TemplateManager(self)
 
     def generate_modification_stack_name(self, mod_name):
         return "{ENVIRONMENT}-{APPLICATION}-{ROLE}-{mod_name}".format(mod_name=mod_name, **self)
@@ -139,7 +131,7 @@ class DeployContext(dict):
         pass
 
     def get_service_modifications(self):
-        return self.get(SERVICE_MODIFICATIONS,[])
+        return self.service_definition.service_modifications
 
     def should_skip_ecs_trivial_update(self):
         return self.get(SKIP_ECS, os.environ.get(SKIP_ECS, True))
@@ -157,6 +149,9 @@ class DeployContext(dict):
     def __del__(self):
         for file in self.temp_files:
             os.remove(file)
+
+    def get_execution_plan(self):
+        return self.service_definition.generate_execution_plan(self.template_manager)
 
     def _expandvars(self, path, default=None, skip_escaped=False):
         """Expand ENVIRONMENT variables of form $var and ${var}.

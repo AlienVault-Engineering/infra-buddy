@@ -1,0 +1,12 @@
+{
+  "application": "foo",
+  "role": "bar",
+  "service-type": "pylib-remote",
+  "registry-url": "https://docker.io/my-registry",
+  "deployment-parameters": {
+    "API_PATH":"bar"
+  },
+  "service-modifications": [
+    "autoscale"
+  ]
+}

@@ -1,6 +1,10 @@
 import json
+import os
 
 from jsonschema import validate
+
+from infra_buddy.context.deploy import Deploy
+from infra_buddy.utility import print_utility
 
 _MODIFICATIONS = 'service-modifications'
 
@@ -56,8 +60,15 @@ class ServiceDefinition(object):
         ]
     }
 
-    def __init__(self, service_definition_path, environment):
+    def __init__(self, artifact_directory, environment):
         super(ServiceDefinition, self).__init__()
+        self.artifact_directory = artifact_directory
+        service_definition_path = os.path.join(artifact_directory, "service.json")
+        if not os.path.exists(service_definition_path):
+            err_msg = "Service definition (service.json) does not exist in artifact directory - {}".format(
+                artifact_directory)
+            print_utility.error(err_msg)
+            raise Exception(err_msg)
         with open(service_definition_path, 'r') as fp:
             service_definition = json.load(fp)
             validate(service_definition, self.schema)
@@ -68,10 +79,25 @@ class ServiceDefinition(object):
             deployment_parameters = _DEPLOYMENT_PARAMETERS
             if deployment_parameters in service_definition:
                 self.deployment_parameters = service_definition[deployment_parameters]
-            else:
-                self.deployment_parameters = {}
             env_deployment_parameters = '{environment}-deployment-parameters'.format(environment=environment)
             if env_deployment_parameters in service_definition:
                 self.deployment_parameters.update(service_definition[env_deployment_parameters])
-            if _MODIFICATIONS in service_definition:
-                self.service_modifications = service_definition[_MODIFICATIONS]
+            self.service_modifications = service_definition.get(_MODIFICATIONS,[])
+
+    def generate_execution_plan(self, template_manager):
+        # type: (TemplateManager) -> list
+        ret = []
+        ret.append(template_manager.get_known_service(self.service_type))
+        resource_template_path = os.path.join(self.artifact_directory, "aws-resources.template")
+        if os.path.exists(resource_template_path):
+            resource_params = os.path.join(self.artifact_directory, "aws-resources.parameters.json")
+            resource_config_dir = os.path.join(self.artifact_directory, "aws-resources-config")
+            if not os.path.exists(resource_config_dir):
+                resource_config_dir = None
+            ret.append(Deploy(template_file=resource_template_path,
+                              parameter_file=resource_params,
+                              config_directory=resource_config_dir))
+        for mod in self.service_modifications:
+            ret.append(template_manager.get_known_service_modification(mod))
+        return ret
+

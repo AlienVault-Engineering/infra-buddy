@@ -5,6 +5,10 @@
         "ParameterValue": "${EnvName}"
     },
     {
+        "ParameterKey": "Unknown",
+        "ParameterValue": "${Unknown}"
+    },
+    {
         "ParameterKey": "Environment",
         "ParameterValue": "${ENVIRONMENT}"
     },

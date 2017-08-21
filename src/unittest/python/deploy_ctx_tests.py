@@ -70,7 +70,8 @@ class DeployContextTestCase(ParentTestCase):
         render_file_test = self._get_resource_path('test_render_file.json')
         template = deploy_ctx.render_template(render_file_test)
         expected = {
-            "EnvName": "${EnvName}",
+            "EnvName": "dev-foo-bar",
+            "Unknown": "${Unknown}",
             "Environment": "dev",
             "VPCStack": "dev-foo-vpc",
             "ClusterStack": "dev-foo-cluster",
@@ -101,6 +102,16 @@ class DeployContextTestCase(ParentTestCase):
         self.assertEqual(deploy_ctx.docker_registry_url,"https://docker.io/my-registry","Failed to load registry-url")
         self.assertEqual(deploy_ctx['API_PATH'],"bar","Failed to load deployment parameters")
         self.assertEqual(deploy_ctx['IMAGE'],"https://docker.io/my-registry/artifact:39","Failed to load deployment parameters")
+        self.assertIsNotNone(deploy_ctx.service_definition,"Failed to populate service definition")
+
+    def test_artifact_directory_execution_plan(self):
+        artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_execution_plan_test')
+        deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
+                                                               environment="dev",
+                                                               defaults=self.default_config)
+        plan = deploy_ctx.get_execution_plan()
+        self.assertTrue(len(plan)==3,"Failed to identify all elements of execution")
+
 
 
 
