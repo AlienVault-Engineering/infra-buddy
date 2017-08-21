@@ -100,6 +100,8 @@ class DeployContextTestCase(ParentTestCase):
         self.assertListEqual(deploy_ctx.get_service_modifications(),['autoscale'],"Failed to load service modifications")
         self.assertEqual(deploy_ctx.docker_registry_url,"https://docker.io/my-registry","Failed to load registry-url")
         self.assertEqual(deploy_ctx['API_PATH'],"bar","Failed to load deployment parameters")
+        self.assertEqual(deploy_ctx['IMAGE'],"https://docker.io/my-registry/artifact:39","Failed to load deployment parameters")
+
 
 
 
