@@ -1,4 +1,7 @@
 import os
+import tempfile
+import urlparse
+from zipfile import ZipFile
 
 import boto3
 import botocore
@@ -35,5 +38,14 @@ class S3Buddy(object):
         return self.s3.meta.client.get_object(Bucket=self.deploy_ctx.cf_bucket_name,Key=key_name)['Body'].read()
 
 
-def download_zip_from_s3_url(s3_url):
-    return None
+def download_zip_from_s3_url(s3_url,destination):
+    # type: (str, dest_directory) -> None
+    parsed = urlparse.urlparse(s3_url)
+    bucket = parsed.hostname
+    key = parsed.path[1:] #strip leading /
+    s3 = boto3.resource('s3')
+    with tempfile.NamedTemporaryFile() as temporary_file:
+        temp_file_path = temporary_file.name
+    s3.Bucket(bucket).download_file(key, temp_file_path)
+    with ZipFile(temp_file_path) as zf:
+       zf.extractall(destination)
