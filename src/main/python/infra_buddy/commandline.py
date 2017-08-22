@@ -18,7 +18,7 @@ from infra_buddy.utility import print_utility
 @click.option("--verbose", is_flag=True, help='Print verbose status messages')
 @click.pass_context
 def cli(ctx, artifact_directory, application, role, environment, configuration_defaults, verbose):
-    # type: (str, str, str, str, str, str, bool) -> None
+    # type: (object, str, str, str, str, str, bool) -> None
     """
 
     :param ctx: click context
@@ -31,7 +31,7 @@ def cli(ctx, artifact_directory, application, role, environment, configuration_d
     print_utility.configure(verbose)
     if artifact_directory:
         if application or role:
-            click.UsageError("When specifying --artifact-directory do not provide --application or --role")
+            raise click.UsageError("When specifying --artifact-directory do not provide --application or --role")
         ctx.obj = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
                                                                environment=environment,
                                                                defaults=configuration_defaults)

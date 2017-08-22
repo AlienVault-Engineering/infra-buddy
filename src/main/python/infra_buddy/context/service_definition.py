@@ -1,9 +1,7 @@
 import json
 import os
-
 from jsonschema import validate
-
-from infra_buddy.context.deploy import Deploy
+from infra_buddy.context.template_manager import TemplateManager
 from infra_buddy.utility import print_utility
 
 _MODIFICATIONS = 'service-modifications'
@@ -82,7 +80,7 @@ class ServiceDefinition(object):
             env_deployment_parameters = '{environment}-deployment-parameters'.format(environment=environment)
             if env_deployment_parameters in service_definition:
                 self.deployment_parameters.update(service_definition[env_deployment_parameters])
-            self.service_modifications = service_definition.get(_MODIFICATIONS,[])
+            self.service_modifications = service_definition.get(_MODIFICATIONS, [])
 
     def generate_execution_plan(self, template_manager):
         # type: (TemplateManager) -> list
@@ -94,10 +92,9 @@ class ServiceDefinition(object):
             resource_config_dir = os.path.join(self.artifact_directory, "aws-resources-config")
             if not os.path.exists(resource_config_dir):
                 resource_config_dir = None
-            ret.append(Deploy(template_file=resource_template_path,
-                              parameter_file=resource_params,
-                              config_directory=resource_config_dir))
+            ret.append(template_manager.get_resource_service(template_file=resource_template_path,
+                                                             parameter_file=resource_params,
+                                                             config_directory=resource_config_dir))
         for mod in self.service_modifications:
             ret.append(template_manager.get_known_service_modification(mod))
         return ret
-

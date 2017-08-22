@@ -8,9 +8,12 @@ import re
 import datetime
 
 from infra_buddy.aws import s3
+from infra_buddy.context.deploy import Deploy
 from infra_buddy.context.service_definition import ServiceDefinition
 from infra_buddy.context.template_manager import TemplateManager
 from infra_buddy.utility import print_utility
+
+STACK_NAME = 'STACK_NAME'
 
 DOCKER_REGISTRY = 'DOCKER_REGISTRY_URL'
 ROLE = 'ROLE'
@@ -22,7 +25,7 @@ built_in = [DOCKER_REGISTRY, ROLE, APPLICATION, ENVIRONMENT, REGION, SKIP_ECS]
 env_variables = OrderedDict()
 env_variables['VPCAPP'] = "{VPCAPP}"
 env_variables['DEPLOY_DATE'] = "{DEPLOY_DATE}"
-env_variables['STACK_NAME'] = "{ENVIRONMENT}-{APPLICATION}-{ROLE}"
+env_variables[STACK_NAME] = "{ENVIRONMENT}-{APPLICATION}-{ROLE}"
 env_variables['EnvName'] = "{STACK_NAME}"  # alias
 env_variables['ECS_SERVICE_STACK_NAME'] = "{STACK_NAME}"  # alias
 env_variables['VPC_STACK_NAME'] = "{ENVIRONMENT}-{VPCAPP}-vpc"
@@ -109,6 +112,7 @@ class DeployContext(dict):
                 self.update(config)
         self.update(os.environ)
         self.template_manager = TemplateManager(self)
+        self.stack_name_cache = []
 
     def generate_modification_stack_name(self, mod_name):
         return "{ENVIRONMENT}-{APPLICATION}-{ROLE}-{mod_name}".format(mod_name=mod_name, **self)
@@ -151,6 +155,7 @@ class DeployContext(dict):
             os.remove(file)
 
     def get_execution_plan(self):
+        # type: () -> list(Deploy)
         return self.service_definition.generate_execution_plan(self.template_manager)
 
     def _expandvars(self, path, default=None, skip_escaped=False):
@@ -338,3 +343,10 @@ class DeployContext(dict):
         #         echo "True"
         #     fi
         # }
+
+    def push_stack_name(self, stack_name):
+        self.stack_name_cache.append(self[STACK_NAME])
+        self[STACK_NAME] = stack_name
+
+    def pop_stack_name(self):
+        self[STACK_NAME] = self.stack_name_cache.pop()
