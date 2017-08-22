@@ -1,5 +1,6 @@
 import json
 import os
+import tempfile
 from collections import OrderedDict
 from tempfile import NamedTemporaryFile
 
@@ -79,7 +80,9 @@ class DeployContext(dict):
     def _initialize_artifact_directory(self, artifact_directory):
         # type: (str) -> None
         if artifact_directory.startswith("s3://"):
-            artifact_directory = s3.download_zip_from_s3_url(artifact_directory)
+            tmp_dir = tempfile.mkdtemp()
+            s3.download_zip_from_s3_url(artifact_directory,destination=tmp_dir)
+            artifact_directory = tmp_dir
         service_definition = ServiceDefinition(artifact_directory, self['ENVIRONMENT'])
         self[APPLICATION] = service_definition.application
         self[ROLE] = service_definition.role
@@ -113,6 +116,12 @@ class DeployContext(dict):
         self.update(os.environ)
         self.template_manager = TemplateManager(self)
         self.stack_name_cache = []
+
+    def get_deploy_templates(self):
+        return self.get('service-templates',{})
+
+    def get_service_modification_templates(self):
+        return self.get('service-modification-templates',{})
 
     def generate_modification_stack_name(self, mod_name):
         return "{ENVIRONMENT}-{APPLICATION}-{ROLE}-{mod_name}".format(mod_name=mod_name, **self)
@@ -180,169 +189,6 @@ class DeployContext(dict):
         #     --tags "application:${application} ROLE:${ROLE} ENVIRONMENT:${ENVIRONMENT} system:${application}-${ROLE}"
 
 
-
-        #
-        # function parse_template() {
-        #     perl -p -i -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' \
-        #         <  $1 \
-        #         > $2 \
-        #         2> /dev/null
-        # }
-        #
-        # function does_stack_exist(){
-        #     if [[ $(get_cloudformation_stack_status ${1}) ]]; then
-        #         echo "Yes"
-        #     else
-        #         echo "No"
-        #     fi
-        # }
-        # function print_stack_param(){
-        #     if [[ $(does_stack_exist ${1}) == "Yes" ]]; then
-        #         aws cloudformation describe-stacks  --stack-name ${1} |  jq -r --arg parameter_key "${2}" '.Stacks[].Parameters[] | select(.ParameterKey == $parameter_key) | .ParameterValue'
-        #     else
-        #         echo "# did not find stack to export values ${1}"
-        #     fi
-        # }
-        #
-        # function get_cloudformation_stack_status(){
-        #     aws cloudformation list-stacks | jq -r ".StackSummaries[] | select(.StackStatus != \"DELETE_COMPLETE\") | select(.StackName == \"${1}\") | .StackStatus "
-        # }
-        #
-        # function print_variables_from_json_dictionary(){
-        #     DICT=`cat ${1} | jq -r  --arg DictName "${2}" '.[$DictName]'`
-        #     if [[ $DICT != null ]]; then
-        #         #load any defaults from the service definition (sets env variables for subsequent rerun and CloudFormation tasks) "export \(.OutputKey)=\"${\(.OutputKey):=\(.OutputValue)}\""
-        #         cat ${1} |  jq -r --arg DictName "${2}" '.[$DictName] | keys[] as $k | "export \($k)=\"${\($k):=\(.[$k] | . )}\""'
-        #     fi
-        # }
-        #
-        # function process_artifact_directory(){
-        #     # Allow artifact directory to be in s3
-        #     if [[ ${1} == "s3"* ]]; then
-        #         TMPDIR=$(eval mktemp -d /tmp/deploy_cf.XXXXXXXXXX)
-        #         ARTIFACT=$(basename ${1})
-        #         aws s3 cp ${1} ${TMPDIR}
-        #         pushd ${TMPDIR}/ > /dev/null
-        #         unzip ${TMPDIR}/${ARTIFACT}
-        #         popd > /dev/null
-        #         ARTIFACT_DIRECTORY_LOCATION=${TMPDIR}/service
-        #     else
-        #         ARTIFACT_DIRECTORY_LOCATION=${1}
-        #
-        #     fi
-        #     if [[ ! -d ${ARTIFACT_DIRECTORY_LOCATION} ]]; then
-        #       echo "# artifact directory does not exist"
-        #       return
-        #     fi
-        #
-        #     if [[  -e ${ARTIFACT_DIRECTORY_LOCATION}/service.json ]]; then
-        #         # load service definition from service.json.template
-        #         export application=$( cat ${ARTIFACT_DIRECTORY_LOCATION}/service.json | jq -r '.["application"]')
-        #         export ROLE=$( cat ${ARTIFACT_DIRECTORY_LOCATION}/service.json | jq -r '.["ROLE"]')
-        #         export SERVICE_TYPE="${SERVICE_TYPE:=$( cat ${ARTIFACT_DIRECTORY_LOCATION}/service.json | jq -r '.["service-type"]')}"
-        #         export DOCKER_REGISTRY="${DOCKER_REGISTRY:=$( cat ${ARTIFACT_DIRECTORY_LOCATION}/service.json | jq -r '.["registry-url"]')}"
-        #         #allow a generic section
-        #         eval $(print_variables_from_json_dictionary ${ARTIFACT_DIRECTORY_LOCATION}/service.json "deployment-parameters")
-        #         #override with ENVIRONMENT specific variables
-        #         eval $(print_variables_from_json_dictionary ${ARTIFACT_DIRECTORY_LOCATION}/service.json "${ENVIRONMENT}-deployment-parameters")
-        #         if [[ `cat  ${ARTIFACT_DIRECTORY_LOCATION}/service.json  | jq -r --arg DictName "service-modifications" '.[$DictName]'` != null ]]; then
-        #             export SERVICE_MODIFICATIONS=$(cat  ${ARTIFACT_DIRECTORY_LOCATION}/service.json  | jq -r --arg DictName "service-modifications" '.[$DictName] | join(" ")')
-        #         fi
-        #         #########################
-        #         #for backward compatibility
-        #         #use eval to allow variables to have defaults (as in evaluate export FOO="${FOO:=bar}" it does not eval without eval)
-        #         eval $(print_variables_from_json_dictionary ${ARTIFACT_DIRECTORY_LOCATION}/service.json "service-parameters")
-        #         #load any defaults from the service definition (sets env variables for subsequent rerun and CloudFormation tasks)
-        #         eval $(print_variables_from_json_dictionary ${ARTIFACT_DIRECTORY_LOCATION}/service.json "aws-resource-parameters")
-        #         #########################
-        #     else
-        #         echo "# service definition does not exist, exiting now!"
-        #         exit 1
-        #     fi
-        #
-        #     if [[ -e ${ARTIFACT_DIRECTORY_LOCATION}/containerurl.txt ]]; then
-        #         # load the containerurl from containerurl.txt
-        #         export IMAGE=$(eval cat ${ARTIFACT_DIRECTORY}/containerurl.txt)
-        #     fi
-        # }
-        #
-        # function print_export_value(){
-        #     print_export_value_rec ${1} ""
-        # }
-        #
-        # function print_export_value_rec(){
-        #     if [[ "${2}" != "" ]]; then
-        #         PARAMS="  --next-token ${2} "
-        #     fi
-        #     aws cloudformation list-exports ${PARAMS:=} > tmp.txt
-        #     VALUE=$( cat tmp.txt | jq -r --arg name "${1}" '.Exports[] | select(.Name == $name ) | .Value')
-        #     if [[ "${VALUE:=}" == "" && $(cat tmp.txt | jq -r '.NextToken') != "" ]]; then
-        #         NEXT=$(cat tmp.txt | jq -r '.NextToken')
-        #         VALUE=$(print_export_value_rec ${1} ${NEXT} )
-        #     fi
-        #     echo ${VALUE}
-        # }
-        # function generate_vpc_stack_name(){
-        #     VPCAPP=$(generate_short_app_name)
-        #     echo "${ENVIRONMENT}-${VPCAPP}-vpc"
-        # }
-        # function generate_cf_bucket_name(){
-        #    VPCAPP=$(generate_short_app_name)
-        #    echo "cf-templates-${VPCAPP}"
-        # }
-        # function generate_short_app_name(){
-        #     echo $application | cut -d '-' -f1
-        # }
-        #
-        # function generate_cluster_stack_name(){
-        #    echo "${ENVIRONMENT}-${application}-cluster"
-        # }
-        #
-        # function generate_stack_name(){
-        #     echo "${ENVIRONMENT}-${application}-${ROLE}"
-        # }
-        #
-        # function generate_resource_stack_name(){
-        #     echo "${ENVIRONMENT}-${application}-${ROLE}-resources"
-        # }
-        #
-        # function generate_modification_stack_name(){
-        #     echo "${ENVIRONMENT}-${application}-${ROLE}-${1}"
-        # }
-        #
-        # function generate_modification_resource_stack_name(){
-        #     echo "${ENVIRONMENT}-${application}-${ROLE}-${1}-resources"
-        # }
-        #
-        # function generate_key_name(){
-        #     echo "${ENVIRONMENT}-${application}"
-        # }
-        #
-        # function print_cluster_export_value(){
-        #     print_export_value "$(generate_cluster_stack_name)-${1}"
-        # }
-        #
-        # function print_ecs_service_export_value(){
-        #     print_export_value "$(generate_stack_name)-${1}"
-        # }
-        #
-        # function bucket_exists(){
-        #     EXISTS=$(aws s3api list-buckets --query 'Buckets[].Name' | grep ${1})
-        #     if [[ "${EXISTS:=}" == "" ]]; then
-        #         echo "False"
-        #     else
-        #         echo "True"
-        #     fi
-        # }
-        #
-        # function key_exists(){
-        #     EXISTS=$(aws ec2 describe-key-pairs --key-name ${1} 2> /dev/null )
-        #     if [[ $? != 0 ]]; then
-        #         echo "False"
-        #     else
-        #         echo "True"
-        #     fi
-        # }
 
     def push_stack_name(self, stack_name):
         self.stack_name_cache.append(self[STACK_NAME])

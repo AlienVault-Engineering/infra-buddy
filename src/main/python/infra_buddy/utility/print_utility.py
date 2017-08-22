@@ -22,5 +22,7 @@ def banner_warn(msg, data):
     click.secho(data, fg="yellow", bg='blue')
 
 
-def error(err_msg):
+def error(err_msg,raise_exception=False):
     click.secho(err_msg,fg="red")
+    if raise_exception:
+        raise click.UsageError(err_msg)

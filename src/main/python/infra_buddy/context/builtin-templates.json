@@ -1,0 +1,56 @@
+{
+  "service-modification-templates": {
+    "autoscale": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-autoscale"
+    },
+    "cluster-cpu-autoscale": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-cluster-cpu-autoscale"
+    },
+    "cluster-memory-autoscale": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-cluster-memory-autoscale"
+    },
+    "sqs-threshold": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-sqs-threshold"
+    },
+    "target-connection-error": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-target-connection-error"
+    }
+  },
+  "service-templates": {
+    "cluster": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-cluster"
+    },
+    "vpc": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-vpc"
+    },
+    "default-api-service": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-default-api-service"
+    },
+    "api-service": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-api-service"
+    },
+    "batch-service": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-batch-service"
+    }
+  }
+}
