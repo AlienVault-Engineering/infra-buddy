@@ -1,7 +1,7 @@
 {
   "application": "foo",
   "role": "bar",
-  "service-type": "pylib-remote",
+  "service-type": "api-service",
   "registry-url": "https://docker.io/my-registry",
   "deployment-parameters": {
     "API_PATH":"bar"

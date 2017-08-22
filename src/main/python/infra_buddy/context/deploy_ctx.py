@@ -24,20 +24,20 @@ REGION = 'REGION'
 SKIP_ECS = 'SKIP_ECS'
 built_in = [DOCKER_REGISTRY, ROLE, APPLICATION, ENVIRONMENT, REGION, SKIP_ECS]
 env_variables = OrderedDict()
-env_variables['VPCAPP'] = "{VPCAPP}"
-env_variables['DEPLOY_DATE'] = "{DEPLOY_DATE}"
-env_variables[STACK_NAME] = "{ENVIRONMENT}-{APPLICATION}-{ROLE}"
-env_variables['EnvName'] = "{STACK_NAME}"  # alias
-env_variables['ECS_SERVICE_STACK_NAME'] = "{STACK_NAME}"  # alias
-env_variables['VPC_STACK_NAME'] = "{ENVIRONMENT}-{VPCAPP}-vpc"
-env_variables['CF_BUCKET_NAME'] = "{ENVIRONMENT}-{VPCAPP}-cloudformation-deploy-resources"
-env_variables['CF_DEPLOY_RESOURCE_PATH'] = "{STACK_NAME}/{DEPLOY_DATE}"
-env_variables['CF_BUCKET_URL'] = "https://s3-{REGION}.amazonaws.com/{CF_BUCKET_NAME}"
-env_variables['CLUSTER_STACK_NAME'] = "{ENVIRONMENT}-{APPLICATION}-cluster"
-env_variables['RESOURCE_STACK_NAME'] = "{ENVIRONMENT}-{APPLICATION}-{ROLE}-resources"
-env_variables['ECS_SERVICE_RESOURCE_STACK_NAME'] = "{RESOURCE_STACK_NAME}"  # alias
-env_variables['KEY_NAME'] = "{ENVIRONMENT}-{APPLICATION}"
-env_variables['CHANGE_SET_NAME'] = "{STACK_NAME}-deploy-cloudformation-change-set"
+env_variables['VPCAPP'] = "${VPCAPP}"
+env_variables['DEPLOY_DATE'] = "${DEPLOY_DATE}"
+env_variables[STACK_NAME] = "${ENVIRONMENT}-${APPLICATION}-${ROLE}"
+env_variables['EnvName'] = "${STACK_NAME}"  # alias
+env_variables['ECS_SERVICE_STACK_NAME'] = "${STACK_NAME}"  # alias
+env_variables['VPC_STACK_NAME'] = "${ENVIRONMENT}-${VPCAPP}-vpc"
+env_variables['CF_BUCKET_NAME'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources"
+env_variables['CF_DEPLOY_RESOURCE_PATH'] = "${STACK_NAME}/${DEPLOY_DATE}"
+env_variables['CF_BUCKET_URL'] = "https://s3-${REGION}.amazonaws.com/${CF_BUCKET_NAME}"
+env_variables['CLUSTER_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-cluster"
+env_variables['RESOURCE_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-${ROLE}-resources"
+env_variables['ECS_SERVICE_RESOURCE_STACK_NAME'] = "${RESOURCE_STACK_NAME}"  # alias
+env_variables['KEY_NAME'] = "${ENVIRONMENT}-${APPLICATION}"
+env_variables['CHANGE_SET_NAME'] = "${STACK_NAME}-deploy-cloudformation-change-set"
 
 
 class DeployContext(dict):
@@ -103,7 +103,7 @@ class DeployContext(dict):
         for property_name in built_in:
             self.__dict__[property_name.lower()] = self.get(property_name, None)
         for variable, template in env_variables.iteritems():
-            evaluated_template = template.format(**self)
+            evaluated_template = self.expandvars(template)
             self[variable] = evaluated_template
             self.__dict__[variable.lower()] = evaluated_template
 
@@ -156,7 +156,7 @@ class DeployContext(dict):
                 print temp_file_path
                 self.temp_files.append(temp_file_path)
                 for line in source:
-                    destination.write(self._expandvars(line))
+                    destination.write(self.expandvars(line))
                 return temp_file_path
 
     def __del__(self):
@@ -167,18 +167,17 @@ class DeployContext(dict):
         # type: () -> list(Deploy)
         return self.service_definition.generate_execution_plan(self.template_manager)
 
-    def _expandvars(self, path, default=None, skip_escaped=False):
+    def expandvars(self, path, default=None):
         """Expand ENVIRONMENT variables of form $var and ${var}.
            If parameter 'skip_escaped' is True, all escaped variable references
            (i.e. preceded by backslashes) are skipped.
            Unknown variables are set to 'default'. If 'default' is None,
            they are left unchanged.
         """
-
         def replace_var(m):
             return self.get(m.group(2) or m.group(1), m.group(0) if default is None else default)
 
-        reVar = (r'(?<!\\)' if skip_escaped else '') + r'\$(\w+|\{([^}]*)\})'
+        reVar = r'(?<!\\)\$(\w+|\{([^}]*)\})'
         sub = re.sub(reVar, replace_var, path)
         return sub
 

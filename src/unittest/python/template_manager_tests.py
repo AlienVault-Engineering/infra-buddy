@@ -39,6 +39,7 @@ class TemplateManagerTestCase(ParentTestCase):
                                     "repo": "service-template-vpc"
                                 })
 
+
     def test_invalid_template(self):
         template = self.test_deploy_ctx.template_manager.get_resource_service(
                 ParentTestCase._get_resource_path("template_tests/invalid_template"))
@@ -47,4 +48,12 @@ class TemplateManagerTestCase(ParentTestCase):
         template = self.test_deploy_ctx.template_manager.get_resource_service(
                 ParentTestCase._get_resource_path("template_tests/valid_template"))
         self.assertIsNotNone(template,"Failed to return deploy for valid template")
+
+    def test_validate_defaults(self):
+
+        deploy = self.test_deploy_ctx.template_manager.get_resource_service(
+                ParentTestCase._get_resource_path("template_tests/valid_template"))
+        self.assertEqual(deploy.defaults['app'],"foo","Failed to render template value")
+        self.assertEqual(deploy.defaults['val'],"discrete","Failed to render template value")
+        # self.assertEqual(deploy.defaults['val'],"discrete","Failed to call func")
 

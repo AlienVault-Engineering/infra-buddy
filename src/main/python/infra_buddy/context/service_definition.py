@@ -86,15 +86,9 @@ class ServiceDefinition(object):
         # type: (TemplateManager) -> list
         ret = []
         ret.append(template_manager.get_known_service(self.service_type))
-        resource_template_path = os.path.join(self.artifact_directory, "aws-resources.template")
-        if os.path.exists(resource_template_path):
-            resource_params = os.path.join(self.artifact_directory, "aws-resources.parameters.json")
-            resource_config_dir = os.path.join(self.artifact_directory, "aws-resources-config")
-            if not os.path.exists(resource_config_dir):
-                resource_config_dir = None
-            ret.append(template_manager.get_resource_service(template_file=resource_template_path,
-                                                             parameter_file=resource_params,
-                                                             config_directory=resource_config_dir))
+        resource_deploy = template_manager.get_resource_service(self.artifact_directory)
+        if resource_deploy:
+            ret.append(resource_deploy)
         for mod in self.service_modifications:
             ret.append(template_manager.get_known_service_modification(mod))
         return ret

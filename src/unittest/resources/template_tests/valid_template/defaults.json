@@ -1,0 +1,10 @@
+{
+  "app":{
+    "type":"template",
+    "value":"${APPLICATION}"
+  },
+  "val":{
+    "type":"value",
+    "value":"discrete"
+  }
+}
