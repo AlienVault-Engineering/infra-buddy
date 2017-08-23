@@ -24,7 +24,7 @@ class ParentTestCase(unittest.TestCase):
         cls.resource_directory = RESOURCE_DIR
         config = 'default_config.json'
         cls.default_config = ParentTestCase._get_resource_path(config)
-        cls.test_deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar", environment="dev",
+        cls.test_deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar", environment="unit-test",
                                             defaults=cls.default_config)
         print_utility.configure(True)
 

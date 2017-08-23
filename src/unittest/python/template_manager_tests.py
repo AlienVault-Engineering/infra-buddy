@@ -55,14 +55,14 @@ class TemplateManagerTestCase(ParentTestCase):
                 ParentTestCase._get_resource_path("template_tests/valid_template"))
         self.assertEqual(deploy.defaults['app'],"foo","Failed to render template value")
         self.assertEqual(deploy.defaults['val'],"discrete","Failed to render template value")
-        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"dev-foo","Failed to render expected key value")
+        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"unit-test-foo","Failed to render expected key value")
         self.test_deploy_ctx.push_deploy_ctx(deploy)
-        self.assertEqual(self.test_deploy_ctx.stack_name,"dev-foo-bar-resources","Failed to update stack_name")
+        self.assertEqual(self.test_deploy_ctx.stack_name,"unit-test-foo-bar-resources","Failed to update stack_name")
         self.assertEqual(self.test_deploy_ctx.expandvars("${app}"),"foo","Failed to render deploy default")
         self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"override","Failed to render deploy default")
         self.test_deploy_ctx.pop_deploy_ctx()
-        self.assertEqual(self.test_deploy_ctx.stack_name,"dev-foo-bar","Failed to update stack_name after pop")
-        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"dev-foo","Failed to render expected key value after pop")
+        self.assertEqual(self.test_deploy_ctx.stack_name,"unit-test-foo-bar","Failed to update stack_name after pop")
+        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"unit-test-foo","Failed to render expected key value after pop")
 
         # self.assertEqual(deploy.defaults['val'],"discrete","Failed to call func")
 

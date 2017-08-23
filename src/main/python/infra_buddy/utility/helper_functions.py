@@ -15,9 +15,9 @@ def load_balancer_name(deploy_ctx):
     # we need an export value from the cluster stack so manually override it
     val = _get_cluster_stack_export_value(cf, deploy_ctx,"ElasticLoadBalancerARN")
     # //#amazon conveniently wants some substring of the ARN instead of the name or other value actually available in the API
-    # //# turn arn:aws: elasticloadbalancing: us-west-2: 271083817914: listener/app/prod-EcsEl-1WYNMMT2MT9NR/c5f92ddeb151227f/313bb2e23d9dd8d8
+    # //# turn arn:aws:elasticloadbalancing:us-west-2:271083817914:listener/app/prod-EcsEl-1WYNMMT2MT9NR/c5f92ddeb151227f/313bb2e23d9dd8d8
     # //# into app/prod-EcsEl-1WYNMMT2MT9NR/c5f92ddeb151227f/313bb2e23d9dd8d8
-    return "" if not val else val[val.find('app/')+4:]
+    return "" if not val else val[val.find('app/'):]
 
 
 def _get_cluster_stack_export_value(cf, deploy_ctx, param):
@@ -27,22 +27,32 @@ def _get_cluster_stack_export_value(cf, deploy_ctx, param):
     return val
 
 
+def _get_max_priority(rules):
+    rules = sorted(rules, key=lambda k: k["Priority"],reverse=True)
+    for rule in rules:
+        priority_ = rule['Priority']
+        if priority_ is not "default":
+            return int(priority_)
+
+
 def calculate_rule_priority(deploy_ctx,stack_name):
     # type: (DeployContext,str) -> str
     cf = CloudFormationBuddy(deploy_ctx)
     # we need some data for the passed stack_name so manually override it
-    cf.stack_name = deploy_ctx.stack_name
+    cf.stack_name = stack_name
     if cf.does_stack_exist():
         return cf.get_existing_parameter_value('RulePriority')
     else:
         listenerArn = _get_cluster_stack_export_value(cf,deploy_ctx,"ListenerARN")
         client = boto3.client('elbv2',region_name=deploy_ctx.region)
-        rules = client.describe_rules(ListenerArn=listenerArn)
+        rules = client.describe_rules(ListenerArn=listenerArn)['Rules']
         if not rules or len(rules)==0:
             current_max = 30
         else:
-            rules = sorted(rules, key=itemgetter("Priority"),reverse=True)
-            current_max = int(rules[0]['Priority'])
+            if len(rules)==1 and rules[0]['Priority'] == "default":
+                current_max = 30
+            else:
+                current_max = int(_get_max_priority(rules))
         return str(current_max+1)
 
 

@@ -1,0 +1,95 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Minimal ELB creation for infra-buddy unit testing purposes.",
+  "Parameters": {
+    "Environment": {
+      "Description": "The environment parameter for the docker container",
+      "Type": "String"
+    },
+    "Application": {
+      "Description": "The application",
+      "Type": "String"
+    },
+    "Role": {
+      "Description": "The application",
+      "Type": "String"
+    },
+    "RulePriority": {
+      "Description": "The application",
+      "Type": "Number"
+    }
+  },
+  "Resources": {
+    "EcsElasticLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Subnets": [
+          "subnet-4af2922f","subnet-a340e1fa"
+        ]
+      }
+    },
+    "DefaultTargetGroup": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "HealthCheckPath": "/health",
+        "HealthCheckIntervalSeconds": 30,
+        "HealthCheckProtocol": "HTTP",
+        "HealthCheckTimeoutSeconds": 10,
+        "HealthyThresholdCount": 5,
+        "UnhealthyThresholdCount": 2,
+        "TargetGroupAttributes": [
+          {
+            "Key": "deregistration_delay.timeout_seconds",
+            "Value": "45"
+          }
+        ],
+        "Matcher": {
+          "HttpCode": "200"
+        },
+        "Port": 80,
+        "Protocol": "HTTP",
+        "VpcId": "vpc-a2fa42c7"
+      }
+    },
+    "ELBHTTPListener": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [
+          {
+            "Type": "forward",
+            "TargetGroupArn": {
+              "Ref": "DefaultTargetGroup"
+            }
+          }
+        ],
+        "LoadBalancerArn": {
+          "Ref": "EcsElasticLoadBalancer"
+        },
+        "Port": "80",
+        "Protocol": "HTTP"
+      }
+    }
+  },
+  "Outputs": {
+    "ELBHTTPListener": {
+      "Value": {
+        "Ref": "ELBHTTPListener"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${Environment}-${Application}-cluster-ListenerARN"
+        }
+      }
+    },
+    "ECSAutoScalingGroup": {
+      "Value": {
+        "Ref": "EcsElasticLoadBalancer"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${Environment}-${Application}-cluster-ElasticLoadBalancerARN"
+        }
+      }
+    }
+  }
+}

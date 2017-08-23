@@ -220,21 +220,20 @@ class CloudFormationBuddy(object):
         export_list = exports['Exports']
         while export_list is not None:
             for export in export_list:
-                if export['ExportingStackId'] == self.stack_name:
-                    self.exports[export['Name']] = export['Value']
-            next = exports['NextToken']
-            if next:
+                self.exports[export['Name']] = export['Value']
+            next_ = exports.get('NextToken',None)
+            if next_:
                 exports = self.client.list_exports(NextToken=next)
-                export_list = exports['Exports']
+                export_list = exports.get('Exports',None)
             else:
                 export_list = None
 
-    def get_existing_parameter_value(self, param):
+    def get_existing_parameter_value(self, param_val):
         self._describe_stack()
         for param in self.stack_description.get('Parameters',[]):
-            if param['ParameterKey'] == param:
+            if param['ParameterKey'] == param_val:
                 return param['ParameterValue']
-        print_utility.error("Could not locate parameter value: {}".format(param))
+        print_utility.error("Could not locate parameter value: {}".format(param_val))
         return None
 
         

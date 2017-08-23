@@ -1,6 +1,7 @@
 import json
 import os
 import tempfile
+from collections import defaultdict
 from pprint import pformat
 
 import pydash
@@ -87,6 +88,7 @@ class Deploy(object):
     def validate(self, deploy_ctx):
         self.print_template_description()
         self.print_known_parameters(deploy_ctx)
+        self.print_export()
         config_files = self.get_rendered_config_files(deploy_ctx)
         if len(config_files) ==0:
             print_utility.warn("No Configuration Files")
@@ -106,30 +108,61 @@ class Deploy(object):
 
     def print_known_parameters(self, deploy_ctx):
         # type: (DeployContext) -> None
+        known_param, errors = self._analyze_parameters(deploy_ctx)
+        print_utility.banner_warn("Parameters", pformat(known_param))
+        print_utility.banner_warn("Parameter Warnings", pformat(errors))
+
+    def print_export(self):
+        # type: () -> None
+        known_exports, errors = self._analyze_export()
+        print_utility.banner_warn("Export Values", pformat(known_exports))
+        print_utility.banner_warn("Export Values Warnings", pformat(errors))
+
+    def _analyze_parameters(self, deploy_ctx):
         known_param = {}
-        extra_params = []
-        unconfigured_params = []
+        errors = defaultdict(list)
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
             template_params = pydash.get(template_obj, 'Parameters', '')
             for key, value in template_params.iteritems():
-                known_param[key] = {'description': value.get('Description',None) , 'type': value['Type']}
+                description = value.get('Description', None)
+                default = value.get('Default', None)
+                if not description: errors[key].append("Parameter does not contain a description")
+                if default: errors[key].append("Parameter contains default value defined in template")
+                errors[key].append("Parameter has default defined in CloudFormation Template")
+                known_param[key] = {'description': description, 'type': value['Type']}
         with open(self.parameter_file, 'r') as params:
             param_file_params = json.load(params)
             for param in param_file_params:
                 key_ = param['ParameterKey']
                 if key_ in known_param:
                     known_param[key_]['variable'] = param['ParameterValue']
-                    known_param[key_]['default_value'] = deploy_ctx.expandvars(param['ParameterValue'], self.defaults)
+                    expandvars = deploy_ctx.expandvars(param['ParameterValue'], self.defaults)
+                    if "${" in expandvars: errors[key_].append("Parameter did not appear to validate - {}".format(expandvars))
+                    known_param[key_]['default_value'] = expandvars
                 else:
                     # exists in param file but not in template
-                    extra_params.append(key_)
+                    errors[key_].append("Parameter does not exist in template but defined in param file")
         for key, value in known_param.iteritems():
             if 'variable' not in value:
-                unconfigured_params.append(key)
-        print_utility.banner_warn("Parameters", pformat(known_param))
+                errors[key].append("Parameter does not exist in param file but defined in template")
+        return known_param, errors
+
+    def _analyze_export(self):
+        known_exports = {}
+        errors = defaultdict(list)
+        with open(self.template_file, 'r') as template:
+            template_obj = json.load(template)
+            template_exports = pydash.get(template_obj, 'Outputs', '')
+            for key, value in template_exports.iteritems():
+                export = value.get('Export', None)
+                value = value.get('Value', None)
+                description = value.get('Description', None)
+                if not description: errors[key].append("Parameter does not contain a description")
+                known_exports[key] = {'description': description, 'export': export,'value':value}
+        return known_exports, errors
 
     def print_template_description(self):
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
-            print_utility.banner_warn(self.stack_name, pydash.get(template_obj, 'Description', ''))
+            print_utility.banner_warn("Deploy for Stack: {}".format(self.stack_name), pydash.get(template_obj, 'Description', ''))

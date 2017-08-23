@@ -97,7 +97,7 @@ class S3Template(Template):
 
 class LocalTemplate(Template):
 
-    def __init__(self, template, parameter_file, config_dir):
+    def __init__(self, template, parameter_file, config_dir=None):
         super(LocalTemplate, self).__init__("")
         self.config_dir = config_dir
         self.parameter_file = parameter_file

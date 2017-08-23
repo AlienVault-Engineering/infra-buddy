@@ -21,22 +21,22 @@ class CommandlineTestCase(ParentTestCase):
 
     def test_context_creation(self):
         runner = CliRunner()
-        result = runner.invoke(cli, ['--application', 'foo', '--role', 'bar', '--environment', 'dev',
+        result = runner.invoke(cli, ['--application', 'foo', '--role', 'bar', '--environment', 'unit-test',
                                      '--configuration-defaults', self.default_config, 'test-command'])
-        self.assertEqual(result.output.strip(), 'dev-foo-bar', "Invocation for simple cli usage failed")
+        self.assertEqual(result.output.strip(), 'unit-test-foo-bar', "Invocation for simple cli usage failed")
 
     def test_artifact_context_creation(self):
         artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_service_definition')
         runner = CliRunner()
-        result = runner.invoke(cli, ['--artifact-directory', artifact_directory, '--environment', 'dev',
+        result = runner.invoke(cli, ['--artifact-directory', artifact_directory, '--environment', 'unit-test',
                                      '--configuration-defaults', self.default_config, 'test-command'])
-        self.assertEqual(result.output.strip(), 'dev-foo-bar', "Invocation for simple cli usage failed")
+        self.assertEqual(result.output.strip(), 'unit-test-foo-bar', "Invocation for simple cli usage failed")
 
     def test_error_case(self):
         artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_service_definition')
         runner = CliRunner()
         result = runner.invoke(cli,
                                ['--application', 'foo', '--artifact-directory', artifact_directory, '--environment',
-                                'dev',
+                                'unit-test',
                                 '--configuration-defaults', self.default_config, 'test-command'])
         self.assertEqual(result.exit_code, 2, "Failed to fail")

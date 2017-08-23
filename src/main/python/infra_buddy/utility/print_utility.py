@@ -9,7 +9,6 @@ def configure(verbose):
 
 
 def info(msg):
-    print msg
     if VERBOSE: click.secho(msg, fg='green')
 
 

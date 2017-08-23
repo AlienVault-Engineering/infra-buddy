@@ -22,7 +22,7 @@ class S3TestCase(ParentTestCase):
             self.assertEqual(s3_buddy.cf_bucket.name, self.test_deploy_ctx.cf_bucket_name,
                              "Did not init correct bucket")
             self.assertEqual(s3_buddy.url_base,
-                             "https://s3-us-west-1.amazonaws.com/dev-foo-cloudformation-deploy-resources",
+                             "https://s3-us-west-1.amazonaws.com/unit-test-foo-cloudformation-deploy-resources",
                              "Did not init correct url")
         finally:
             self.clean_s3(s3_buddy)
