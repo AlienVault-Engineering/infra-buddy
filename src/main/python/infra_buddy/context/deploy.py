@@ -45,3 +45,5 @@ class Deploy(object):
             return value['value']
         elif type_ == "func":
             return ""
+        elif type_ == "property":
+            return self.deploy_ctx.get(value['key'],value.get('default',None))

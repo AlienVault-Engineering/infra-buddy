@@ -3,27 +3,27 @@
     "autoscale": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-template-autoscale"
+      "repo": "service-modification-template-autoscale"
     },
     "cluster-cpu-autoscale": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-template-cluster-cpu-autoscale"
+      "repo": "service-modification-template-cluster-cpu-autoscale"
     },
     "cluster-memory-autoscale": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-template-cluster-memory-autoscale"
+      "repo": "service-modification-template-cluster-memory-autoscale"
     },
     "sqs-threshold": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-template-sqs-threshold"
+      "repo": "service-modification-template-sqs-threshold"
     },
     "target-connection-error": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-template-target-connection-error"
+      "repo": "service-modification-template-target-connection-error"
     }
   },
   "service-templates": {

@@ -6,5 +6,9 @@
   "val":{
     "type":"value",
     "value":"discrete"
+  },
+  "KEY_NAME":{
+    "type": "value",
+    "value":"override"
   }
 }

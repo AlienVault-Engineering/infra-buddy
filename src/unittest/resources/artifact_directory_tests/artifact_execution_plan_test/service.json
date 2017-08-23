@@ -1,7 +1,7 @@
 {
   "application": "foo",
   "role": "bar",
-  "service-type": "api-service",
+  "service-type": "vpc",
   "registry-url": "https://docker.io/my-registry",
   "deployment-parameters": {
     "API_PATH":"bar"

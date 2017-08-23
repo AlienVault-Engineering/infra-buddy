@@ -16,9 +16,9 @@ def do_command(deploy_ctx):
     # type: (DeployContext) -> None
     plan = deploy_ctx.get_execution_plan()
     for deploy in plan:
-        deploy_ctx.push_stack_name(deploy.stack_name)
+        deploy_ctx.push_deploy_ctx(deploy)
         deploy_cf.do_command(deploy_ctx,
                              template=deploy.template_file,
                              parameter_file=deploy.parameter_file,
                              config_templates=deploy.config_directory)
-        deploy_ctx.pop_stack_name()
+        deploy_ctx.pop_deploy_ctx()

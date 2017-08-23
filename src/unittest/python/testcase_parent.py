@@ -15,7 +15,7 @@ class ParentTestCase(unittest.TestCase):
         pass
 
     def assertEqual(self, first, second, msg=None):
-        msg = "{msg} - {first} {second}".format(msg=msg, first=first, second=second)
+        msg = "{msg} - actual: {first} expected: {second}".format(msg=msg, first=first, second=second)
         super(ParentTestCase, self).assertEqual(first, second, msg)
 
     @classmethod

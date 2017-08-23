@@ -31,8 +31,10 @@ env_variables['EnvName'] = "${STACK_NAME}"  # alias
 env_variables['ECS_SERVICE_STACK_NAME'] = "${STACK_NAME}"  # alias
 env_variables['VPC_STACK_NAME'] = "${ENVIRONMENT}-${VPCAPP}-vpc"
 env_variables['CF_BUCKET_NAME'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources"
+env_variables['TEMPLATE_BUCKET'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources" # alias
 env_variables['CF_DEPLOY_RESOURCE_PATH'] = "${STACK_NAME}/${DEPLOY_DATE}"
 env_variables['CF_BUCKET_URL'] = "https://s3-${REGION}.amazonaws.com/${CF_BUCKET_NAME}"
+env_variables['CONFIG_TEMPLATES_URL'] = "https://s3-${REGION}.amazonaws.com/${CF_BUCKET_NAME}/${CF_DEPLOY_RESOURCE_PATH}"
 env_variables['CLUSTER_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-cluster"
 env_variables['RESOURCE_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-${ROLE}-resources"
 env_variables['ECS_SERVICE_RESOURCE_STACK_NAME'] = "${RESOURCE_STACK_NAME}"  # alias
@@ -43,6 +45,7 @@ env_variables['CHANGE_SET_NAME'] = "${STACK_NAME}-deploy-cloudformation-change-s
 class DeployContext(dict):
     def __init__(self, defaults, environment):
         super(DeployContext, self).__init__()
+        self.current_deploy = None
         self['ENVIRONMENT'] = environment.lower()
         self.temp_files = []
         self._initalize_defaults(defaults)
@@ -81,7 +84,7 @@ class DeployContext(dict):
         # type: (str) -> None
         if artifact_directory.startswith("s3://"):
             tmp_dir = tempfile.mkdtemp()
-            s3.download_zip_from_s3_url(artifact_directory,destination=tmp_dir)
+            s3.download_zip_from_s3_url(artifact_directory, destination=tmp_dir)
             artifact_directory = tmp_dir
         service_definition = ServiceDefinition(artifact_directory, self['ENVIRONMENT'])
         self[APPLICATION] = service_definition.application
@@ -118,10 +121,10 @@ class DeployContext(dict):
         self.stack_name_cache = []
 
     def get_deploy_templates(self):
-        return self.get('service-templates',{})
+        return self.get('service-templates', {})
 
     def get_service_modification_templates(self):
-        return self.get('service-modification-templates',{})
+        return self.get('service-modification-templates', {})
 
     def generate_modification_stack_name(self, mod_name):
         return "{ENVIRONMENT}-{APPLICATION}-{ROLE}-{mod_name}".format(mod_name=mod_name, **self)
@@ -167,18 +170,18 @@ class DeployContext(dict):
         # type: () -> list(Deploy)
         return self.service_definition.generate_execution_plan(self.template_manager)
 
-    def expandvars(self, path, default=None):
+    def expandvars(self, template_string):
         """Expand ENVIRONMENT variables of form $var and ${var}.
-           If parameter 'skip_escaped' is True, all escaped variable references
-           (i.e. preceded by backslashes) are skipped.
-           Unknown variables are set to 'default'. If 'default' is None,
-           they are left unchanged.
         """
         def replace_var(m):
-            return self.get(m.group(2) or m.group(1), m.group(0) if default is None else default)
+            # if we are in a deployment values set in that context take precedent
+            if self.current_deploy is not None:
+                val = self.current_deploy.defaults.get(m.group(2) or m.group(1), None)
+                if val: return val
+            return self.get(m.group(2) or m.group(1), m.group(0))
 
         reVar = r'(?<!\\)\$(\w+|\{([^}]*)\})'
-        sub = re.sub(reVar, replace_var, path)
+        sub = re.sub(reVar, replace_var, template_string)
         return sub
 
         # rerun otx:notify-datadog \
@@ -187,11 +190,18 @@ class DeployContext(dict):
         #     --type success \
         #     --tags "application:${application} ROLE:${ROLE} ENVIRONMENT:${ENVIRONMENT} system:${application}-${ROLE}"
 
-
-
-    def push_stack_name(self, stack_name):
+    def push_deploy_ctx(self, deploy_):
+        # type: (Deploy) -> None
         self.stack_name_cache.append(self[STACK_NAME])
-        self[STACK_NAME] = stack_name
+        new_val = deploy_.stack_name
+        self._update_stack_name(new_val)
+        self.current_deploy = deploy_
 
-    def pop_stack_name(self):
-        self[STACK_NAME] = self.stack_name_cache.pop()
+    def _update_stack_name(self, new_val):
+        self[STACK_NAME] = new_val
+        self.stack_name = new_val
+
+    def pop_deploy_ctx(self):
+        new_val = self.stack_name_cache.pop()
+        self._update_stack_name(new_val)
+        self.current_deploy = None
