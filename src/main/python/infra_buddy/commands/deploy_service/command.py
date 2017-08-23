@@ -6,8 +6,8 @@ from infra_buddy.commands.deploy_cloudformation import command as deploy_cf
 
 
 @cli.command(name='deploy-service')
-@click.option("--validate", is_flag=True, help="Prints the execution plan and displays parameter values for the "
-                                               "deployment.")
+@click.option("--validate", is_flag=True, help="Prints the execution plan and displays the evaluated "
+                                               "parameter values for the deployment.")
 @click.pass_obj
 def deploy_cloudformation(deploy_ctx,validate):
     # type: (DeployContext,bool) -> None

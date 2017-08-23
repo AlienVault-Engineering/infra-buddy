@@ -50,7 +50,7 @@ class HelperTestCase(ParentTestCase):
             print "Name: " + name
             self.assertEqual(name.count('/'),2,"Failed to trim")
             self.assertEqual(name.count(':'),0,"Failed to trim")
-            self.assertEqual(name.startswith('app'),0,"Failed to trim")
+            self.assertTrue(name.startswith('app'),"Failed to trim")
         finally:
             self.clean(cloudformation=cloudformation)
 
