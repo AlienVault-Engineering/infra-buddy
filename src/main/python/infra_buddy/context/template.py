@@ -77,9 +77,9 @@ class GitHubTemplate(URLTemplate):
         self._set_download_relative_path("{repo}-{tag}".format(tag=tag,**values))
 
 
-class AWSResourceTemplate(Template):
-    def __init__(self, directory):
-        super(AWSResourceTemplate, self).__init__("aws-resources")
+class NamedLocalTemplate(Template):
+    def __init__(self, directory,service_type="aws-resources"):
+        super(NamedLocalTemplate, self).__init__(service_type)
         self.destination = directory
         self._validate_template_dir()
 
@@ -92,6 +92,8 @@ class S3Template(Template):
     def download_template(self):
         self._prep_download()
         s3.download_zip_from_s3_url(self.s3_location, self.destination)
+
+
 
 
 

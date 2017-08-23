@@ -69,7 +69,7 @@ class DeployContextTestCase(ParentTestCase):
 
     def test_template_render(self):
         deploy_ctx = self.test_deploy_ctx
-        render_file_test = self._get_resource_path('test_render_file.json')
+        render_file_test = self._get_resource_path('deploy_ctx_tests/test_render_file.json')
         mkdtemp = tempfile.mkdtemp()
         try:
             template = deploy_ctx.render_template(render_file_test,mkdtemp)

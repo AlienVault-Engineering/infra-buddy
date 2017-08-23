@@ -4,7 +4,7 @@ import os
 import click
 
 from infra_buddy.context.deploy import Deploy
-from infra_buddy.context.template import URLTemplate, GitHubTemplate, AWSResourceTemplate, S3Template
+from infra_buddy.context.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template
 from infra_buddy.utility import print_utility
 
 
@@ -36,7 +36,7 @@ class TemplateManager(object):
 
     def get_resource_service(self, artifact_directory):
         try:
-            template = AWSResourceTemplate(artifact_directory)
+            template = NamedLocalTemplate(artifact_directory)
             return Deploy(stack_name=self.deploy_ctx.resource_stack_name,
                           template=template,
                           deploy_ctx=self.deploy_ctx)

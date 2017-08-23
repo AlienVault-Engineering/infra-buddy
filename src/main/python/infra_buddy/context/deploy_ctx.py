@@ -47,7 +47,7 @@ class DeployContext(dict):
     def __init__(self, defaults, environment):
         super(DeployContext, self).__init__()
         self.current_deploy = None
-        self['ENVIRONMENT'] = environment.lower()
+        self['ENVIRONMENT'] = environment.lower() if environment else "dev"
         self.temp_files = []
         self._initalize_defaults(defaults)
 
@@ -111,7 +111,7 @@ class DeployContext(dict):
 
     def _initialize_environment_variables(self):
         application = self['APPLICATION']
-        self['VPCAPP'] = application if '-' not in application else application[:application.find('-')]
+        self['VPCAPP'] = application if not application or '-' not in application else application[:application.find('-')]
         self['DEPLOY_DATE'] = datetime.datetime.now().strftime("%b_%d_%Y_Time_%H_%M")
         for property_name in built_in:
             self.__dict__[property_name.lower()] = self.get(property_name, None)

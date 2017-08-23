@@ -44,3 +44,7 @@ def cli(ctx, artifact_directory, application, role, environment, configuration_d
 
 # noinspection PyUnresolvedReferences
 from infra_buddy.commands.deploy_cloudformation import command
+# noinspection PyUnresolvedReferences
+from infra_buddy.commands.deploy_service import command
+# noinspection PyUnresolvedReferences
+from infra_buddy.commands.validate_template import command

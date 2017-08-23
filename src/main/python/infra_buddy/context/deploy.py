@@ -110,13 +110,21 @@ class Deploy(object):
         # type: (DeployContext) -> None
         known_param, errors = self._analyze_parameters(deploy_ctx)
         print_utility.banner_warn("Parameters", pformat(known_param))
-        print_utility.banner_warn("Parameter Warnings", pformat(errors))
+        print_utility.warn("Parameter Warnings")
+        self._print_error(errors)
 
     def print_export(self):
         # type: () -> None
         known_exports, errors = self._analyze_export()
-        print_utility.banner_warn("Export Values", pformat(known_exports))
-        print_utility.banner_warn("Export Values Warnings", pformat(errors))
+        print_utility.warn("Export Values")
+        self._print_info(known_exports)
+        print_utility.warn("Export Values Warnings")
+        self._print_error(errors)
+
+    def analyze(self,deploy_ctx):
+        self.print_known_parameters(deploy_ctx)
+        self.print_export()
+
 
     def _analyze_parameters(self, deploy_ctx):
         known_param = {}
@@ -166,3 +174,14 @@ class Deploy(object):
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
             print_utility.banner_warn("Deploy for Stack: {}".format(self.stack_name), pydash.get(template_obj, 'Description', ''))
+
+    def _print_error(self, errors):
+        for key,errs in errors.iteritems():
+            print_utility.error(pformat(key,indent=1))
+            print_utility.banner(pformat(errs,indent=2))
+
+    def _print_info(self, errors):
+        for key,errs in errors.iteritems():
+            print_utility.warn(pformat(key,indent=1))
+            print_utility.banner(pformat(errs,indent=2))
+

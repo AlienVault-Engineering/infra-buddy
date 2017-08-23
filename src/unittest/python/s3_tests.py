@@ -40,7 +40,7 @@ class S3TestCase(ParentTestCase):
 
     def test_zip_download(self):
         s3_buddy = S3Buddy(self.test_deploy_ctx)
-        compress = ParentTestCase._get_resource_path("test_compress.json.zip")
+        compress = ParentTestCase._get_resource_path("s3_tests/test_compress.json.zip")
         s3_buddy.upload(compress)
         s3_url = "s3://{bucket}/{key}".format(bucket=self.test_deploy_ctx.cf_bucket_name,
                                                    key=s3_buddy._get_upload_bucket_key_name(file=None,
