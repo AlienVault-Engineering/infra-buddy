@@ -51,6 +51,5 @@ class S3TestCase(ParentTestCase):
             s3.download_zip_from_s3_url(s3_url,temp_dir)
             self.assertTrue(os.path.exists(test_file), "Failed to decompress file")
         finally:
-            os.remove(test_file)
-            os.removedirs(temp_dir)
+            self.clean_dir(temp_dir)
             self.clean_s3(s3_buddy)

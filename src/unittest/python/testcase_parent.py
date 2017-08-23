@@ -53,3 +53,12 @@ class ParentTestCase(unittest.TestCase):
             return True
         except:
             return False
+
+    @classmethod
+    def clean_dir(cls, director):
+        try:
+            for file in os.listdir(director):
+                os.remove(file)
+            os.removedirs(director)
+        except Exception as e:
+            print 'Error cleaning up '+ e.message

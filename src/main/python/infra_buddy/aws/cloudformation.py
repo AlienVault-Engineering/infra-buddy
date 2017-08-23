@@ -18,6 +18,7 @@ def _load_file_to_json(parameter_file):
 class CloudFormationBuddy(object):
     def __init__(self, deploy_ctx):
         super(CloudFormationBuddy, self).__init__()
+        self.exports = {}
         self.deploy_ctx = deploy_ctx
         self.client = boto3.client('cloudformation', region_name=self.deploy_ctx.region)
         self.existing_change_set_id = None
@@ -26,14 +27,12 @@ class CloudFormationBuddy(object):
         self.stack_description = None
         self.stack_name = self.deploy_ctx.stack_name
 
-    def does_stack_exist(self, stack_name=None):
-        return self._describe_stack(stack_name)
+    def does_stack_exist(self):
+        return self._describe_stack()
 
-    def _describe_stack(self, stack_name=None):
-        if not stack_name:
-            stack_name = self.stack_name
+    def _describe_stack(self):
         try:
-            stacks = self.client.describe_stacks(StackName=stack_name)['Stacks']
+            stacks = self.client.describe_stacks(StackName=self.stack_name)['Stacks']
             if len(stacks) >= 1:
                 print_utility.info("Persisting stacks - {}".format(stacks))
                 self.stack_description = stacks[0]
@@ -209,3 +208,33 @@ class CloudFormationBuddy(object):
             self.deploy_ctx.notify_event(title=msg,
                                          type="error")
             self.log_stack_status()
+
+    def get_export_value(self, param, fully_qualified_param_name=None):
+        if not fully_qualified_param_name:
+            fully_qualified_param_name = "{stack_name}-{param}".format(stack_name=self.stack_name, param=param)
+        self._load_export_values()
+        return self.exports.get(fully_qualified_param_name, None)
+
+    def _load_export_values(self):
+        exports = self.client.list_exports()
+        export_list = exports['Exports']
+        while export_list is not None:
+            for export in export_list:
+                if export['ExportingStackId'] == self.stack_name:
+                    self.exports[export['Name']] = export['Value']
+            next = exports['NextToken']
+            if next:
+                exports = self.client.list_exports(NextToken=next)
+                export_list = exports['Exports']
+            else:
+                export_list = None
+
+    def get_existing_parameter_value(self, param):
+        self._describe_stack()
+        for param in self.stack_description.get('Parameters',[]):
+            if param['ParameterKey'] == param:
+                return param['ParameterValue']
+        print_utility.error("Could not locate parameter value: {}".format(param))
+        return None
+
+        

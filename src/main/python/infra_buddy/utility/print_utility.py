@@ -19,10 +19,14 @@ def warn(msg):
 
 def banner_warn(msg, data):
     click.secho(msg, fg="yellow")
-    click.secho(data, fg="yellow", bg='blue')
+    banner(data)
 
 
 def error(err_msg,raise_exception=False):
     click.secho(err_msg,fg="red")
     if raise_exception:
         raise click.UsageError(err_msg)
+
+
+def banner(data):
+    click.secho(data, fg="yellow", bg='blue')

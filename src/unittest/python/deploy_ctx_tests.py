@@ -1,6 +1,8 @@
 import json
 import os
+import tempfile
 
+from infra_buddy.commands.deploy_service import command as ds_command
 from infra_buddy.context.deploy_ctx import DeployContext
 from infra_buddy.context.deploy_ctx import REGION
 from testcase_parent import ParentTestCase
@@ -12,7 +14,6 @@ class DeployContextTestCase(ParentTestCase):
     def tearDown(self):
         pass
 
-
     @classmethod
     def setUpClass(cls):
         super(DeployContextTestCase, cls).setUpClass()
@@ -20,7 +21,8 @@ class DeployContextTestCase(ParentTestCase):
     def test_string_render(self):
         deploy_ctx = self.test_deploy_ctx
         self._validate_deploy_ctx(deploy_ctx)
-        deploy_ctx = DeployContext.create_deploy_context(application="foo-bar", role="baz", environment="dev", defaults=self.default_config)
+        deploy_ctx = DeployContext.create_deploy_context(application="foo-bar", role="baz", environment="dev",
+                                                         defaults=self.default_config)
         self.assertEqual(deploy_ctx.vpcapp, "foo", "Failed to generate generate_short_app_name")
 
     def _validate_deploy_ctx(self, deploy_ctx):
@@ -68,20 +70,24 @@ class DeployContextTestCase(ParentTestCase):
     def test_template_render(self):
         deploy_ctx = self.test_deploy_ctx
         render_file_test = self._get_resource_path('test_render_file.json')
-        template = deploy_ctx.render_template(render_file_test)
-        expected = {
-            "EnvName": "dev-foo-bar",
-            "Unknown": "${Unknown}",
-            "Environment": "dev",
-            "VPCStack": "dev-foo-vpc",
-            "ClusterStack": "dev-foo-cluster",
-            "DesiredCapacity": "\${DESIRED_CAPACITY}"
-        }
-        with open(template, 'r') as source:
-            load = json.load(source)
-            for val in load:
-                self.assertEqual(val["ParameterValue"], expected[val["ParameterKey"]], "Did not render template as "
-                                                                                       "expected")
+        mkdtemp = tempfile.mkdtemp()
+        try:
+            template = deploy_ctx.render_template(render_file_test,mkdtemp)
+            expected = {
+                "EnvName": "dev-foo-bar",
+                "Unknown": "${Unknown}",
+                "Environment": "dev",
+                "VPCStack": "dev-foo-vpc",
+                "ClusterStack": "dev-foo-cluster",
+                "DesiredCapacity": "\${DESIRED_CAPACITY}"
+            }
+            with open(template, 'r') as source:
+                load = json.load(source)
+                for val in load:
+                    self.assertEqual(val["ParameterValue"], expected[val["ParameterKey"]], "Did not render template as "
+                                                                                           "expected")
+        finally:
+            ParentTestCase.clean_dir(mkdtemp)
 
     def test_artifact_directory_error_handling(self):
         try:
@@ -95,24 +101,29 @@ class DeployContextTestCase(ParentTestCase):
     def test_artifact_directory_service_load(self):
         artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_service_definition')
         deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
-                                                               environment="dev",
-                                                               defaults=self.default_config)
+                                                                  environment="dev",
+                                                                  defaults=self.default_config)
         self._validate_deploy_ctx(deploy_ctx)
-        self.assertListEqual(deploy_ctx.get_service_modifications(),['autoscale'],"Failed to load service modifications")
-        self.assertEqual(deploy_ctx.docker_registry_url,"https://docker.io/my-registry","Failed to load registry-url")
-        self.assertEqual(deploy_ctx['API_PATH'],"bar","Failed to load deployment parameters")
-        self.assertEqual(deploy_ctx['IMAGE'],"https://docker.io/my-registry/artifact:39","Failed to load deployment parameters")
-        self.assertIsNotNone(deploy_ctx.service_definition,"Failed to populate service definition")
+        self.assertListEqual(deploy_ctx.get_service_modifications(), ['autoscale'],
+                             "Failed to load service modifications")
+        self.assertEqual(deploy_ctx.docker_registry_url, "https://docker.io/my-registry", "Failed to load registry-url")
+        self.assertEqual(deploy_ctx['API_PATH'], "bar", "Failed to load deployment parameters")
+        self.assertEqual(deploy_ctx['IMAGE'], "https://docker.io/my-registry/artifact:39",
+                         "Failed to load deployment parameters")
+        self.assertIsNotNone(deploy_ctx.service_definition, "Failed to populate service definition")
 
     def test_artifact_directory_execution_plan(self):
         artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_execution_plan_test')
         deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
-                                                               environment="dev",
-                                                               defaults=self.default_config)
+                                                                  environment="dev",
+                                                                  defaults=self.default_config)
         plan = deploy_ctx.get_execution_plan()
-        self.assertTrue(len(plan)==3,"Failed to identify all elements of execution")
+        self.assertTrue(len(plan) == 3, "Failed to identify all elements of execution")
 
-
-
-
+    def test_deploy_validate(self):
+        artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_execution_plan_test')
+        deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
+                                                                  environment="dev",
+                                                                  defaults=self.default_config)
+        ds_command.do_command(deploy_ctx=deploy_ctx,validate=True)
 

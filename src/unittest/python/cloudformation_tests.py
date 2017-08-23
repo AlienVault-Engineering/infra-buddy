@@ -1,12 +1,15 @@
 import json
 import random
 import string
+import tempfile
 
 from infra_buddy.aws.cloudformation import CloudFormationBuddy
 from infra_buddy.aws.s3 import S3Buddy
 # noinspection PyUnresolvedReferences
 from infra_buddy import commandline
 from infra_buddy.commands.deploy_cloudformation import command
+from infra_buddy.context.deploy import Deploy
+from infra_buddy.context.template import LocalTemplate
 from infra_buddy.utility.exception import NOOPException
 from testcase_parent import ParentTestCase
 
@@ -22,11 +25,12 @@ class CloudFormationTestCase(ParentTestCase):
     def test_cloudformation_create_and_update(self):
         cloudformation = CloudFormationBuddy(self.test_deploy_ctx)
         s3 = S3Buddy(self.test_deploy_ctx)
+        temp_dir = tempfile.mkdtemp()
         try:
             template = ParentTestCase._get_resource_path("cloudformation/aws-resources.template")
             parameter_file = ParentTestCase._get_resource_path("cloudformation/aws-resources.parameters.json")
             self.test_deploy_ctx['RANDOM'] = ''.join(random.choice(string.lowercase) for i in range(5))
-            parameter_file_rendered = self.test_deploy_ctx.render_template(parameter_file)
+            parameter_file_rendered = self.test_deploy_ctx.render_template(parameter_file,temp_dir)
             template_file_url = s3.upload(file=template)
             self.assertFalse(cloudformation.does_stack_exist(), "Failed to identify reality")
             cloudformation.create_stack(template_file_url=template_file_url,
@@ -40,7 +44,7 @@ class CloudFormationTestCase(ParentTestCase):
             except NOOPException as noop:
                 pass
             self.test_deploy_ctx['RANDOM'] = ''.join(random.choice(string.lowercase) for i in range(5))
-            parameter_file_rendered = self.test_deploy_ctx.render_template(parameter_file)
+            parameter_file_rendered = self.test_deploy_ctx.render_template(parameter_file,temp_dir)
             try:
                 cloudformation.create_change_set(template_file_url=template_file_url,
                                                  parameter_file=parameter_file_rendered)
@@ -56,13 +60,14 @@ class CloudFormationTestCase(ParentTestCase):
         finally:
             super(CloudFormationTestCase, self).clean(cloudformation)
             super(CloudFormationTestCase, self).clean_s3(s3)
+            super(CloudFormationTestCase, self).clean_dir(temp_dir)
 
     def test_cloudformation_deploy(self):
         template = ParentTestCase._get_resource_path("cloudformation/aws-resources.template")
         parameter_file = ParentTestCase._get_resource_path("cloudformation/aws-resources.parameters.json")
         config_templates = ParentTestCase._get_resource_path("cloudformation/config/")
-        command.do_command(self.test_deploy_ctx, template=template, parameter_file=parameter_file,
-                                      config_templates=config_templates)
+        deploy = Deploy(self.test_deploy_ctx.stack_name, LocalTemplate(template,parameter_file,config_templates),self.test_deploy_ctx)
+        command.do_command(self.test_deploy_ctx, deploy)
         cloudformation = CloudFormationBuddy(self.test_deploy_ctx)
         s3 = S3Buddy(self.test_deploy_ctx)
         try:

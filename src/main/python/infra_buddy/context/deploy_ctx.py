@@ -2,6 +2,7 @@ import json
 import os
 import tempfile
 from collections import OrderedDict
+from pprint import pformat
 from tempfile import NamedTemporaryFile
 
 import re
@@ -80,6 +81,15 @@ class DeployContext(dict):
         ret._initialize_environment_variables()
         return ret
 
+    def print_self(self):
+        print_utility.warn("Context:")
+        print_utility.warn("Stack: {}".format(self.stack_name))
+        if len(self.stack_name_cache)>0:
+            print_utility.warn("Depth: {}".format(self.stack_name_cache))
+        if self.current_deploy:
+            print_utility.banner_warn("Deploy Defaults:",pformat(self.current_deploy.defaults))
+        print_utility.banner_warn("Environment:",pformat(self))
+
     def _initialize_artifact_directory(self, artifact_directory):
         # type: (str) -> None
         if artifact_directory.startswith("s3://"):
@@ -152,11 +162,11 @@ class DeployContext(dict):
     def should_skip_ecs_trivial_update(self):
         return self.get(SKIP_ECS, os.environ.get(SKIP_ECS, True))
 
-    def render_template(self, file):
+    def render_template(self, file,destination):
         with open(file, 'r') as source:
-            with NamedTemporaryFile(delete=False) as destination:
+            with open(os.path.join(destination,os.path.basename(file).replace('.tmpl','')),'w+') as destination:
                 temp_file_path = os.path.abspath(destination.name)
-                print temp_file_path
+                print_utility.info("Rendering template to path: {}".format(temp_file_path))
                 self.temp_files.append(temp_file_path)
                 for line in source:
                     destination.write(self.expandvars(line))
@@ -170,15 +180,18 @@ class DeployContext(dict):
         # type: () -> list(Deploy)
         return self.service_definition.generate_execution_plan(self.template_manager)
 
-    def expandvars(self, template_string):
+    def expandvars(self, template_string, aux_dict=None):
         """Expand ENVIRONMENT variables of form $var and ${var}.
         """
         def replace_var(m):
+            if aux_dict:
+                val = aux_dict.get(m.group(2) or m.group(1), None)
+                if val: return str(val)
             # if we are in a deployment values set in that context take precedent
             if self.current_deploy is not None:
                 val = self.current_deploy.defaults.get(m.group(2) or m.group(1), None)
-                if val: return val
-            return self.get(m.group(2) or m.group(1), m.group(0))
+                if val: return str(val)
+            return str(self.get(m.group(2) or m.group(1), m.group(0)))
 
         reVar = r'(?<!\\)\$(\w+|\{([^}]*)\})'
         sub = re.sub(reVar, replace_var, template_string)

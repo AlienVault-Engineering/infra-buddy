@@ -47,6 +47,9 @@ class Template(object):
         self.destination_relative = path
 
 
+
+
+
 class URLTemplate(Template):
     def __init__(self, service_type, values):
         super(URLTemplate, self).__init__(service_type)
@@ -89,3 +92,26 @@ class S3Template(Template):
     def download_template(self):
         self._prep_download()
         s3.download_zip_from_s3_url(self.s3_location, self.destination)
+
+
+
+class LocalTemplate(Template):
+
+    def __init__(self, template, parameter_file, config_dir):
+        super(LocalTemplate, self).__init__("")
+        self.config_dir = config_dir
+        self.parameter_file = parameter_file
+        self.template = template
+
+    def get_parameter_file_path(self):
+        return self.parameter_file
+
+    def get_defaults_file_path(self):
+        return None
+
+    def get_template_file_path(self):
+        return self.template
+
+    def get_config_dir(self):
+        return self.config_dir
+
