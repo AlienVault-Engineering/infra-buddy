@@ -143,8 +143,7 @@ class Deploy(object):
                 description = value.get('Description', None)
                 default = value.get('Default', None)
                 if not description: warning[key].append("Parameter does not contain a description")
-                if default: warning[key].append("Parameter contains default value defined in template")
-                warning[key].append("Parameter has default defined in CloudFormation Template")
+                if default: warning[key].append("Parameter has default value defined in CloudFormation Template - {}".format(default))
                 known_param[key] = {'description': description, 'type': value['Type']}
         with open(self.parameter_file, 'r') as params:
             param_file_params = json.load(params)

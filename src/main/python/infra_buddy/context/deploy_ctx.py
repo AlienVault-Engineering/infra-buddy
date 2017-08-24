@@ -186,11 +186,11 @@ class DeployContext(dict):
         def replace_var(m):
             if aux_dict:
                 val = aux_dict.get(m.group(2) or m.group(1), None)
-                if val: return str(val)
+                if val is not None: return str(val)
             # if we are in a deployment values set in that context take precedent
             if self.current_deploy is not None:
                 val = self.current_deploy.defaults.get(m.group(2) or m.group(1), None)
-                if val: return str(val)
+                if val is not None: return str(val)
             return str(self.get(m.group(2) or m.group(1), m.group(0)))
 
         reVar = r'(?<!\\)\$(\w+|\{([^}]*)\})'

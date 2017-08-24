@@ -34,7 +34,7 @@ class HelperTestCase(ParentTestCase):
 
     def test_helper_funcs(self):
 
-        ctx = DeployContext.create_deploy_context(application="dev", role="cluster", environment="unit-test",
+        ctx = DeployContext.create_deploy_context(application="dev-{}".format(self.run_random_word), role="cluster", environment="unit-test",
                                                     defaults=self.default_config)
         cloudformation = CloudFormationBuddy(ctx)
         try:
