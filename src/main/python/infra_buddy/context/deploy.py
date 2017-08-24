@@ -20,7 +20,8 @@ class Deploy(object):
                 "value": {"type": "string"},
                 "default_value": {"type": "string"},
                 "key": {"type": "string"}
-            }
+            },
+           "required":["type"]
         }
 
     }
@@ -107,37 +108,43 @@ class Deploy(object):
         self.destination = tempfile.mkdtemp()
 
     def print_known_parameters(self, deploy_ctx):
-        # type: (DeployContext) -> None
-        known_param, errors = self._analyze_parameters(deploy_ctx)
+        # type: (DeployContext) -> int
+        known_param, warnings,errors = self._analyze_parameters(deploy_ctx)
         print_utility.banner_warn("Parameters", pformat(known_param))
         print_utility.warn("Parameter Warnings")
+        self._print_info(warnings)
+        print_utility.warn("Parameter Errors")
         self._print_error(errors)
+        return len(errors)
 
     def print_export(self):
-        # type: () -> None
-        known_exports, errors = self._analyze_export()
+        # type: () -> int
+        known_exports, warnings,errors = self._analyze_export()
         print_utility.warn("Export Values")
         self._print_info(known_exports)
         print_utility.warn("Export Values Warnings")
         self._print_error(errors)
+        return len(errors)
 
     def analyze(self,deploy_ctx):
-        self.print_known_parameters(deploy_ctx)
-        self.print_export()
+        errs = self.print_known_parameters(deploy_ctx)
+        errs += self.print_export()
+        return errs
 
 
     def _analyze_parameters(self, deploy_ctx):
         known_param = {}
         errors = defaultdict(list)
+        warning = defaultdict(list)
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
             template_params = pydash.get(template_obj, 'Parameters', '')
             for key, value in template_params.iteritems():
                 description = value.get('Description', None)
                 default = value.get('Default', None)
-                if not description: errors[key].append("Parameter does not contain a description")
-                if default: errors[key].append("Parameter contains default value defined in template")
-                errors[key].append("Parameter has default defined in CloudFormation Template")
+                if not description: warning[key].append("Parameter does not contain a description")
+                if default: warning[key].append("Parameter contains default value defined in template")
+                warning[key].append("Parameter has default defined in CloudFormation Template")
                 known_param[key] = {'description': description, 'type': value['Type']}
         with open(self.parameter_file, 'r') as params:
             param_file_params = json.load(params)
@@ -154,11 +161,12 @@ class Deploy(object):
         for key, value in known_param.iteritems():
             if 'variable' not in value:
                 errors[key].append("Parameter does not exist in param file but defined in template")
-        return known_param, errors
+        return known_param, warning, errors
 
     def _analyze_export(self):
         known_exports = {}
         errors = defaultdict(list)
+        warnings = defaultdict(list)
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
             template_exports = pydash.get(template_obj, 'Outputs', '')
@@ -166,9 +174,9 @@ class Deploy(object):
                 export = value.get('Export', None)
                 value = value.get('Value', None)
                 description = value.get('Description', None)
-                if not description: errors[key].append("Parameter does not contain a description")
+                if not description: warnings[key].append("Export does not contain a description")
                 known_exports[key] = {'description': description, 'export': export,'value':value}
-        return known_exports, errors
+        return known_exports, warnings, errors
 
     def print_template_description(self):
         with open(self.template_file, 'r') as template:

@@ -127,7 +127,7 @@ class DeployContext(dict):
                 config = json.load(fp)
                 self.update(config)
         self.update(os.environ)
-        self.template_manager = TemplateManager(self)
+        self.template_manager = TemplateManager(self.get_deploy_templates(),self.get_service_modification_templates())
         self.stack_name_cache = []
 
     def get_deploy_templates(self):
@@ -178,7 +178,7 @@ class DeployContext(dict):
 
     def get_execution_plan(self):
         # type: () -> list(Deploy)
-        return self.service_definition.generate_execution_plan(self.template_manager)
+        return self.service_definition.generate_execution_plan(self.template_manager,self)
 
     def expandvars(self, template_string, aux_dict=None):
         """Expand ENVIRONMENT variables of form $var and ${var}.

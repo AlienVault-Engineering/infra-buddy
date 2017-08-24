@@ -29,7 +29,7 @@ class CloudFormationTestCase(ParentTestCase):
         try:
             template = ParentTestCase._get_resource_path("cloudformation/aws-resources.template")
             parameter_file = ParentTestCase._get_resource_path("cloudformation/aws-resources.parameters.json")
-            self.test_deploy_ctx['RANDOM'] = ''.join(random.choice(string.lowercase) for i in range(5))
+            self.test_deploy_ctx['RANDOM'] = self.randomWord(5)
             parameter_file_rendered = self.test_deploy_ctx.render_template(parameter_file,temp_dir)
             template_file_url = s3.upload(file=template)
             self.assertFalse(cloudformation.does_stack_exist(), "Failed to identify reality")
@@ -43,7 +43,7 @@ class CloudFormationTestCase(ParentTestCase):
                 self.fail("Failed to identify noop changeset")
             except NOOPException as noop:
                 pass
-            self.test_deploy_ctx['RANDOM'] = ''.join(random.choice(string.lowercase) for i in range(5))
+            self.test_deploy_ctx['RANDOM'] = self.randomWord(5)
             parameter_file_rendered = self.test_deploy_ctx.render_template(parameter_file,temp_dir)
             try:
                 cloudformation.create_change_set(template_file_url=template_file_url,
@@ -72,7 +72,7 @@ class CloudFormationTestCase(ParentTestCase):
         s3 = S3Buddy(self.test_deploy_ctx)
         try:
             self.assertTrue(cloudformation.does_stack_exist(), "Failed to create stack")
-            self.assertEqual(s3.get_file_as_string("install_template.sh"),"foo-bar","Did not render config template")
+            self.assertEqual(s3.get_file_as_string("install_template.sh"),"foo-bar-{}".format(self.run_random_word),"Did not render config template")
         finally:
             super(CloudFormationTestCase, self).clean(cloudformation)
             super(CloudFormationTestCase, self).clean_s3(s3)

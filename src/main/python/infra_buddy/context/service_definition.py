@@ -1,6 +1,8 @@
 import json
 import os
 from jsonschema import validate
+
+from infra_buddy.context.deploy import Deploy
 from infra_buddy.context.template_manager import TemplateManager
 from infra_buddy.utility import print_utility
 
@@ -82,13 +84,20 @@ class ServiceDefinition(object):
                 self.deployment_parameters.update(service_definition[env_deployment_parameters])
             self.service_modifications = service_definition.get(_MODIFICATIONS, [])
 
-    def generate_execution_plan(self, template_manager):
+    def generate_execution_plan(self, template_manager, deploy_ctx):
         # type: (TemplateManager) -> list
         ret = []
-        ret.append(template_manager.get_known_service(self.service_type))
+        ret.append(Deploy(stack_name=deploy_ctx.stack_name,
+                            template=template_manager.get_known_service(self.service_type),
+                            deploy_ctx=deploy_ctx))
         resource_deploy = template_manager.get_resource_service(self.artifact_directory)
         if resource_deploy:
-            ret.append(resource_deploy)
+            ret.append(Deploy(stack_name=deploy_ctx.resource_stack_name,
+                                      template=resource_deploy,
+                                      deploy_ctx=deploy_ctx))
         for mod in self.service_modifications:
-            ret.append(template_manager.get_known_service_modification(mod))
+            template = template_manager.get_known_service_modification(mod)
+            ret.append(Deploy(stack_name=deploy_ctx.generate_modification_stack_name(mod),
+                                  template=template,
+                                  deploy_ctx=deploy_ctx))
         return ret

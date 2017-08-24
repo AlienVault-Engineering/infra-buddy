@@ -2,6 +2,7 @@ import json
 import os
 
 import click
+from jsonschema import validate
 
 from infra_buddy.context.deploy import Deploy
 from infra_buddy.context.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template
@@ -11,35 +12,72 @@ from infra_buddy.utility import print_utility
 class TemplateManager(object):
     deploy_templates = {}
     service_modification_templates = {}
+    # schema = {
+    #     "type": "object",
+    #     "patternProperties": {
+    #         "^.*$": {
+    #             "type": "object",
+    #             "properties": {
+    #                 "type": {"type", "string"},
+    #                 "owner": {"type", "string"},
+    #                 "repo": {"type", "string"},
+    #                 "tag": {"type", "string"},
+    #                 "location": {"type", "string"},
+    #                 "url": {"type", "string"}
+    #             },
+    #             "required":[
+    #                 "type"
+    #             ]
+    #
+    #         }
+    #     }
+    # }
+    schema = {
+           "type": "object",
+           "additionalProperties": {
+               "type": "object",
+               "properties": {
+                   "type": {"type": "string"},
+                   "owner": {"type": "string"},
+                   "repo": {"type": "string"},
+                   "location": {"type": "string"},
+                   "url": {"type": "string"}
+               },
+               "required":["type"]
+           }
 
-    def __init__(self, deploy_ctx):
+       }
+
+
+    def __init__(self, user_default_service_templates=None, user_default_service_modification_tempaltes=None):
         # type: (DeployContext) -> None
         super(TemplateManager, self).__init__()
-        self.deploy_ctx = deploy_ctx
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'builtin-templates.json'), 'r') as f:
             built_in = json.load(f)
-        self._load_templates(built_in['service-templates'])
-        self._load_templates(built_in['service-modification-templates'], service_modification=True)
-        self._load_templates(deploy_ctx.get_deploy_templates())
-        self._load_templates(deploy_ctx.get_service_modification_templates())
+        service_templates_ = built_in['service-templates']
+        validate(service_templates_, self.schema)
+        self._load_templates(service_templates_)
+        modification_templates_ = built_in['service-modification-templates']
+        validate(modification_templates_, self.schema)
+        self._load_templates(modification_templates_, service_modification=True)
+        if user_default_service_templates:self._load_templates(user_default_service_templates)
+        if user_default_service_modification_tempaltes:self._load_templates(user_default_service_modification_tempaltes)
 
     def get_known_service(self, service_type):
-        # type: (str) -> Deploy
+        # type: (str) -> Template
         template = self.locate_service(service_type)
-        return Deploy(stack_name=self.deploy_ctx.stack_name, template=template,deploy_ctx=self.deploy_ctx)
+        return template
 
     def get_known_service_modification(self, modification_name):
+        # type: (str) -> Template
         template = self.locate_service(modification_name, modification=True)
-        return Deploy(stack_name=self.deploy_ctx.generate_modification_stack_name(modification_name),
-                      template=template,
-                      deploy_ctx=self.deploy_ctx)
+        return template
 
     def get_resource_service(self, artifact_directory):
+        # type: (str) -> Template
         try:
             template = NamedLocalTemplate(artifact_directory)
-            return Deploy(stack_name=self.deploy_ctx.resource_stack_name,
-                          template=template,
-                          deploy_ctx=self.deploy_ctx)
+            return template
         except click.UsageError as e:
             return None
 
@@ -64,5 +102,5 @@ class TemplateManager(object):
             elif type_ == "url":
                 target[name] = URLTemplate(service_type=name, values=values)
             else:
-                print_utility.error("Can not locate resource. Requested uknown template type - {}".format(type_),
+                print_utility.error("Can not locate resource. Requested unknown template type - {}".format(type_),
                                     raise_exception=True)

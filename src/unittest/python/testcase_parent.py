@@ -1,4 +1,6 @@
 import os
+import random
+import string
 import unittest
 
 import boto3
@@ -23,8 +25,9 @@ class ParentTestCase(unittest.TestCase):
         super(ParentTestCase, cls).setUpClass()
         cls.resource_directory = RESOURCE_DIR
         config = 'default_config.json'
+        cls.run_random_word = cls.randomWord(5)
         cls.default_config = ParentTestCase._get_resource_path(config)
-        cls.test_deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar", environment="unit-test",
+        cls.test_deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar-{}".format(cls.run_random_word), environment="unit-test",
                                             defaults=cls.default_config)
         print_utility.configure(True)
 
@@ -62,3 +65,7 @@ class ParentTestCase(unittest.TestCase):
             os.removedirs(director)
         except Exception as e:
             print 'Error cleaning up '+ e.message
+
+    @classmethod
+    def randomWord(cls, param):
+        return ''.join(random.choice(string.lowercase) for i in range(param))

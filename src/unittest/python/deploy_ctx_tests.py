@@ -19,7 +19,8 @@ class DeployContextTestCase(ParentTestCase):
         super(DeployContextTestCase, cls).setUpClass()
 
     def test_string_render(self):
-        deploy_ctx = self.test_deploy_ctx
+        deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar", environment="unit-test",
+                                                                 defaults=self.default_config)
         self._validate_deploy_ctx(deploy_ctx)
         deploy_ctx = DeployContext.create_deploy_context(application="foo-bar", role="baz", environment="unit-test",
                                                          defaults=self.default_config)
@@ -74,7 +75,7 @@ class DeployContextTestCase(ParentTestCase):
         try:
             template = deploy_ctx.render_template(render_file_test,mkdtemp)
             expected = {
-                "EnvName": "unit-test-foo-bar",
+                "EnvName": "unit-test-foo-bar-{}".format(self.run_random_word),
                 "Unknown": "${Unknown}",
                 "Environment": "unit-test",
                 "VPCStack": "unit-test-foo-vpc",
