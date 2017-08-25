@@ -1,17 +1,8 @@
-import os
-import tempfile
-
-from flask import json
+import json
 
 from infra_buddy.aws.ecs import ECSBuddy
-from infra_buddy.commandline import cli
-from infra_buddy.commands.validate_template import command   as vcommand
-from infra_buddy.context.deploy import Deploy
-from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.context.template import LocalTemplate, NamedLocalTemplate
-from infra_buddy.context.template_manager import TemplateManager
-from infra_buddy.utility import helper_functions
 from testcase_parent import ParentTestCase
+
 
 class FakeEcsClient(object):
     def __init__(self, testcase):
