@@ -51,6 +51,11 @@
       "type": "github",
       "owner": "AlienVault-Engineering",
       "repo": "service-template-batch-service"
+    },
+    "rds-aurora": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-rds-aurora"
     }
   }
 }

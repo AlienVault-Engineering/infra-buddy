@@ -28,4 +28,4 @@ def error(err_msg,raise_exception=False):
 
 
 def banner(data):
-    click.secho(data, fg="yellow", bg='blue')
+    click.secho(data, fg="yellow")

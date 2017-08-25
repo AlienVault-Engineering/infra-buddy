@@ -1,0 +1,70 @@
+{
+    "taskDefinition": {
+        "status": "ACTIVE",
+        "family": "prod-otxb-portal-yara-listener-ECSTaskFamily",
+        "placementConstraints": [],
+        "requiresAttributes": [
+            {
+                "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+            },
+            {
+                "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+            },
+            {
+                "name": "com.amazonaws.ecs.capability.ecr-auth"
+            },
+            {
+                "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+            },
+            {
+                "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+            },
+            {
+                "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+            }
+        ],
+        "volumes": [],
+        "taskDefinitionArn": "arn:aws:ecs:us-west-2:271083817914:task-definition/prod-otxb-portal-yara-listener-ECSTaskFamily:12",
+        "containerDefinitions": [
+            {
+                "memoryReservation": 512,
+                "environment": [
+                    {
+                        "name": "ENVIRONMENT",
+                        "value": "prod"
+                    }
+                ],
+                "name": "prod-otxb-portal-yara-listener",
+                "links": [],
+                "mountPoints": [],
+                "image": "271083817914.dkr.ecr.us-west-2.amazonaws.com/otx/otxb-portal-yara-listener:1.21",
+                "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                        "awslogs-group": "prod-otxb-portal-yara-listener-LogGroup-T9E1HZXTTYHC",
+                        "awslogs-region": "us-west-2"
+                    }
+                },
+                "dnsSearchDomains": [],
+                "dockerLabels": {},
+                "essential": true,
+                "portMappings": [
+                    {
+                        "protocol": "tcp",
+                        "containerPort": 5000,
+                        "hostPort": 0
+                    }
+                ],
+                "dnsServers": [],
+                "dockerSecurityOptions": [],
+                "entryPoint": [],
+                "ulimits": [],
+                "extraHosts": [],
+                "command": [],
+                "cpu": 64,
+                "volumesFrom": []
+            }
+        ],
+        "revision": 12
+    }
+}

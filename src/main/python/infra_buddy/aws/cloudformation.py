@@ -209,7 +209,7 @@ class CloudFormationBuddy(object):
                                          type="error")
             self.log_stack_status()
 
-    def get_export_value(self, param, fully_qualified_param_name=None):
+    def get_export_value(self, param=None, fully_qualified_param_name=None):
         if not fully_qualified_param_name:
             fully_qualified_param_name = "{stack_name}-{param}".format(stack_name=self.stack_name, param=param)
         self._load_export_values()

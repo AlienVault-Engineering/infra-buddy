@@ -22,7 +22,7 @@ def deploy_cloudformation(deploy_ctx,service_template_directory,service_type):
 def do_command(deploy_ctx,service_template_directory=None,service_type=None):
     # type: (DeployContext,[str or None],str) -> None
     if service_template_directory is None:
-        print_utility.warn("Service template directory was not provided.  Assuming service-type {} is built-in.")
+        print_utility.warn("Service template directory was not provided.  Assuming service-type {} is built-in.".format(service_type))
         template = deploy_ctx.template_manager.get_known_service(service_type=service_type)
         deploy= Deploy(stack_name=deploy_ctx.stack_name, template=template,deploy_ctx=deploy_ctx)
 

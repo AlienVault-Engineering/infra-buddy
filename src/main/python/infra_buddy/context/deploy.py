@@ -184,11 +184,11 @@ class Deploy(object):
 
     def _print_error(self, errors):
         for key,errs in errors.iteritems():
-            print_utility.error(pformat(key,indent=1))
-            print_utility.banner(pformat(errs,indent=2))
+            print_utility.error(pformat(key,indent=4))
+            print_utility.banner(pformat(errs,indent=8))
 
     def _print_info(self, errors):
         for key,errs in errors.iteritems():
-            print_utility.warn(pformat(key,indent=1))
-            print_utility.banner(pformat(errs,indent=2))
+            print_utility.warn(pformat(key,indent=4))
+            print_utility.banner(pformat(errs,indent=8))
 

@@ -47,9 +47,8 @@ class DeployContext(dict):
     def __init__(self, defaults, environment):
         super(DeployContext, self).__init__()
         self.current_deploy = None
-        self['ENVIRONMENT'] = environment.lower() if environment else "dev"
         self.temp_files = []
-        self._initalize_defaults(defaults)
+        self._initalize_defaults(defaults,environment)
 
     @classmethod
     def create_deploy_context_artifact(cls, artifact_directory, environment, defaults=None):
@@ -120,9 +119,12 @@ class DeployContext(dict):
             self[variable] = evaluated_template
             self.__dict__[variable.lower()] = evaluated_template
 
-    def _initalize_defaults(self, defaults):
-        self.defaults = defaults
+    def _initalize_defaults(self, defaults,environment):
+        self['DATADOG_KEY'] = ""
+        self['REGION'] = "us-west-1"
+        self['ENVIRONMENT'] = environment.lower() if environment else "dev"
         if defaults:
+            print_utility.info("Loading default settings from path: {}".format(defaults))
             with open(defaults, 'r') as fp:
                 config = json.load(fp)
                 self.update(config)

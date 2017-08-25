@@ -126,5 +126,5 @@ class DeployContextTestCase(ParentTestCase):
         deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
                                                                   environment="unit-test",
                                                                   defaults=self.default_config)
-        ds_command.do_command(deploy_ctx=deploy_ctx,validate=True)
+        ds_command.do_command(deploy_ctx=deploy_ctx,validate=True,ecs_deploy=False)
 
