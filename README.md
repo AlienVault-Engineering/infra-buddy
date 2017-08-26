@@ -1,6 +1,6 @@
 # infra-buddy
 
-[Build Status](https://api.travis-ci.org/AlienVault-Engineering/infra-buddy.png) 
+[Build Status](https://travis-ci.org/AlienVault-Engineering/infra-buddy.svg?branch=master) 
 ## Installation
 
 ```bash
