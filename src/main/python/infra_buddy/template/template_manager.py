@@ -4,8 +4,7 @@ import os
 import click
 from jsonschema import validate
 
-from infra_buddy.context.deploy import Deploy
-from infra_buddy.context.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template
+from infra_buddy.template.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template
 from infra_buddy.utility import print_utility
 
 

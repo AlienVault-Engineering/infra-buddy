@@ -11,7 +11,7 @@ class FakeEcsClient(object):
         with open(path,'r') as definition:
             self.test_task_definition = json.load(definition)
 
-    def describe_task_defintion(self,taskDefinition):
+    def describe_task_definition(self,taskDefinition):
         return self.test_task_definition
 
     def register_task_definition(self,new_task_def):
@@ -43,8 +43,8 @@ class ECSUpdateTemplateTestCase(ParentTestCase):
         ecs.cluster = "fake-cluster"
         ecs.ecs_service = "fake-service"
         ecs.ecs_task_family = "fake-task-family"
-        self.test_deploy_ctx.image = "bar"
+        ecs.set_container_image("path", "bar")
         self.assertTrue(ecs.requires_update(),"Did not recognize udpate required")
-        self.test_deploy_ctx.image = "271083817914.dkr.ecr.us-west-2.amazonaws.com/otx/otxb-portal-yara-listener:1.21"
+        ecs.set_container_image("271083817914.dkr.ecr.us-west-2.amazonaws.com/otx/otxb-portal-yara-listener", "1.21")
         self.assertFalse(ecs.requires_update(),"Did not recognize udpate not required")
         ecs.perform_update()

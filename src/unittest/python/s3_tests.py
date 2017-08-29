@@ -2,7 +2,7 @@ import os
 import tempfile
 
 from infra_buddy.aws import s3
-from infra_buddy.aws.s3 import S3Buddy
+from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
 from testcase_parent import ParentTestCase
 
 
@@ -15,11 +15,11 @@ class S3TestCase(ParentTestCase):
         super(S3TestCase, cls).setUpClass()
 
     def test_bucket_configuration(self):
-        s3_buddy = S3Buddy(self.test_deploy_ctx)
+        s3_buddy = CloudFormationDeployS3Buddy(self.test_deploy_ctx)
         try:
-            self.assertEqual(s3_buddy.s3_bucket_deploy_directory, self.test_deploy_ctx.cf_deploy_resource_path,
+            self.assertEqual(s3_buddy.key_root_path, self.test_deploy_ctx.cf_deploy_resource_path,
                              "Did not init correct path")
-            self.assertEqual(s3_buddy.cf_bucket.name, self.test_deploy_ctx.cf_bucket_name,
+            self.assertEqual(s3_buddy.bucket.name, self.test_deploy_ctx.cf_bucket_name,
                              "Did not init correct bucket")
             self.assertEqual(s3_buddy.url_base,
                              "https://s3-us-west-1.amazonaws.com/unit-test-foo-cloudformation-deploy-resources",
@@ -28,7 +28,7 @@ class S3TestCase(ParentTestCase):
             self.clean_s3(s3_buddy)
         
     def test_file_operations(self):
-        s3_buddy = S3Buddy(self.test_deploy_ctx)
+        s3_buddy = CloudFormationDeployS3Buddy(self.test_deploy_ctx)
         try:
             changeset = ParentTestCase._get_resource_path("cloudformation/sample_changeset.json")
             s3_buddy.upload(changeset)
@@ -39,12 +39,12 @@ class S3TestCase(ParentTestCase):
             self.clean_s3(s3_buddy)
 
     def test_zip_download(self):
-        s3_buddy = S3Buddy(self.test_deploy_ctx)
+        s3_buddy = CloudFormationDeployS3Buddy(self.test_deploy_ctx)
         compress = ParentTestCase._get_resource_path("s3_tests/test_compress.json.zip")
         s3_buddy.upload(compress)
         s3_url = "s3://{bucket}/{key}".format(bucket=self.test_deploy_ctx.cf_bucket_name,
-                                                   key=s3_buddy._get_upload_bucket_key_name(file=None,
-                                                                                            file_name="test_compress.json.zip"))
+                                              key=s3_buddy._get_upload_bucket_key_name(file=None,
+                                                                                       key_name="test_compress.json.zip"))
         temp_dir = tempfile.mkdtemp()
         test_file = os.path.join(temp_dir, "test_compress.json")
         try:

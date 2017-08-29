@@ -2,6 +2,8 @@ import json
 import os
 import tempfile
 
+# noinspection PyUnresolvedReferences
+from infra_buddy.commandline import cli
 from infra_buddy.commands.deploy_service import command as ds_command
 from infra_buddy.context.deploy_ctx import DeployContext
 from infra_buddy.context.deploy_ctx import REGION
@@ -109,8 +111,13 @@ class DeployContextTestCase(ParentTestCase):
                              "Failed to load service modifications")
         self.assertEqual(deploy_ctx.docker_registry_url, "https://docker.io/my-registry", "Failed to load registry-url")
         self.assertEqual(deploy_ctx['API_PATH'], "bar", "Failed to load deployment parameters")
-        self.assertEqual(deploy_ctx['IMAGE'], "https://docker.io/my-registry/artifact:39",
-                         "Failed to load deployment parameters")
+        self.assertIsNotNone(deploy_ctx.artifact_definition, "Failed to populate artifact definition")
+        self.assertEqual(deploy_ctx.artifact_definition.artifact_id, "39",
+                         "Failed to load artifact definition parameters")
+        self.assertEqual(deploy_ctx.artifact_definition.artifact_location, "https://docker.io/my-registry/artifact",
+                         "Failed to load artifact definition parameters")
+        self.assertEqual(deploy_ctx.artifact_definition.artifact_type, "ecs",
+                         "Failed to load artifact definition parameters")
         self.assertIsNotNone(deploy_ctx.service_definition, "Failed to populate service definition")
 
     def test_artifact_directory_execution_plan(self):
@@ -119,12 +126,12 @@ class DeployContextTestCase(ParentTestCase):
                                                                   environment="unit-test",
                                                                   defaults=self.default_config)
         plan = deploy_ctx.get_execution_plan()
-        self.assertTrue(len(plan) == 3, "Failed to identify all elements of execution")
+        self.assertEqual(len(plan),4, "Failed to identify all elements of execution")
 
     def test_deploy_validate(self):
         artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_execution_plan_test')
         deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
                                                                   environment="unit-test",
                                                                   defaults=self.default_config)
-        ds_command.do_command(deploy_ctx=deploy_ctx,validate=True,ecs_deploy=False)
+        ds_command.do_command(deploy_ctx=deploy_ctx,dry_run=True)
 

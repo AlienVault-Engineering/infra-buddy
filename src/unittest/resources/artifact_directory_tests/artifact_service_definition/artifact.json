@@ -1,0 +1,5 @@
+{
+  "artifact-path":"https://docker.io/my-registry/artifact",
+  "artifact-type":"ecs",
+  "artifact-identifier":"39"
+}

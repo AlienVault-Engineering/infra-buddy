@@ -1,13 +1,6 @@
-import os
-import tempfile
-
 from infra_buddy.commandline import cli
 from infra_buddy.commands.validate_template import command   as vcommand
-from infra_buddy.context.deploy import Deploy
-from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.context.template import LocalTemplate, NamedLocalTemplate
-from infra_buddy.context.template_manager import TemplateManager
-from infra_buddy.utility import helper_functions
+from infra_buddy.template.template_manager import TemplateManager
 from testcase_parent import ParentTestCase
 
 

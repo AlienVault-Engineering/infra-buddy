@@ -21,13 +21,20 @@ class ECSBuddy(object):
         self.ecs_task_family = cf.get_export_value(
             fully_qualified_param_name="{}-ECSTaskFamily".format(self.deploy_ctx.stack_name))
         self.task_definition_description = None
+        self.new_image = None
+
+    def set_container_image(self,location,tag):
+        self.new_image = "{location}:{tag}".format(location=location,tag=tag)
 
     def requires_update(self):
+        if not self.new_image:
+            print_utility.warn("Checking for ECS update without registering new image ")
+            return False
         self._describe_task_definition()
         existing = pydash.get(self.task_definition_description, "containerDefinitions[0].image")
         print_utility.info("ECS task existing image - {}".format(existing))
-        print_utility.info("ECS task desired image - {}".format(self.deploy_ctx.image))
-        return existing != self.deploy_ctx.image
+        print_utility.info("ECS task desired image - {}".format(self.new_image))
+        return existing != self.new_image
 
     def perform_update(self):
         self._describe_task_definition(refresh=True)
@@ -36,7 +43,7 @@ class ECSBuddy(object):
             'containerDefinitions':self.task_definition_description['containerDefinitions'],
             'volumes':self.task_definition_description['volumes']
         }
-        new_task_def['containerDefinitions'][0]['image'] = self.deploy_ctx.image
+        new_task_def['containerDefinitions'][0]['image'] = self.new_image
         if 'TASK_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_MEMORY']:
             new_task_def['containerDefinitions'][0]['memory'] = self.deploy_ctx['TASK_MEMORY']
         if 'TASK_SOFT_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_SOFT_MEMORY']:
@@ -71,5 +78,5 @@ class ECSBuddy(object):
 
     def _describe_task_definition(self, refresh=False):
         if self.task_definition_description and not refresh: return
-        self.task_definition_description = self.client.describe_task_defintion(taskDefinition=self.ecs_task_family)[
+        self.task_definition_description = self.client.describe_task_definition(taskDefinition=self.ecs_task_family)[
             'taskDefinition']

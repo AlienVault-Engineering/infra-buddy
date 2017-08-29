@@ -1,7 +1,7 @@
 import click
 
-from infra_buddy.aws.s3 import S3Buddy
-from infra_buddy.context.deploy import Deploy
+from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
+from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
 from testcase_parent import ParentTestCase
 
 
@@ -14,10 +14,10 @@ class TemplateManagerTestCase(ParentTestCase):
         super(TemplateManagerTestCase, cls).setUpClass()
 
     def test_s3_template(self):
-        s3 = S3Buddy(self.test_deploy_ctx)
+        s3 = CloudFormationDeployS3Buddy(self.test_deploy_ctx)
         template = ParentTestCase._get_resource_path("template_tests/test-template.zip")
         s3.upload(file=template)
-        key = s3._get_upload_bucket_key_name(template,file_name=None)
+        key = s3._get_upload_bucket_key_name(template, key_name=None)
         s3_url = "s3://{bucket}/{key}".format(bucket=self.test_deploy_ctx.cf_bucket_name, key=key)
         self._validate_template(self.test_deploy_ctx.template_manager, {"type": "s3", "location": s3_url})
 
@@ -53,9 +53,9 @@ class TemplateManagerTestCase(ParentTestCase):
     def test_validate_defaults(self):
 
         template = self.test_deploy_ctx.template_manager.get_resource_service(ParentTestCase._get_resource_path("template_tests/valid_template"))
-        deploy = Deploy(stack_name=self.test_deploy_ctx.resource_stack_name,
-                                              template=template,
-                                              deploy_ctx=self.test_deploy_ctx)
+        deploy = CloudFormationDeploy(stack_name=self.test_deploy_ctx.resource_stack_name,
+                                      template=template,
+                                      deploy_ctx=self.test_deploy_ctx)
         self.assertEqual(deploy.defaults['app'],"foo","Failed to render template value")
         self.assertEqual(deploy.defaults['val'],"discrete","Failed to render template value")
         self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"unit-test-foo","Failed to render expected key value")

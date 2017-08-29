@@ -1,18 +1,15 @@
+import datetime
 import json
 import os
+import re
 import tempfile
 from collections import OrderedDict
 from pprint import pformat
-from tempfile import NamedTemporaryFile
-
-import re
-
-import datetime
 
 from infra_buddy.aws import s3
-from infra_buddy.context.deploy import Deploy
+from infra_buddy.context.artifact_definition import ArtifactDefinition
 from infra_buddy.context.service_definition import ServiceDefinition
-from infra_buddy.context.template_manager import TemplateManager
+from infra_buddy.template.template_manager import TemplateManager
 from infra_buddy.utility import print_utility
 
 STACK_NAME = 'STACK_NAME'
@@ -34,13 +31,14 @@ env_variables['VPC_STACK_NAME'] = "${ENVIRONMENT}-${VPCAPP}-vpc"
 env_variables['CF_BUCKET_NAME'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources"
 env_variables['TEMPLATE_BUCKET'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources" # alias
 env_variables['CF_DEPLOY_RESOURCE_PATH'] = "${STACK_NAME}/${DEPLOY_DATE}"
-env_variables['CF_BUCKET_URL'] = "https://s3-${REGION}.amazonaws.com/${CF_BUCKET_NAME}"
 env_variables['CONFIG_TEMPLATES_URL'] = "https://s3-${REGION}.amazonaws.com/${CF_BUCKET_NAME}/${CF_DEPLOY_RESOURCE_PATH}"
 env_variables['CLUSTER_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-cluster"
 env_variables['RESOURCE_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-${ROLE}-resources"
 env_variables['ECS_SERVICE_RESOURCE_STACK_NAME'] = "${RESOURCE_STACK_NAME}"  # alias
 env_variables['KEY_NAME'] = "${ENVIRONMENT}-${APPLICATION}"
 env_variables['CHANGE_SET_NAME'] = "${STACK_NAME}-deploy-cloudformation-change-set"
+
+
 
 
 class DeployContext(dict):
@@ -101,12 +99,7 @@ class DeployContext(dict):
         self[DOCKER_REGISTRY] = service_definition.docker_registry
         self.update(service_definition.deployment_parameters)
         self.service_definition = service_definition
-        image_definition = os.path.join(artifact_directory, "containerurl.txt")
-        if os.path.exists(image_definition):
-            with open(image_definition, 'r') as image:
-                self['IMAGE'] = image.read()
-        else:
-            print_utility.warn("Image definition (containerurl.txt) did not exist in artifact directory.")
+        self.artifact_definition = ArtifactDefinition(artifact_directory)
 
     def _initialize_environment_variables(self):
         application = self['APPLICATION']
@@ -179,8 +172,12 @@ class DeployContext(dict):
             os.remove(file)
 
     def get_execution_plan(self):
-        # type: () -> list(Deploy)
-        return self.service_definition.generate_execution_plan(self.template_manager,self)
+        # type: () -> list(CloudFormationDeploy)
+        service_plan = self.service_definition.generate_execution_plan(self.template_manager, self)
+        artifact_plan = self.artifact_definition.generate_execution_plan(self)
+        if artifact_plan:
+            service_plan.append(artifact_plan)
+        return service_plan
 
     def expandvars(self, template_string, aux_dict=None):
         """Expand ENVIRONMENT variables of form $var and ${var}.
@@ -206,10 +203,10 @@ class DeployContext(dict):
         #     --tags "application:${application} ROLE:${ROLE} ENVIRONMENT:${ENVIRONMENT} system:${application}-${ROLE}"
 
     def push_deploy_ctx(self, deploy_):
-        # type: (Deploy) -> None
+        # type: (CloudFormationDeploy) -> None
         self.stack_name_cache.append(self[STACK_NAME])
-        new_val = deploy_.stack_name
-        self._update_stack_name(new_val)
+        if deploy_.stack_name:
+            self._update_stack_name(deploy_.stack_name)
         self.current_deploy = deploy_
 
     def _update_stack_name(self, new_val):
@@ -217,6 +214,7 @@ class DeployContext(dict):
         self.stack_name = new_val
 
     def pop_deploy_ctx(self):
-        new_val = self.stack_name_cache.pop()
-        self._update_stack_name(new_val)
+        if self.current_deploy.stack_name:
+            new_val = self.stack_name_cache.pop()
+            self._update_stack_name(new_val)
         self.current_deploy = None

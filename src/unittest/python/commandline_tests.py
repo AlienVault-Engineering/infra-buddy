@@ -43,5 +43,5 @@ class CommandlineTestCase(ParentTestCase):
 
     def test_template_validate(self):
         runner = CliRunner()
-        result = runner.invoke(cli,[ 'validate-service-template' , "--service-type","cluster"])
+        result = runner.invoke(cli,[ 'validate-template' , "--service-type","cluster"])
         # self.assertEqual(result.exit_code, 0, "Failed ")

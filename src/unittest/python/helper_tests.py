@@ -6,9 +6,9 @@ from infra_buddy.aws.cloudformation import CloudFormationBuddy
 from infra_buddy.aws.s3 import S3Buddy
 from infra_buddy.commandline import cli
 from infra_buddy.commands.deploy_cloudformation import command
-from infra_buddy.context.deploy import Deploy
 from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.context.template import LocalTemplate, NamedLocalTemplate
+from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy.template.template import NamedLocalTemplate
 from infra_buddy.utility import helper_functions
 from testcase_parent import ParentTestCase
 
@@ -39,8 +39,8 @@ class HelperTestCase(ParentTestCase):
         cloudformation = CloudFormationBuddy(ctx)
         try:
             template_dir = ParentTestCase._get_resource_path("helper_func_tests/")
-            deploy = Deploy(ctx.stack_name, NamedLocalTemplate(template_dir),ctx)
-            command.do_command(ctx, deploy)
+            deploy = CloudFormationDeploy(ctx.stack_name, NamedLocalTemplate(template_dir), ctx)
+            deploy.do_deploy(dry_run=False)
             rp = helper_functions.calculate_rule_priority(ctx,ctx.stack_name)
             self.assertEqual(rp,"10","Failed to detect existing rule priority")
             rp = helper_functions.calculate_rule_priority(ctx,"foo-bar")

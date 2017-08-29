@@ -1,1 +1,0 @@
-https://docker.io/my-registry/artifact:39

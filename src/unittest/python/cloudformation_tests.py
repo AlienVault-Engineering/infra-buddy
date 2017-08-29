@@ -4,12 +4,12 @@ import string
 import tempfile
 
 from infra_buddy.aws.cloudformation import CloudFormationBuddy
-from infra_buddy.aws.s3 import S3Buddy
+from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
 # noinspection PyUnresolvedReferences
 from infra_buddy import commandline
 from infra_buddy.commands.deploy_cloudformation import command
-from infra_buddy.context.deploy import Deploy
-from infra_buddy.context.template import LocalTemplate
+from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy.template.template import LocalTemplate
 from infra_buddy.utility.exception import NOOPException
 from testcase_parent import ParentTestCase
 
@@ -24,7 +24,7 @@ class CloudFormationTestCase(ParentTestCase):
 
     def test_cloudformation_create_and_update(self):
         cloudformation = CloudFormationBuddy(self.test_deploy_ctx)
-        s3 = S3Buddy(self.test_deploy_ctx)
+        s3 = CloudFormationDeployS3Buddy(self.test_deploy_ctx)
         temp_dir = tempfile.mkdtemp()
         try:
             template = ParentTestCase._get_resource_path("cloudformation/aws-resources.template")
@@ -66,10 +66,10 @@ class CloudFormationTestCase(ParentTestCase):
         template = ParentTestCase._get_resource_path("cloudformation/aws-resources.template")
         parameter_file = ParentTestCase._get_resource_path("cloudformation/aws-resources.parameters.json")
         config_templates = ParentTestCase._get_resource_path("cloudformation/config/")
-        deploy = Deploy(self.test_deploy_ctx.stack_name, LocalTemplate(template,parameter_file,config_templates),self.test_deploy_ctx)
-        command.do_command(self.test_deploy_ctx, deploy)
+        deploy = CloudFormationDeploy(self.test_deploy_ctx.stack_name, LocalTemplate(template, parameter_file, config_templates), self.test_deploy_ctx)
+        deploy.do_deploy(dry_run=False)
         cloudformation = CloudFormationBuddy(self.test_deploy_ctx)
-        s3 = S3Buddy(self.test_deploy_ctx)
+        s3 = CloudFormationDeployS3Buddy(self.test_deploy_ctx)
         try:
             self.assertTrue(cloudformation.does_stack_exist(), "Failed to create stack")
             self.assertEqual(s3.get_file_as_string("install_template.sh"),"foo-bar-{}".format(self.run_random_word),"Did not render config template")

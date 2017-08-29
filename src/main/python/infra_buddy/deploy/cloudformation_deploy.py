@@ -7,16 +7,30 @@ from pprint import pformat
 import pydash
 from jsonschema import validate
 
+from infra_buddy.aws.cloudformation import CloudFormationBuddy
+from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
+from infra_buddy.deploy.deploy import Deploy
 from infra_buddy.utility import helper_functions, print_utility
 
+_PARAM_TYPE_VALUE = "value"
 
-class Deploy(object):
+_PARAM_TYPE_PROPERTY = "property"
+
+_PARAM_TYPE_FUNC = "func"
+
+_PARAM_TYPE_TEMPLATE = "template"
+
+
+class CloudFormationDeploy(Deploy):
     schema = {
         "type": "object",
         "additionalProperties": {
             "type": "object",
             "properties": {
-                "type": {"type": "string"},
+                "type": {"type": "string","enum":[_PARAM_TYPE_PROPERTY,
+                                                 _PARAM_TYPE_FUNC,
+                                                 _PARAM_TYPE_VALUE,
+                                                 _PARAM_TYPE_TEMPLATE]},
                 "value": {"type": "string"},
                 "default_value": {"type": "string"},
                 "key": {"type": "string"}
@@ -28,8 +42,7 @@ class Deploy(object):
 
     def __init__(self, stack_name, template, deploy_ctx):
         # type: (str, Template,DeployContext) -> None
-        super(Deploy, self).__init__()
-        self.deploy_ctx = deploy_ctx
+        super(CloudFormationDeploy, self).__init__(deploy_ctx)
         self.stack_name = stack_name
         self.config_directory = template.get_config_dir()
         self.parameter_file = template.get_parameter_file_path()
@@ -48,11 +61,11 @@ class Deploy(object):
 
     def _load_value(self, value):
         type_ = value['type']
-        if type_ == "template":
+        if type_ == _PARAM_TYPE_TEMPLATE:
             return self.deploy_ctx.expandvars(value['value'], self.defaults)
-        elif type_ == "value":
+        elif type_ == _PARAM_TYPE_VALUE:
             return value['value']
-        elif type_ == "func":
+        elif type_ == _PARAM_TYPE_FUNC:
             if 'default_key' in value:
                 # look for a default value before calling the func
                 def_key = value['default_key']
@@ -70,27 +83,27 @@ class Deploy(object):
                 print_utility.error(
                     "Can not locate function for defaults.json: Stack {} Function {}".format(self.stack_name,
                                                                                              func_name))
-        elif type_ == "property":
+        elif type_ == _PARAM_TYPE_PROPERTY:
             return self.deploy_ctx.get(value['key'], value.get('default', None))
 
-    def get_rendered_config_files(self, deploy_ctx):
+    def get_rendered_config_files(self):
         self._prep_render_destination()
         rendered_config_files = []
         config_dir = self.config_directory
         if config_dir:
             for template in os.listdir(config_dir):
-                rendered_config_files.append(deploy_ctx.render_template(os.path.join(config_dir, template), self.destination))
+                rendered_config_files.append(self.deploy_ctx.render_template(os.path.join(config_dir, template), self.destination))
         return rendered_config_files
 
-    def get_rendered_param_file(self, deploy_ctx):
+    def get_rendered_param_file(self):
         self._prep_render_destination()
-        return deploy_ctx.render_template(self.parameter_file, self.destination)
+        return self.deploy_ctx.render_template(self.parameter_file, self.destination)
 
-    def validate(self, deploy_ctx):
+    def validate(self):
         self.print_template_description()
-        self.print_known_parameters(deploy_ctx)
+        self.print_known_parameters()
         self.print_export()
-        config_files = self.get_rendered_config_files(deploy_ctx)
+        config_files = self.get_rendered_config_files()
         if len(config_files) ==0:
             print_utility.warn("No Configuration Files")
         else:
@@ -107,9 +120,9 @@ class Deploy(object):
     def _prep_render_destination(self):
         self.destination = tempfile.mkdtemp()
 
-    def print_known_parameters(self, deploy_ctx):
+    def print_known_parameters(self):
         # type: (DeployContext) -> int
-        known_param, warnings,errors = self._analyze_parameters(deploy_ctx)
+        known_param, warnings,errors = self._analyze_parameters()
         print_utility.banner_warn("Parameters", pformat(known_param))
         print_utility.warn("Parameter Warnings")
         self._print_info(warnings)
@@ -126,13 +139,13 @@ class Deploy(object):
         self._print_error(errors)
         return len(errors)
 
-    def analyze(self,deploy_ctx):
-        errs = self.print_known_parameters(deploy_ctx)
+    def analyze(self):
+        errs = self.print_known_parameters()
         errs += self.print_export()
         return errs
 
 
-    def _analyze_parameters(self, deploy_ctx):
+    def _analyze_parameters(self):
         known_param = {}
         errors = defaultdict(list)
         warning = defaultdict(list)
@@ -151,7 +164,7 @@ class Deploy(object):
                 key_ = param['ParameterKey']
                 if key_ in known_param:
                     known_param[key_]['variable'] = param['ParameterValue']
-                    expandvars = deploy_ctx.expandvars(param['ParameterValue'], self.defaults)
+                    expandvars = self.deploy_ctx.expandvars(param['ParameterValue'], self.defaults)
                     if "${" in expandvars: errors[key_].append("Parameter did not appear to validate - {}".format(expandvars))
                     known_param[key_]['default_value'] = expandvars
                 else:
@@ -191,4 +204,36 @@ class Deploy(object):
         for key,errs in errors.iteritems():
             print_utility.warn(pformat(key,indent=4))
             print_utility.banner(pformat(errs,indent=8))
+
+    def _internal_deploy(self,dry_run):
+        # Initialize our buddies
+        s3 = CloudFormationDeployS3Buddy(self.deploy_ctx)
+        cloud_formation = CloudFormationBuddy(self.deploy_ctx)
+        if dry_run:
+            self.validate()
+            return
+        # Upload our template to s3 to make things a bit easier and keep a record
+        template_file_url = s3.upload(file=(self.template_file))
+        # Upload all of our config files to S3 rendering any variables
+        config_files = self.get_rendered_config_files()
+        for rendered in config_files:
+            s3.upload(file=rendered)
+        # render our parameter files
+        parameter_file_rendered = self.get_rendered_param_file()
+        # see if we are updating or creating
+        if cloud_formation.does_stack_exist():
+            cloud_formation.create_change_set(template_file_url=template_file_url,
+                                              parameter_file=parameter_file_rendered)
+            # make sure it is avaiable and that there are no special conditions
+            if cloud_formation.should_execute_change_set():
+                cloud_formation.execute_change_set()
+            else:
+                # if there are no changes then clean up and exit
+                cloud_formation.delete_change_set()
+                return
+        else:
+            cloud_formation.create_stack(template_file_url=template_file_url,
+                                         parameter_file=parameter_file_rendered)
+
+
 
