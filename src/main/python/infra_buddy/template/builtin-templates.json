@@ -56,6 +56,11 @@
       "type": "github",
       "owner": "AlienVault-Engineering",
       "repo": "service-template-rds-aurora"
+    },
+    "cloudfront-angular": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "service-template-cloudfront-angular"
     }
   }
 }
