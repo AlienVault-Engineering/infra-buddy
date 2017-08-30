@@ -9,10 +9,10 @@ class Deploy(object):
         self.deploy_ctx = deploy_ctx
         self.stack_name = None
 
-    def do_deploy(self,dry_run):
+    def do_deploy(self,dry_run=False):
         self.deploy_ctx.push_deploy_ctx(self)
         try:
-            self._internal_deploy(dry_run)
+            return self._internal_deploy(dry_run)
         finally:
             self.deploy_ctx.pop_deploy_ctx()
 

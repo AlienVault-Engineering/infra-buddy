@@ -3,7 +3,20 @@ import tempfile
 
 from infra_buddy.aws import s3
 from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
+from infra_buddy.deploy.s3_deploy import S3Deploy
 from testcase_parent import ParentTestCase
+
+
+class TestCloudFormationBuddy(object):
+
+    def __init__(self, deploy_ctx):
+        super(TestCloudFormationBuddy, self).__init__()
+        self.ctx = deploy_ctx
+
+
+    def get_export_value(self,param):
+        return "{bucket_name}/{root_path}".format(root_path=self.ctx.cf_deploy_resource_path,
+                                                  bucket_name=self.ctx.cf_bucket_name)
 
 
 class S3TestCase(ParentTestCase):
@@ -53,3 +66,20 @@ class S3TestCase(ParentTestCase):
         finally:
             self.clean_dir(temp_dir)
             self.clean_s3(s3_buddy)
+
+    def test_s3_deploy(self):
+        s3_buddy = CloudFormationDeployS3Buddy(self.test_deploy_ctx)
+        try:
+            compress = ParentTestCase._get_resource_path("s3_tests/test_compress.json.zip")
+            s3_buddy.upload(compress)
+            s3_url = "{bucket}/{key}".format(bucket=self.test_deploy_ctx.cf_bucket_name,
+                                                  key=s3_buddy._get_upload_bucket_key_name(file=None,
+                                                                                                   key_name="test_compress.json.zip"))
+            # s3 deploy appends zip to it
+            s3d = S3Deploy(artifact_id="test_compress.json",location=s3_url[:s3_url.rfind("/")],ctx=self.test_deploy_ctx)
+            s3d.cloud_formation_buddy = TestCloudFormationBuddy(self.test_deploy_ctx)
+            s3d.do_deploy()
+            self.assertEqual(s3_buddy.get_file_as_string('test_compress.json'),"test-compress","Failed to get file as string")
+        finally:
+            self.clean_s3(s3_buddy)
+

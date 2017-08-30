@@ -52,8 +52,9 @@ class ArtifactDefinition(object):
             print_utility.warn("Defining ECS service udpate with deprecated containerurl.txt artifact")
             with open(image_definition, 'r') as image:
                 image_def = self.image = image.read()
-                ret[_ARTIFACT_LOCATION] = image_def.split(":")[0]
-                ret[_ARTIFACT_IDENTIFIER] = image_def.split(":")[1]
+                rfind = image_def.rfind(":")
+                ret[_ARTIFACT_LOCATION] = image_def[:rfind]
+                ret[_ARTIFACT_IDENTIFIER] = image_def[rfind+1:]
             return ret
         return None
 
