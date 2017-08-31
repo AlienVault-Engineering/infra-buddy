@@ -126,7 +126,7 @@ class DeployContextTestCase(ParentTestCase):
                                                                   environment="unit-test",
                                                                   defaults=self.default_config)
         plan = deploy_ctx.get_execution_plan()
-        self.assertEqual(len(plan),4, "Failed to identify all elements of execution")
+        self.assertEqual(len(plan),4, "Failed to identify all elements of execution - {}".format(plan))
 
     def test_deploy_validate(self):
         artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_execution_plan_test')

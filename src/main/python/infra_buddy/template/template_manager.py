@@ -11,26 +11,7 @@ from infra_buddy.utility import print_utility
 class TemplateManager(object):
     deploy_templates = {}
     service_modification_templates = {}
-    # schema = {
-    #     "type": "object",
-    #     "patternProperties": {
-    #         "^.*$": {
-    #             "type": "object",
-    #             "properties": {
-    #                 "type": {"type", "string"},
-    #                 "owner": {"type", "string"},
-    #                 "repo": {"type", "string"},
-    #                 "tag": {"type", "string"},
-    #                 "location": {"type", "string"},
-    #                 "url": {"type", "string"}
-    #             },
-    #             "required":[
-    #                 "type"
-    #             ]
-    #
-    #         }
-    #     }
-    # }
+
     schema = {
            "type": "object",
            "additionalProperties": {
@@ -39,6 +20,7 @@ class TemplateManager(object):
                    "type": {"type": "string"},
                    "owner": {"type": "string"},
                    "repo": {"type": "string"},
+                   "tag": {"type": "string"},
                    "location": {"type": "string"},
                    "url": {"type": "string"}
                },

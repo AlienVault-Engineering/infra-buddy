@@ -1,9 +1,13 @@
+import os
+import tempfile
+
 import click
 
 from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
+from infra_buddy.context.service_definition import ServiceDefinition
 from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
 from testcase_parent import ParentTestCase
-
+from infra_buddy.commands.generate_service_definition import command as generate_command
 
 class TemplateManagerTestCase(ParentTestCase):
     def tearDown(self):
@@ -63,9 +67,23 @@ class TemplateManagerTestCase(ParentTestCase):
         self.assertEqual(self.test_deploy_ctx.stack_name,"unit-test-foo-bar-{}-resources".format(self.run_random_word),"Failed to update stack_name")
         self.assertEqual(self.test_deploy_ctx.expandvars("${app}"),"foo","Failed to render deploy default")
         self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"override","Failed to render deploy default")
+        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME_2}"),"foo","Failed to render deploy default template")
         self.test_deploy_ctx.pop_deploy_ctx()
         self.assertEqual(self.test_deploy_ctx.stack_name,"unit-test-foo-bar-{}".format(self.run_random_word),"Failed to update stack_name after pop")
         self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"unit-test-foo","Failed to render expected key value after pop")
 
-        # self.assertEqual(deploy.defaults['val'],"discrete","Failed to call func")
+    def test_validate_service_definition_generation(self):
+        tempdir = tempfile.mkdtemp()
+        try:
+            generated = generate_command.do_command(self.test_deploy_ctx, service_template_directory=None,
+                                                  service_type="cluster", destination=tempdir)
+            definition = ServiceDefinition(artifact_directory=os.path.dirname(generated), environment="dev")
+            self.assertIsNotNone(definition,"Failed to load service definition")
+            self.assertEqual(definition.service_type,"cluster","Did not do a good job")
+            self.assertEqual(definition.application,self.test_deploy_ctx.application,"Did not do a good job --application")
+            self.assertEqual(definition.role,self.test_deploy_ctx.role,"Did not do a good job --role")
+            self.assertTrue(os.path.exists(os.path.join(os.path.dirname(generated),"README.md")),"Did not generate readme.md")
+        finally:
+            self.clean_dir(tempdir)
+
 

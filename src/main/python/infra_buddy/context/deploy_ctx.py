@@ -99,7 +99,7 @@ class DeployContext(dict):
         self[DOCKER_REGISTRY] = service_definition.docker_registry
         self.update(service_definition.deployment_parameters)
         self.service_definition = service_definition
-        self.artifact_definition = ArtifactDefinition(artifact_directory)
+        self.artifact_definition = ArtifactDefinition.create_from_directory(artifact_directory)
 
     def _initialize_environment_variables(self):
         application = self['APPLICATION']
@@ -180,6 +180,7 @@ class DeployContext(dict):
         return service_plan
 
     def expandvars(self, template_string, aux_dict=None):
+        if not template_string: return template_string #if you pass none, return none
         """Expand ENVIRONMENT variables of form $var and ${var}.
         """
         def replace_var(m):

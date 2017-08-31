@@ -1,11 +1,14 @@
 import json
 import os
 
+import datetime
 from jsonschema import validate
 
 from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
 from infra_buddy.template.template_manager import TemplateManager
 from infra_buddy.utility import print_utility
+
+_SERVICE_DEFINITION_FILE = "service.json"
 
 _MODIFICATIONS = 'service-modifications'
 
@@ -64,9 +67,10 @@ class ServiceDefinition(object):
     def __init__(self, artifact_directory, environment):
         super(ServiceDefinition, self).__init__()
         self.artifact_directory = artifact_directory
-        service_definition_path = os.path.join(artifact_directory, "service.json")
+        service_definition_path = os.path.join(artifact_directory, _SERVICE_DEFINITION_FILE)
         if not os.path.exists(service_definition_path):
-            err_msg = "Service definition (service.json) does not exist in artifact directory - {}".format(
+            err_msg = "Service definition ({}) does not exist in artifact directory - {}".format(
+                _SERVICE_DEFINITION_FILE,
                 artifact_directory)
             print_utility.error(err_msg)
             raise Exception(err_msg)
@@ -76,10 +80,9 @@ class ServiceDefinition(object):
             self.application = service_definition[_APPLICATION]
             self.role = service_definition[_ROLE]
             self.service_type = service_definition[_SERVICE_TYPE]
-            self.docker_registry = service_definition[_DOCKER_REGISTRY]
-            deployment_parameters = _DEPLOYMENT_PARAMETERS
-            if deployment_parameters in service_definition:
-                self.deployment_parameters = service_definition[deployment_parameters]
+            self.docker_registry = service_definition.get(_DOCKER_REGISTRY,"")
+            if _DEPLOYMENT_PARAMETERS in service_definition:
+                self.deployment_parameters = service_definition[_DEPLOYMENT_PARAMETERS]
             env_deployment_parameters = '{environment}-deployment-parameters'.format(environment=environment)
             if env_deployment_parameters in service_definition:
                 self.deployment_parameters.update(service_definition[env_deployment_parameters])
@@ -102,3 +105,53 @@ class ServiceDefinition(object):
                                             template=template,
                                             deploy_ctx=deploy_ctx))
         return ret
+
+    @classmethod
+    def save_to_file(cls, application,role, deploy_params, service_type,known_service_modifications,destination):
+        # type: (str, str, dict,str) -> str
+        if destination:
+            service_file_path = os.path.join(destination,_SERVICE_DEFINITION_FILE)
+            readme_file_path = os.path.join(destination,"README.md")
+        else:
+            service_file_path = _SERVICE_DEFINITION_FILE
+            readme_file_path = "README.md"
+        service_definition_object = {
+            _APPLICATION: application,
+            _ROLE: role,
+            _SERVICE_TYPE: service_type,
+            _DEPLOYMENT_PARAMETERS: {},
+            _MODIFICATIONS: []}
+        with open(service_file_path, 'w') as def_file:
+            json.dump(service_definition_object,def_file)
+        with open(readme_file_path,'w') as read:
+            read.write("# Service Type: {}\n".format(service_type))
+            read.write("Generated on {}\n\n".format(datetime.datetime.now()))
+            read.write("Service template may have been modified, please verify usage with:\n")
+            read.write(" ```bash\n")
+            read.write("infra-buddy validate-template --service-type {}\n".format(service_type))
+            read.write("```\n")
+            read.write("## Known Service Modifications\n")
+            read.write("Define these service modifications in the service.json stanza '{}'\n".format(_MODIFICATIONS))
+            read.write(" ```javascript\n")
+            read.write("\"{}\":[ \"modification-1\"]'\n".format(_MODIFICATIONS))
+            read.write("```\n\n")
+            read.write("| Service Modification |\n")
+            read.write("| --- |\n")
+            for key,val in known_service_modifications.iteritems():
+                read.write("| {} |\n".format(key))
+            read.write("\n")
+            read.write("## Deploy parameters\n\n")
+            read.write("Define these parameters in the service.json stanza '{}'\n\n".format(_DEPLOYMENT_PARAMETERS))
+            read.write("For environment specific values use the corresponding stanza in the form '<environment>-{}'\n".format(_DEPLOYMENT_PARAMETERS))
+            read.write("this is supported for the known environments: 'dev', 'ci', and 'prod'.\n\n")
+            if len(deploy_params) > 0:
+                read.write("| Parameter | Description | Default Value |\n")
+                read.write("| --- | --- | --- |\n")
+                for key_, definition in deploy_params.iteritems():
+                    if 'default_type' in definition and definition["default_type"] == "property":
+                        parameter = definition['key']
+                        description = definition.get("description","<None>")
+                        default_val = definition.get("default","<None>")
+                        read.write("| {} | {} | {} |\n".format(parameter,description,default_val))
+        return service_file_path
+

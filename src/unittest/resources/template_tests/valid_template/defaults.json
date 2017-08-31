@@ -4,11 +4,18 @@
     "value":"${APPLICATION}"
   },
   "val":{
-    "type":"value",
-    "value":"discrete"
+    "type":"property",
+    "key":"NOT_A_KEY",
+    "default": "discrete"
+
   },
   "KEY_NAME":{
-    "type": "value",
+    "type": "template",
     "value":"override"
+  },
+  "KEY_NAME_2":{
+    "type": "property",
+    "key":"KEY_NAME_2",
+    "default":"${APPLICATION}"
   }
 }

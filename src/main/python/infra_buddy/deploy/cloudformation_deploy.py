@@ -12,8 +12,6 @@ from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
 from infra_buddy.deploy.deploy import Deploy
 from infra_buddy.utility import helper_functions, print_utility
 
-_PARAM_TYPE_VALUE = "value"
-
 _PARAM_TYPE_PROPERTY = "property"
 
 _PARAM_TYPE_FUNC = "func"
@@ -27,15 +25,14 @@ class CloudFormationDeploy(Deploy):
         "additionalProperties": {
             "type": "object",
             "properties": {
-                "type": {"type": "string","enum":[_PARAM_TYPE_PROPERTY,
-                                                 _PARAM_TYPE_FUNC,
-                                                 _PARAM_TYPE_VALUE,
-                                                 _PARAM_TYPE_TEMPLATE]},
+                "type": {"type": "string", "enum": [_PARAM_TYPE_PROPERTY,
+                                                    _PARAM_TYPE_FUNC,
+                                                    _PARAM_TYPE_TEMPLATE]},
                 "value": {"type": "string"},
                 "default_value": {"type": "string"},
                 "key": {"type": "string"}
             },
-           "required":["type"]
+            "required": ["type"]
         }
 
     }
@@ -63,8 +60,6 @@ class CloudFormationDeploy(Deploy):
         type_ = value['type']
         if type_ == _PARAM_TYPE_TEMPLATE:
             return self.deploy_ctx.expandvars(value['value'], self.defaults)
-        elif type_ == _PARAM_TYPE_VALUE:
-            return value['value']
         elif type_ == _PARAM_TYPE_FUNC:
             if 'default_key' in value:
                 # look for a default value before calling the func
@@ -84,7 +79,8 @@ class CloudFormationDeploy(Deploy):
                     "Can not locate function for defaults.json: Stack {} Function {}".format(self.stack_name,
                                                                                              func_name))
         elif type_ == _PARAM_TYPE_PROPERTY:
-            return self.deploy_ctx.get(value['key'], value.get('default', None))
+            return self.deploy_ctx.get(value['key'],
+                                       self.deploy_ctx.expandvars(str(value.get('default', None)), self.defaults))
 
     def get_rendered_config_files(self):
         self._prep_render_destination()
@@ -92,7 +88,8 @@ class CloudFormationDeploy(Deploy):
         config_dir = self.config_directory
         if config_dir:
             for template in os.listdir(config_dir):
-                rendered_config_files.append(self.deploy_ctx.render_template(os.path.join(config_dir, template), self.destination))
+                rendered_config_files.append(
+                    self.deploy_ctx.render_template(os.path.join(config_dir, template), self.destination))
         return rendered_config_files
 
     def get_rendered_param_file(self):
@@ -104,7 +101,7 @@ class CloudFormationDeploy(Deploy):
         self.print_known_parameters()
         self.print_export()
         config_files = self.get_rendered_config_files()
-        if len(config_files) ==0:
+        if len(config_files) == 0:
             print_utility.warn("No Configuration Files")
         else:
             print_utility.warn("Configuration Files:")
@@ -122,7 +119,7 @@ class CloudFormationDeploy(Deploy):
 
     def print_known_parameters(self):
         # type: (DeployContext) -> int
-        known_param, warnings,errors = self._analyze_parameters()
+        known_param, warnings, errors = self._analyze_parameters()
         print_utility.banner_warn("Parameters", pformat(known_param))
         print_utility.warn("Parameter Warnings")
         self._print_info(warnings)
@@ -132,7 +129,7 @@ class CloudFormationDeploy(Deploy):
 
     def print_export(self):
         # type: () -> int
-        known_exports, warnings,errors = self._analyze_export()
+        known_exports, warnings, errors = self._analyze_export()
         print_utility.warn("Export Values")
         self._print_info(known_exports)
         print_utility.warn("Export Values Warnings")
@@ -143,7 +140,6 @@ class CloudFormationDeploy(Deploy):
         errs = self.print_known_parameters()
         errs += self.print_export()
         return errs
-
 
     def _analyze_parameters(self):
         known_param = {}
@@ -156,20 +152,37 @@ class CloudFormationDeploy(Deploy):
                 description = value.get('Description', None)
                 default = value.get('Default', None)
                 if not description: warning[key].append("Parameter does not contain a description")
-                if default: warning[key].append("Parameter has default value defined in CloudFormation Template - {}".format(default))
+                if default: warning[key].append(
+                    "Parameter has default value defined in CloudFormation Template - {}".format(default))
                 known_param[key] = {'description': description, 'type': value['Type']}
+        value_to_key = {}
         with open(self.parameter_file, 'r') as params:
             param_file_params = json.load(params)
             for param in param_file_params:
                 key_ = param['ParameterKey']
                 if key_ in known_param:
                     known_param[key_]['variable'] = param['ParameterValue']
+                    value_to_key[param['ParameterValue'].replace("$","").replace("{","").replace("}","")] = key_
                     expandvars = self.deploy_ctx.expandvars(param['ParameterValue'], self.defaults)
-                    if "${" in expandvars: errors[key_].append("Parameter did not appear to validate - {}".format(expandvars))
+                    if "${" in expandvars: errors[key_].append(
+                        "Parameter did not appear to validate - {}".format(expandvars))
                     known_param[key_]['default_value'] = expandvars
                 else:
                     # exists in param file but not in template
                     errors[key_].append("Parameter does not exist in template but defined in param file")
+        if self.default_path and os.path.exists(self.default_path):
+            with open(self.default_path, 'r') as defs:
+                defs = json.load(defs)
+                for key_, param in defs.iteritems():
+                    if key_ in value_to_key:
+                        param_key = value_to_key[key_]
+                        known_param[param_key]['default_type'] = param['type']
+                        known_param[param_key].update(param)
+                    else:
+                        # exists in param file but not in template
+                        errors[key_].append("Parameter does not exist in parameter file but defined in defaults file")
+
+
         for key, value in known_param.iteritems():
             if 'variable' not in value:
                 errors[key].append("Parameter does not exist in param file but defined in template")
@@ -187,25 +200,26 @@ class CloudFormationDeploy(Deploy):
                 value = value.get('Value', None)
                 description = value.get('Description', None)
                 if not description: warnings[key].append("Export does not contain a description")
-                known_exports[key] = {'description': description, 'export': export,'value':value}
+                known_exports[key] = {'description': description, 'export': export, 'value': value}
         return known_exports, warnings, errors
 
     def print_template_description(self):
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
-            print_utility.banner_warn("Deploy for Stack: {}".format(self.stack_name), pydash.get(template_obj, 'Description', ''))
+            print_utility.banner_warn("Deploy for Stack: {}".format(self.stack_name),
+                                      pydash.get(template_obj, 'Description', ''))
 
     def _print_error(self, errors):
-        for key,errs in errors.iteritems():
-            print_utility.error(pformat(key,indent=4))
-            print_utility.banner(pformat(errs,indent=8))
+        for key, errs in errors.iteritems():
+            print_utility.error(pformat(key, indent=4))
+            print_utility.banner(pformat(errs, indent=8))
 
     def _print_info(self, errors):
-        for key,errs in errors.iteritems():
-            print_utility.warn(pformat(key,indent=4))
-            print_utility.banner(pformat(errs,indent=8))
+        for key, errs in errors.iteritems():
+            print_utility.warn(pformat(key, indent=4))
+            print_utility.banner(pformat(errs, indent=8))
 
-    def _internal_deploy(self,dry_run):
+    def _internal_deploy(self, dry_run):
         # Initialize our buddies
         s3 = CloudFormationDeployS3Buddy(self.deploy_ctx)
         cloud_formation = CloudFormationBuddy(self.deploy_ctx)
@@ -235,5 +249,5 @@ class CloudFormationDeploy(Deploy):
             cloud_formation.create_stack(template_file_url=template_file_url,
                                          parameter_file=parameter_file_rendered)
 
-
-
+    def get_default_params(self):
+        return self._analyze_parameters()[0]

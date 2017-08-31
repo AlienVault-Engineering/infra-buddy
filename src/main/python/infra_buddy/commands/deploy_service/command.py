@@ -1,10 +1,7 @@
 import click
-from infra_buddy.utility import print_utility
 
-from infra_buddy.aws.ecs import ECSBuddy
 from infra_buddy.commandline import cli
 from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.commands.deploy_cloudformation import command as deploy_cf
 
 
 @cli.command(name='deploy-service')
