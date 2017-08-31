@@ -7,7 +7,6 @@ from infra_buddy.aws.cloudformation import CloudFormationBuddy
 from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
 # noinspection PyUnresolvedReferences
 from infra_buddy import commandline
-from infra_buddy.commands.deploy_cloudformation import command
 from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
 from infra_buddy.template.template import LocalTemplate
 from infra_buddy.utility.exception import NOOPException

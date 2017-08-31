@@ -5,7 +5,6 @@ from infra_buddy.aws import s3
 from infra_buddy.aws.cloudformation import CloudFormationBuddy
 from infra_buddy.aws.s3 import S3Buddy
 from infra_buddy.commandline import cli
-from infra_buddy.commands.deploy_cloudformation import command
 from infra_buddy.context.deploy_ctx import DeployContext
 from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
 from infra_buddy.template.template import NamedLocalTemplate

@@ -19,15 +19,6 @@ from infra_buddy.utility import print_utility
 @click.pass_context
 def cli(ctx, artifact_directory, application, role, environment, configuration_defaults, verbose):
     # type: (object, str, str, str, str, str, bool) -> None
-    """
-
-    :param ctx: click context
-    :param artifact_directory: Path to directory containing deploy artifacts
-    :param role: Role for service
-    :param environment: Environment to deploy
-    :param verbose: Print informational messages
-    :param application: Application for service
-    """
     print_utility.configure(verbose)
     if artifact_directory:
         if application or role:
@@ -48,3 +39,7 @@ from infra_buddy.commands.deploy_cloudformation import command
 from infra_buddy.commands.deploy_service import command
 # noinspection PyUnresolvedReferences
 from infra_buddy.commands.validate_template import command
+# noinspection PyUnresolvedReferences
+from infra_buddy.commands.generate_artifact_manifest import command
+# noinspection PyUnresolvedReferences
+from infra_buddy.commands.generate_service_definition import command

@@ -3,7 +3,7 @@
     "autoscale": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-modification-template-autoscale"
+      "repo": "service-modification-template-service-autoscale"
     },
     "cluster-cpu-autoscale": {
       "type": "github",
@@ -18,12 +18,12 @@
     "sqs-threshold": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-modification-template-sqs-threshold"
+      "repo": "service-modification-template-service-sqs-threshold"
     },
     "target-connection-error": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-modification-template-target-connection-error"
+      "repo": "service-modification-template-service-target-connection-error"
     }
   },
   "service-templates": {
@@ -40,17 +40,17 @@
     "default-api-service": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-template-default-api-service"
+      "repo": "service-template-service-default-api"
     },
     "api-service": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-template-api-service"
+      "repo": "service-template-service-api"
     },
     "batch-service": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-template-batch-service"
+      "repo": "service-template-service-batch"
     },
     "rds-aurora": {
       "type": "github",
