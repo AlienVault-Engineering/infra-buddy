@@ -119,7 +119,7 @@ class ServiceDefinition(object):
             _APPLICATION: application,
             _ROLE: role,
             _SERVICE_TYPE: service_type,
-            _DEPLOYMENT_PARAMETERS: {},
+            _DEPLOYMENT_PARAMETERS: cls._get_params_without_default_values(deploy_params),
             _MODIFICATIONS: []}
         with open(service_file_path, 'w') as def_file:
             json.dump(service_definition_object,def_file)
@@ -154,4 +154,15 @@ class ServiceDefinition(object):
                         default_val = definition.get("default","<None>")
                         read.write("| {} | {} | {} |\n".format(parameter,description,default_val))
         return service_file_path
+
+    @classmethod
+    def _get_params_without_default_values(cls, deploy_params):
+        ret = {}
+        for key_, definition in deploy_params.iteritems():
+               if 'default_type' in definition and definition["default_type"] == "property":
+                   if 'default_value' not in definition:
+                       definition_key_ = definition['key']
+                       ret[definition_key_] = os.environ.get(definition_key_,"")
+        return ret
+
 
