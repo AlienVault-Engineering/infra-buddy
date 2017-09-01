@@ -1,7 +1,8 @@
 {
   "app":{
-    "type":"template",
-    "value":"${APPLICATION}"
+    "type":"property",
+    "key":"NOT_A_KEY",
+    "value":"${APPLICATION}-with-string"
   },
   "val":{
     "type":"property",
