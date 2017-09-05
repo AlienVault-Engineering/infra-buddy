@@ -1,12 +1,13 @@
 import os
 import tempfile
 
-import click
 
-from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
+from infra_buddy.aws.s3 import CloudFormationDeployS3Buddy
 from infra_buddy.context.service_definition import ServiceDefinition
 from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
 from testcase_parent import ParentTestCase
+# noinspection PyUnresolvedReferences
+from infra_buddy.commandline import cli
 from infra_buddy.commands.generate_service_definition import command as generate_command
 
 class TemplateManagerTestCase(ParentTestCase):

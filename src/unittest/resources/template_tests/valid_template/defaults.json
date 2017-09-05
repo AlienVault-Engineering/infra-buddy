@@ -2,7 +2,7 @@
   "app":{
     "type":"property",
     "key":"NOT_A_KEY",
-    "value":"${APPLICATION}-with-string"
+    "default":"${APPLICATION}-with-string"
   },
   "val":{
     "type":"property",

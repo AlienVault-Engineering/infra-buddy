@@ -19,6 +19,9 @@ from infra_buddy.utility import print_utility
 @click.pass_context
 def cli(ctx, artifact_directory, application, role, environment, configuration_defaults, verbose):
     # type: (object, str, str, str, str, str, bool) -> None
+    """
+    CLI for managing the infrastructure for deploying micro-services in AWS.
+    """
     print_utility.configure(verbose)
     if artifact_directory:
         if application or role:
