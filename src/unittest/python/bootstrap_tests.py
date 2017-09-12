@@ -1,3 +1,5 @@
+import tempfile
+
 import boto3
 import pydash
 # noinspection PyUnresolvedReferences
@@ -17,7 +19,8 @@ class BootStrapTestCase(ParentTestCase):
     def test_boostrap(self):
         environments = ['ci', 'prod']
         gen_keys = ["{env}-{app}".format(env=env,app=self.test_deploy_ctx.application) for env in environments]
-        bcommand.do_command(deploy_ctx=self.test_deploy_ctx, environments=environments)
+        tempdir = tempfile.mkdtemp()
+        bcommand.do_command(deploy_ctx=self.test_deploy_ctx, environments=environments,destination=tempdir)
         client = boto3.client('ec2',  region_name=self.test_deploy_ctx.region)
         try:
             res = client.describe_key_pairs()
@@ -27,3 +30,4 @@ class BootStrapTestCase(ParentTestCase):
         finally:
             for gen_key in gen_keys:
                 client.delete_key_pair(KeyName=gen_key)
+            self.clean_dir(tempdir)

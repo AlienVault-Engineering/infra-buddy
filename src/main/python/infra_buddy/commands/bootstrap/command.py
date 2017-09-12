@@ -1,3 +1,5 @@
+import os
+
 import boto3
 import click
 
@@ -16,13 +18,16 @@ def deploy_cloudformation(deploy_ctx,environments):
     do_command(deploy_ctx,environments)
 
 
-def do_command(deploy_ctx,environments):
+def do_command(deploy_ctx,environments,destination=None):
     # type: (DeployContext,list) -> None
     client = boto3.client('ec2',region_name=deploy_ctx.region)
     for env in environments:
         key_name = "{env}-{application}".format(env=env, application=deploy_ctx.application)
         res = client.create_key_pair(KeyName=key_name)
-        with open('{key_name}.pem'.format(key_name=key_name),'w') as new_pem:
+        key_location = '{key_name}.pem'.format(key_name=key_name)
+        if destination:
+            key_location = os.path.join(destination,key_location)
+        with open(key_location, 'w') as new_pem:
             new_pem.writelines(res['KeyMaterial'])
             
         
