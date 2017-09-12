@@ -11,16 +11,16 @@ from infra_buddy.utility import print_utility
 @cli.command(name='bootstrap')
 @click.argument('--environments', nargs=-1)
 @click.pass_obj
-def deploy_cloudformation(deploy_ctx,application,environments):
-    # type: (DeployContext,str,list) -> None
-    do_command(deploy_ctx,application,environments)
+def deploy_cloudformation(deploy_ctx,environments):
+    # type: (DeployContext,list) -> None
+    do_command(deploy_ctx,environments)
 
 
-def do_command(deploy_ctx,application,environments):
-    # type: (DeployContext,str,list) -> None
+def do_command(deploy_ctx,environments):
+    # type: (DeployContext,list) -> None
     client = boto3.client('ec2',region_name=deploy_ctx.region)
     for env in environments:
-        key_name = "{env}-{application}".format(env=env, application=application)
+        key_name = "{env}-{application}".format(env=env, application=deploy_ctx.application)
         res = client.create_key_pair(KeyName=key_name)
         with open('{key_name}.pem'.format(key_name=key_name),'w') as new_pem:
             new_pem.writelines(res['KeyMaterial'])

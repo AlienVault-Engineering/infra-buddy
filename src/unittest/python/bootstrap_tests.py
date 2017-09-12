@@ -16,9 +16,9 @@ class BootStrapTestCase(ParentTestCase):
 
     def test_boostrap(self):
         environments = ['ci', 'prod']
-        gen_keys = ["{env}-{app}".format(env=env,app='testapp') for env in environments]
-        bcommand.do_command("testapp", environments)
-        client = boto3.client('ec2')
+        gen_keys = ["{env}-{app}".format(env=env,app=self.test_deploy_ctx.application) for env in environments]
+        bcommand.do_command(deploy_ctx=self.test_deploy_ctx, environments=environments)
+        client = boto3.client('ec2',  region_name=self.test_deploy_ctx.region)
         try:
             res = client.describe_key_pairs()
             known = pydash.pluck(res['KeyPairs'],'KeyName')
