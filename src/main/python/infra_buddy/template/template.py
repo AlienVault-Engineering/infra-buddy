@@ -72,7 +72,7 @@ class GitHubTemplate(URLTemplate):
 
     def __init__(self, service_type, values):
         super(GitHubTemplate, self).__init__(service_type=service_type,values=values)
-        tag = values.get('tag', 'master')
+        tag = values.pop('tag', 'master')
         self.download_url = "https://github.com/{owner}/{repo}/archive/{tag}.zip".format(tag=tag, **values)
         self._set_download_relative_path("{repo}-{tag}".format(tag=tag,**values))
 

@@ -3,8 +3,7 @@
     "autoscale": {
       "type": "github",
       "owner": "AlienVault-Engineering",
-      "repo": "service-modification-template-service-autoscale",
-      "tag":"v1"
+      "repo": "service-modification-template-service-autoscale"
     },
     "cluster-cpu-autoscale": {
       "type": "github",
