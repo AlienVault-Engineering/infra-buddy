@@ -74,7 +74,9 @@ class DeployContext(dict):
         """
         ret = DeployContext(defaults=defaults, environment=environment)
         ret['APPLICATION'] = application
+        ret['HAS_APPLICATION'] = application is not None
         ret['ROLE'] = role
+        ret['HAS_ROLE'] = role is not None
         ret._initialize_environment_variables()
         return ret
 

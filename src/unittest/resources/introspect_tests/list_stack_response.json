@@ -1,0 +1,18 @@
+{
+    "StackSummaries": [
+        {
+            "StackId": "arn:aws:cloudformation:us-west-2:271083817914:stack/prod-otxb-osmal-agent-sqs-threshold/e14ced20-916c-11e7-b7f2-500c33711061",
+            "StackName": "prod-otxb-osmal-agent-sqs-threshold",
+            "CreationTime": "2017-09-04T12:30:48.105Z",
+            "LastUpdatedTime": "2017-09-05T07:42:56.521Z",
+            "StackStatus": "UPDATE_COMPLETE"
+        },
+       {
+            "StackId": "arn:aws:cloudformation:us-west-2:271083817914:stack/prod-otxb-osmal-agent-sqs-threshold/e14ced20-916c-11e7-b7f2-500c33711061",
+            "StackName": "ci-otxb-osmal-agent-sqs-threshold",
+            "CreationTime": "2017-09-04T12:30:48.105Z",
+            "LastUpdatedTime": "2017-09-05T07:42:56.521Z",
+            "StackStatus": "UPDATE_COMPLETE"
+        }
+    ]
+}

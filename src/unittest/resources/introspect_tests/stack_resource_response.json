@@ -1,0 +1,32 @@
+{
+    "StackResourceSummaries": [
+        {
+            "ResourceType": "AWS::Logs::LogGroup",
+            "PhysicalResourceId": "ci-otxb-reputation-proxy-api-LogGroup-IK4ZPCD0AF4Y",
+            "LastUpdatedTimestamp": "2016-11-08T21:39:05.281Z",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "LogicalResourceId": "LogGroup"
+        },
+        {
+            "ResourceType": "AWS::ECS::Service",
+            "PhysicalResourceId": "arn:aws:ecs:us-west-2:271083817914:service/ci-otxb-reputation-proxy-api-Service-ZMFIJS7GYIHU",
+            "LastUpdatedTimestamp": "2016-11-08T21:40:19.862Z",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "LogicalResourceId": "Service"
+        },
+        {
+            "ResourceType": "AWS::IAM::Role",
+            "PhysicalResourceId": "ci-otxb-reputation-proxy-api-ServiceIAMRole-5813155AWTXH",
+            "LastUpdatedTimestamp": "2016-11-08T21:39:46.229Z",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "LogicalResourceId": "ServiceIAMRole"
+        },
+        {
+            "ResourceType": "AWS::ECS::TaskDefinition",
+            "PhysicalResourceId": "arn:aws:ecs:us-west-2:271083817914:task-definition/ci-otxb-reputation-proxy-api-TaskDefinition-K51MSXTNI1BD:1",
+            "LastUpdatedTimestamp": "2016-11-08T21:39:08.106Z",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "LogicalResourceId": "TaskDefinition"
+        }
+    ]
+}

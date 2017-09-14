@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 
 import boto3
 import botocore
@@ -19,6 +20,7 @@ class CloudFormationBuddy(object):
     def __init__(self, deploy_ctx):
         super(CloudFormationBuddy, self).__init__()
         self.exports = {}
+        self.resources = []
         self.deploy_ctx = deploy_ctx
         self.client = boto3.client('cloudformation', region_name=self.deploy_ctx.region)
         self.existing_change_set_id = None
@@ -212,19 +214,19 @@ class CloudFormationBuddy(object):
     def get_export_value(self, param=None, fully_qualified_param_name=None):
         if not fully_qualified_param_name:
             fully_qualified_param_name = "{stack_name}-{param}".format(stack_name=self.stack_name, param=param)
-        self._load_export_values()
+        if len(self.exports)==0: self._load_export_values()
         return self.exports.get(fully_qualified_param_name, None)
 
     def _load_export_values(self):
-        exports = self.client.list_exports()
-        export_list = exports['Exports']
+        export_results = self.client.list_exports()
+        export_list = export_results['Exports']
         while export_list is not None:
             for export in export_list:
                 self.exports[export['Name']] = export['Value']
-            next_ = exports.get('NextToken',None)
+            next_ = export_results.get('NextToken',None)
             if next_:
-                exports = self.client.list_exports(NextToken=next)
-                export_list = exports.get('Exports',None)
+                export_results = self.client.list_exports(NextToken=next_)
+                export_list = export_results.get('Exports',None)
             else:
                 export_list = None
 
@@ -236,5 +238,43 @@ class CloudFormationBuddy(object):
         print_utility.error("Could not locate parameter value: {}".format(param_val))
         return None
 
+    def get_resource_list(self):
+        if len(self.resources)== 0:
+            self.resources = self.load_stack_resources(self.stack_name)
+        return self.resources
 
-        
+    def load_stack_resources(self, to_inspect):
+        ret = []
+        res = self.client.list_stack_resources(StackName=to_inspect)
+        res_resources_list = res['StackResourceSummaries']
+        while res_resources_list is not None:
+            ret.extend(res_resources_list)
+            next_ = res.get('NextToken', None)
+            if next_:
+                res = self.client.list_stack_resources(StackName=to_inspect, NextToken=next_)
+                res_resources_list = res['StackResourceSummaries']
+            else:
+                res_resources_list = None
+        return ret
+
+    def list_stacks(self, filter=None):
+        ret = []
+        res = self.client.list_stacks(StackStatusFilter=['UPDATE_COMPLETE','CREATE_COMPLETE'])
+        res_stack_list = res['StackSummaries']
+        while res_stack_list is not None:
+            ret.extend(res_stack_list)
+            next_ = res.get('NextToken', None)
+            if next_:
+                res = self.client.list_stacks( StackStatusFilter=['UPDATE_COMPLETE','CREATE_COMPLETE'],NextToken=next_)
+                res_stack_list = res['StackSummaries']
+            else:
+                res_stack_list = None
+        pluck = pydash.pluck(ret, "StackName")
+        return [stack for stack in pluck if filter and stack.startswith(filter)]
+
+    def load_resources_for_stack_list(self, stacks):
+        resources = defaultdict(list)
+        for stack in stacks:
+            resources[stack] = self.load_stack_resources(stack)
+        return resources
+
