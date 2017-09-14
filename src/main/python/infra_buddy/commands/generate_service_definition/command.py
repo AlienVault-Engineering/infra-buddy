@@ -9,7 +9,8 @@ from infra_buddy.template.template import NamedLocalTemplate
 from infra_buddy.utility import print_utility
 
 
-@cli.command(name='generate-service-definition')
+@cli.command(name='generate-service-definition',
+             short_help="Generate a service definition for use by the deploy-service command.")
 @click.option("--template-directory", type=click.Path(exists=True), help="The directory containing "
                                                                          "the service template.")
 @click.option("--service-type", help="The service-type that corresponds with the provided template directory (or a "

@@ -7,7 +7,8 @@ from infra_buddy.template.template import NamedLocalTemplate
 from infra_buddy.utility import print_utility
 
 
-@cli.command(name='validate-template')
+@cli.command(name='validate-template',short_help="Analyze a service template or built-in service-type for logical "
+                                                 "errors and usability issues.")
 @click.option("--template-directory", type=click.Path(exists=True), help="The directory containing "
                                                                          "the service template.")
 @click.option("--service-type", help="The service-type that corresponds with the provided template directory.")

@@ -4,7 +4,8 @@ from infra_buddy.commandline import cli
 from infra_buddy.context.deploy_ctx import DeployContext
 
 
-@cli.command(name='deploy-service')
+@cli.command(name='deploy-service',short_help="Deploy and/or update a service as defined by a service definition "
+                                              "and an optional artifact definition.  Operation is idempotent.")
 @click.option("--dry-run", is_flag=True, help="Prints the execution plan and displays the evaluated "
                                                "parameter values for the deployment.")
 @click.pass_obj
