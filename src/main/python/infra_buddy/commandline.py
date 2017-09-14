@@ -48,3 +48,5 @@ from infra_buddy.commands.generate_artifact_manifest import command
 from infra_buddy.commands.generate_service_definition import command
 # noinspection PyUnresolvedReferences
 from infra_buddy.commands.bootstrap import command
+# noinspection PyUnresolvedReferences
+from infra_buddy.commands.introspect import command

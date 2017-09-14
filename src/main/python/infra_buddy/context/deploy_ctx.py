@@ -74,9 +74,7 @@ class DeployContext(dict):
         """
         ret = DeployContext(defaults=defaults, environment=environment)
         ret['APPLICATION'] = application
-        ret['HAS_APPLICATION'] = application is not None
         ret['ROLE'] = role
-        ret['HAS_ROLE'] = role is not None
         ret._initialize_environment_variables()
         return ret
 
@@ -106,6 +104,13 @@ class DeployContext(dict):
     def _initialize_environment_variables(self):
         application = self['APPLICATION']
         self['VPCAPP'] = application if not application or '-' not in application else application[:application.find('-')]
+        # allow for partial stack names for validation and introspection usecases
+        stack_template = "${ENVIRONMENT}"
+        if application:
+            stack_template += "-${APPLICATION}"
+            if self['ROLE']:
+                stack_template += "-${ROLE}"
+        env_variables[STACK_NAME] = stack_template
         self['DEPLOY_DATE'] = datetime.datetime.now().strftime("%b_%d_%Y_Time_%H_%M")
         for property_name in built_in:
             self.__dict__[property_name.lower()] = self.get(property_name, None)
@@ -221,3 +226,4 @@ class DeployContext(dict):
             new_val = self.stack_name_cache.pop()
             self._update_stack_name(new_val)
         self.current_deploy = None
+

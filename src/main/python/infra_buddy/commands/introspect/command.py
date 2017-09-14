@@ -21,14 +21,9 @@ def deploy_cloudformation(deploy_ctx,type_filter):
 
 
 def do_command(deploy_ctx,type_filter):
-    # type: (DeployContext,list) -> None
-    to_search = deploy_ctx.environment
-    if deploy_ctx.has_application:
-        to_search = "{existing}-{application}".format(existing=to_search,application=deploy_ctx.application)
-        if deploy_ctx.has_role:
-            to_search = "{existing}-{role}".format(existing=to_search,role=deploy_ctx.role)
+    # type: (DeployContext,str) -> None
     cf_buddy = CloudFormationBuddy(deploy_ctx=deploy_ctx)
-    stacks = cf_buddy.list_stacks(to_search)
+    stacks = cf_buddy.list_stacks(deploy_ctx.stack_name)
     resources = cf_buddy.load_resources_for_stack_list(stacks)
     for stack_name, resources in resources.iteritems():
         print_utility.banner("Stack: {}".format(stack_name))
