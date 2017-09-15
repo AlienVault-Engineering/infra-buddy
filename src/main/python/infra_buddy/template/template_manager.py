@@ -15,30 +15,29 @@ class TemplateManager(object):
     default_service_modification_templates = {}
 
     schema = {
-           "type": "object",
-           "additionalProperties": {
-               "type": "object",
-               "properties": {
-                   "type": {"type": "string"},
-                   "owner": {"type": "string"},
-                   "compatible": {
-                               "type": "array",
-                               "items": {
-                                   "type": "string"
-                               },
-                               "minItems": 1,
-                               "uniqueItems": True
-                           },
-                   "repo": {"type": "string"},
-                   "tag": {"type": "string"},
-                   "location": {"type": "string"},
-                   "url": {"type": "string"}
-               },
-               "required":["type"]
-           }
+        "type": "object",
+        "additionalProperties": {
+            "type": "object",
+            "properties": {
+                "type": {"type": "string"},
+                "owner": {"type": "string"},
+                "compatible": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": True
+                },
+                "repo": {"type": "string"},
+                "tag": {"type": "string"},
+                "location": {"type": "string"},
+                "url": {"type": "string"}
+            },
+            "required": ["type"]
+        }
 
-       }
-
+    }
 
     def __init__(self, user_default_service_templates=None, user_default_service_modification_tempaltes=None):
         # type: (DeployContext) -> None
@@ -51,34 +50,35 @@ class TemplateManager(object):
         modification_templates_ = built_in['service-modification-templates']
         validate(modification_templates_, self.schema)
         self._load_templates(modification_templates_, service_modification=True)
-        if user_default_service_templates:self._load_templates(user_default_service_templates)
-        if user_default_service_modification_tempaltes:self._load_templates(user_default_service_modification_tempaltes)
+        if user_default_service_templates: self._load_templates(user_default_service_templates)
+        if user_default_service_modification_tempaltes: self._load_templates(
+            user_default_service_modification_tempaltes)
 
     def get_known_service(self, service_type):
         # type: (str) -> Template
         return self.locate_service(service_type)
 
-    def get_known_service_modification(self,service_type, modification_name):
+    def get_known_service_modification(self, service_type, modification_name):
         # type: (str,str) -> Template
         return self.locate_service_modification(service_type=service_type, mod_type=modification_name)
 
-    def get_service_modifications_for_service(self,service_type):
+    def get_service_modifications_for_service(self, service_type):
         ret = {}
-        ret.update(self.service_modification_templates.get(service_type,{}))
+        ret.update(self.service_modification_templates.get(service_type, {}))
         ret.update(self.default_service_modification_templates)
         return ret
 
-    def get_known_template(self,template_name):
-        template = self.deploy_templates.get(template_name,self.default_service_modification_templates.get(template_name))
+    def get_known_template(self, template_name):
+        template = self.deploy_templates.get(template_name,
+                                             self.default_service_modification_templates.get(template_name))
         if not template:
             for service, template_map in self.service_modification_templates.iteritems():
-                template = template_map.get(template_name,None)
+                template = template_map.get(template_name, None)
         if template:
             template.download_template()
             return template
         else:
             print_utility.error("Unknown service template - {}".format(template_name), raise_exception=True)
-
 
     def get_resource_service(self, artifact_directory):
         # type: (str) -> Template
@@ -98,11 +98,17 @@ class TemplateManager(object):
 
     def locate_service_modification(self, service_type, mod_type):
         # type: (str, str) -> Template
-        template = self.service_modification_templates.get(service_type, {}).get(mod_type,None)
+        template = self.service_modification_templates.get(service_type, {}).get(mod_type, None)
         if not template:
-            template = self.default_service_modification_templates.get(mod_type,None)
+            template = self.default_service_modification_templates.get(mod_type, None)
         if not template:
-            print_utility.error("Unknown service modification '{}' for type '{}'".format(mod_type,service_type), raise_exception=True)
+            print_utility.error(
+                "Unknown service modification '{}' for type '{}'"
+                " Known modifications are {}".format(mod_type,
+                                                     service_type,
+                                                     self.get_service_modifications_for_service(
+                                                         service_type=service_type)),
+                raise_exception=True)
         template.download_template()
         return template
 
@@ -128,5 +134,3 @@ class TemplateManager(object):
                     self.service_modification_templates[service][name] = template
             else:
                 self.deploy_templates[name] = template
-
-
