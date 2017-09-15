@@ -100,7 +100,7 @@ class ServiceDefinition(object):
                                             template=resource_deploy,
                                             deploy_ctx=deploy_ctx))
         for mod in self.service_modifications:
-            template = template_manager.get_known_service_modification(mod)
+            template = template_manager.get_known_service_modification(self.service_type,mod)
             ret.append(CloudFormationDeploy(stack_name=deploy_ctx.generate_modification_stack_name(mod),
                                             template=template,
                                             deploy_ctx=deploy_ctx))

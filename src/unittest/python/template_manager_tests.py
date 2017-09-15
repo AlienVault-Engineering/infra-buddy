@@ -1,7 +1,6 @@
 import os
 import tempfile
 
-
 from infra_buddy.aws.s3 import CloudFormationDeployS3Buddy
 from infra_buddy.context.service_definition import ServiceDefinition
 from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
@@ -9,6 +8,7 @@ from testcase_parent import ParentTestCase
 # noinspection PyUnresolvedReferences
 from infra_buddy.commandline import cli
 from infra_buddy.commands.generate_service_definition import command as generate_command
+
 
 class TemplateManagerTestCase(ParentTestCase):
     def tearDown(self):
@@ -45,46 +45,50 @@ class TemplateManagerTestCase(ParentTestCase):
                                     "repo": "service-template-vpc"
                                 })
 
-
     def test_invalid_template(self):
         template = self.test_deploy_ctx.template_manager.get_resource_service(
-                ParentTestCase._get_resource_path("template_tests/invalid_template"))
-        self.assertIsNone(template,"Failed to return none for invalid template")
-
+            ParentTestCase._get_resource_path("template_tests/invalid_template"))
+        self.assertIsNone(template, "Failed to return none for invalid template")
         template = self.test_deploy_ctx.template_manager.get_resource_service(
-                ParentTestCase._get_resource_path("template_tests/valid_template"))
-        self.assertIsNotNone(template,"Failed to return deploy for valid template")
+            ParentTestCase._get_resource_path("template_tests/valid_template"))
+        self.assertIsNotNone(template, "Failed to return deploy for valid template")
 
     def test_validate_defaults(self):
-
-        template = self.test_deploy_ctx.template_manager.get_resource_service(ParentTestCase._get_resource_path("template_tests/valid_template"))
+        template = self.test_deploy_ctx.template_manager.get_resource_service(
+            ParentTestCase._get_resource_path("template_tests/valid_template"))
         deploy = CloudFormationDeploy(stack_name=self.test_deploy_ctx.resource_stack_name,
                                       template=template,
                                       deploy_ctx=self.test_deploy_ctx)
-        self.assertEqual(deploy.defaults['app'],"foo-with-string","Failed to render template value")
-        self.assertEqual(deploy.defaults['val'],"discrete","Failed to render template value")
-        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"unit-test-foo","Failed to render expected key value")
+        self.assertEqual(deploy.defaults['app'], "foo-with-string", "Failed to render template value")
+        self.assertEqual(deploy.defaults['val'], "discrete", "Failed to render template value")
+        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"), "unit-test-foo",
+                         "Failed to render expected key value")
         self.test_deploy_ctx.push_deploy_ctx(deploy)
-        self.assertEqual(self.test_deploy_ctx.stack_name,"unit-test-foo-bar-{}-resources".format(self.run_random_word),"Failed to update stack_name")
-        self.assertEqual(self.test_deploy_ctx.expandvars("${app}"),"foo-with-string","Failed to render deploy default")
-        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"override","Failed to render deploy default")
-        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME_2}"),"foo","Failed to render deploy default template")
+        self.assertEqual(self.test_deploy_ctx.stack_name, "unit-test-foo-bar-{}-resources".format(self.run_random_word),
+                         "Failed to update stack_name")
+        self.assertEqual(self.test_deploy_ctx.expandvars("${app}"), "foo-with-string",
+                         "Failed to render deploy default")
+        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"), "override", "Failed to render deploy default")
+        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME_2}"), "foo",
+                         "Failed to render deploy default template")
         self.test_deploy_ctx.pop_deploy_ctx()
-        self.assertEqual(self.test_deploy_ctx.stack_name,"unit-test-foo-bar-{}".format(self.run_random_word),"Failed to update stack_name after pop")
-        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"),"unit-test-foo","Failed to render expected key value after pop")
+        self.assertEqual(self.test_deploy_ctx.stack_name, "unit-test-foo-bar-{}".format(self.run_random_word),
+                         "Failed to update stack_name after pop")
+        self.assertEqual(self.test_deploy_ctx.expandvars("${KEY_NAME}"), "unit-test-foo",
+                         "Failed to render expected key value after pop")
 
     def test_validate_service_definition_generation(self):
         tempdir = tempfile.mkdtemp()
         try:
             generated = generate_command.do_command(self.test_deploy_ctx, service_template_directory=None,
-                                                  service_type="cluster", destination=tempdir)
+                                                    service_type="cluster", destination=tempdir)
             definition = ServiceDefinition(artifact_directory=os.path.dirname(generated), environment="dev")
-            self.assertIsNotNone(definition,"Failed to load service definition")
-            self.assertEqual(definition.service_type,"cluster","Did not do a good job")
-            self.assertEqual(definition.application,self.test_deploy_ctx.application,"Did not do a good job --application")
-            self.assertEqual(definition.role,self.test_deploy_ctx.role,"Did not do a good job --role")
-            self.assertTrue(os.path.exists(os.path.join(os.path.dirname(generated),"README.md")),"Did not generate readme.md")
+            self.assertIsNotNone(definition, "Failed to load service definition")
+            self.assertEqual(definition.service_type, "cluster", "Did not do a good job")
+            self.assertEqual(definition.application, self.test_deploy_ctx.application,
+                             "Did not do a good job --application")
+            self.assertEqual(definition.role, self.test_deploy_ctx.role, "Did not do a good job --role")
+            self.assertTrue(os.path.exists(os.path.join(os.path.dirname(generated), "README.md")),
+                            "Did not generate readme.md")
         finally:
             self.clean_dir(tempdir)
-
-

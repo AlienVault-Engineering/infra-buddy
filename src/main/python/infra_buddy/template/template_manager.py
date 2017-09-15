@@ -1,5 +1,6 @@
 import json
 import os
+from collections import defaultdict
 
 import click
 from jsonschema import validate
@@ -10,7 +11,8 @@ from infra_buddy.utility import print_utility
 
 class TemplateManager(object):
     deploy_templates = {}
-    service_modification_templates = {}
+    service_modification_templates = defaultdict(dict)
+    default_service_modification_templates = {}
 
     schema = {
            "type": "object",
@@ -19,6 +21,14 @@ class TemplateManager(object):
                "properties": {
                    "type": {"type": "string"},
                    "owner": {"type": "string"},
+                   "compatible": {
+                               "type": "array",
+                               "items": {
+                                   "type": "string"
+                               },
+                               "minItems": 1,
+                               "uniqueItems": True
+                           },
                    "repo": {"type": "string"},
                    "tag": {"type": "string"},
                    "location": {"type": "string"},
@@ -46,13 +56,29 @@ class TemplateManager(object):
 
     def get_known_service(self, service_type):
         # type: (str) -> Template
-        template = self.locate_service(service_type)
-        return template
+        return self.locate_service(service_type)
 
-    def get_known_service_modification(self, modification_name):
-        # type: (str) -> Template
-        template = self.locate_service(modification_name, modification=True)
-        return template
+    def get_known_service_modification(self,service_type, modification_name):
+        # type: (str,str) -> Template
+        return self.locate_service_modification(service_type=service_type, mod_type=modification_name)
+
+    def get_service_modifications_for_service(self,service_type):
+        ret = {}
+        ret.update(self.service_modification_templates.get(service_type,{}))
+        ret.update(self.default_service_modification_templates)
+        return ret
+
+    def get_known_template(self,template_name):
+        template = self.deploy_templates.get(template_name,self.default_service_modification_templates.get(template_name))
+        if not template:
+            for service, template_map in self.service_modification_templates.iteritems():
+                template = template_map.get(template_name,None)
+        if template:
+            template.download_template()
+            return template
+        else:
+            print_utility.error("Unknown service template - {}".format(template_name), raise_exception=True)
+
 
     def get_resource_service(self, artifact_directory):
         # type: (str) -> Template
@@ -62,26 +88,45 @@ class TemplateManager(object):
         except click.UsageError as e:
             return None
 
-    def locate_service(self, service_type, modification=False):
+    def locate_service(self, service_type):
         # type: (str, bool) -> Template
-        source = self.service_modification_templates if modification else self.deploy_templates
-        template = source.get(service_type, None)
+        template = self.deploy_templates.get(service_type, None)
         if not template:
             print_utility.error("Unknown service template - {}".format(service_type), raise_exception=True)
         template.download_template()
         return template
 
+    def locate_service_modification(self, service_type, mod_type):
+        # type: (str, str) -> Template
+        template = self.service_modification_templates.get(service_type, {}).get(mod_type,None)
+        if not template:
+            template = self.default_service_modification_templates.get(mod_type,None)
+        if not template:
+            print_utility.error("Unknown service modification template - {}".format(service_type), raise_exception=True)
+        template.download_template()
+        return template
+
     def _load_templates(self, templates, service_modification=False):
         # type: (dict, bool) -> None
-        target = self.service_modification_templates if service_modification else self.deploy_templates
         for name, values in templates.iteritems():
             type_ = values['type']
             if type_ == "github":
-                target[name] = GitHubTemplate(service_type=name, values=values)
+                template = GitHubTemplate(service_type=name, values=values)
             elif type_ == "s3":
-                target[name] = S3Template(service_type=name, values=values)
+                template = S3Template(service_type=name, values=values)
             elif type_ == "url":
-                target[name] = URLTemplate(service_type=name, values=values)
+                template = URLTemplate(service_type=name, values=values)
             else:
                 print_utility.error("Can not locate resource. Requested unknown template type - {}".format(type_),
                                     raise_exception=True)
+                raise Exception("")
+            if service_modification:
+                compatibility = values.get('compatible', [])
+                for service in compatibility:
+                    if service == "*":
+                        self.default_service_modification_templates[name] = template
+                    self.service_modification_templates[service][name] = template
+            else:
+                self.deploy_templates[name] = template
+
+
