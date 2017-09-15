@@ -102,7 +102,7 @@ class TemplateManager(object):
         if not template:
             template = self.default_service_modification_templates.get(mod_type,None)
         if not template:
-            print_utility.error("Unknown service modification template - {}".format(service_type), raise_exception=True)
+            print_utility.error("Unknown service modification '{}' for type '{}'".format(mod_type,service_type), raise_exception=True)
         template.download_template()
         return template
 

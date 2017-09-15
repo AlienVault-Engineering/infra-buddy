@@ -7,6 +7,6 @@
     "API_PATH":"bar"
   },
   "service-modifications": [
-    "autoscale"
+    "rds-aurora"
   ]
 }
