@@ -1,6 +1,8 @@
 import os
 import tempfile
 
+from infra_buddy.template.template_manager import TemplateManager
+
 from infra_buddy.aws.s3 import CloudFormationDeployS3Buddy
 from infra_buddy.context.service_definition import ServiceDefinition
 from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
@@ -92,3 +94,16 @@ class TemplateManagerTestCase(ParentTestCase):
                             "Did not generate readme.md")
         finally:
             self.clean_dir(tempdir)
+
+    def test_service_mod_load(self):
+        template_manager = TemplateManager()
+        self.assertTrue(template_manager.get_known_template('cluster'),"Failed to locate known template")
+        self.assertTrue(template_manager.get_known_service_modification("foo",'rds-aurora'),"Failed to locate wildcard service mod template")
+        self.assertTrue(template_manager.get_known_service_modification("batch-service",'autoscale'),"Failed to locate multi type service mod template")
+        self.assertTrue(template_manager.get_known_service_modification("ecs-service",'autoscale'),"Failed to locate multi type service mod template")
+        self.assertTrue(template_manager.get_known_service_modification("api-service",'autoscale'),"Failed to locate multi type service mod template")
+        self.assertTrue(template_manager.get_known_service_modification("default-api-service",'autoscale'),"Failed to locate multi type service mod template")
+        self.assertTrue(template_manager.get_known_template('autoscale'),"Failed to locate known template mod template")
+        self.assertTrue(template_manager.get_known_template('cluster'),"Failed to locate wildcard service mod template")
+
+
