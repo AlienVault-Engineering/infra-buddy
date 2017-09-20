@@ -82,7 +82,8 @@ class ArtifactDefinition(object):
             with open(artifact_def_path, 'r') as art_def:
                 return json.load(art_def)
         else:
-            print_utility.warn("Artifact definition (artifact.json) did not exist in artifact directory.")
+            print_utility.warn("Artifact definition (artifact.json) did not exist in artifact directory."
+                               " Continuing infrastructure update without artifact deploy.")
         return None
 
     def generate_execution_plan(self, deploy_ctx):

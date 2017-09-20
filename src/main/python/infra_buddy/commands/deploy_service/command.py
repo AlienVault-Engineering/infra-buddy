@@ -2,6 +2,7 @@ import click
 
 from infra_buddy.commandline import cli
 from infra_buddy.context.deploy_ctx import DeployContext
+from infra_buddy.utility import print_utility
 
 
 @cli.command(name='deploy-service',short_help="Deploy and/or update a service as defined by a service definition "
@@ -18,4 +19,5 @@ def do_command(deploy_ctx, dry_run):
     # type: (DeployContext,bool) -> None
     plan = deploy_ctx.get_execution_plan()
     for deploy in plan:
+        print_utility.info("Starting deployment: {}".format(str(deploy)))
         deploy.do_deploy(dry_run)

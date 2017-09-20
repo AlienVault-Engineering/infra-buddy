@@ -50,6 +50,11 @@ class CloudFormationBuddy(object):
 
     def delete_change_set(self):
         self._validate_changeset_operation_ready('delete_change_set')
+        if self.get_change_set_execution_status() == 'EXECUTE_FAILED':
+            print_utility.info(
+                "Skipping Delete ChangeSet - ChangeSetID: {} Execution Status Failed".format(
+                    self.existing_change_set_id))
+            return
         response = self.client.delete_change_set(ChangeSetName=self.existing_change_set_id)
         print_utility.info(
             "Deleted ChangeSet - ChangeSetID: {} Response: {}".format(self.existing_change_set_id, response))
@@ -179,8 +184,10 @@ class CloudFormationBuddy(object):
         if not success:
             raise Exception("Cloudformation stack failed to create")
 
-    def log_stack_status(self):
+    def log_stack_status(self, print_stack_events=False):
         print_utility.banner_warn("Stack Details: {}".format(self.stack_id), str(self.stack_description))
+        if print_stack_events:
+            self._print_stack_events()
 
     def log_changeset_status(self):
         print_utility.banner_warn("ChangeSet Details: {}".format(self.existing_change_set_id),
@@ -206,6 +213,7 @@ class CloudFormationBuddy(object):
         if success:
             self.deploy_ctx.notify_event(title=msg,
                                          type="success")
+            print_utility.warn(msg)
         else:
             self.deploy_ctx.notify_event(title=msg,
                                          type="error")
@@ -214,7 +222,7 @@ class CloudFormationBuddy(object):
     def get_export_value(self, param=None, fully_qualified_param_name=None):
         if not fully_qualified_param_name:
             fully_qualified_param_name = "{stack_name}-{param}".format(stack_name=self.stack_name, param=param)
-        if len(self.exports)==0: self._load_export_values()
+        if len(self.exports) == 0: self._load_export_values()
         return self.exports.get(fully_qualified_param_name, None)
 
     def _load_export_values(self):
@@ -223,23 +231,23 @@ class CloudFormationBuddy(object):
         while export_list is not None:
             for export in export_list:
                 self.exports[export['Name']] = export['Value']
-            next_ = export_results.get('NextToken',None)
+            next_ = export_results.get('NextToken', None)
             if next_:
                 export_results = self.client.list_exports(NextToken=next_)
-                export_list = export_results.get('Exports',None)
+                export_list = export_results.get('Exports', None)
             else:
                 export_list = None
 
     def get_existing_parameter_value(self, param_val):
         self._describe_stack()
-        for param in self.stack_description.get('Parameters',[]):
+        for param in self.stack_description.get('Parameters', []):
             if param['ParameterKey'] == param_val:
                 return param['ParameterValue']
         print_utility.error("Could not locate parameter value: {}".format(param_val))
         return None
 
     def get_resource_list(self):
-        if len(self.resources)== 0:
+        if len(self.resources) == 0:
             self.resources = self.load_stack_resources(self.stack_name)
         return self.resources
 
@@ -259,13 +267,13 @@ class CloudFormationBuddy(object):
 
     def list_stacks(self, filter=None):
         ret = []
-        res = self.client.list_stacks(StackStatusFilter=['UPDATE_COMPLETE','CREATE_COMPLETE'])
+        res = self.client.list_stacks(StackStatusFilter=['UPDATE_COMPLETE', 'CREATE_COMPLETE'])
         res_stack_list = res['StackSummaries']
         while res_stack_list is not None:
             ret.extend(res_stack_list)
             next_ = res.get('NextToken', None)
             if next_:
-                res = self.client.list_stacks( StackStatusFilter=['UPDATE_COMPLETE','CREATE_COMPLETE'],NextToken=next_)
+                res = self.client.list_stacks(StackStatusFilter=['UPDATE_COMPLETE', 'CREATE_COMPLETE'], NextToken=next_)
                 res_stack_list = res['StackSummaries']
             else:
                 res_stack_list = None
@@ -278,3 +286,19 @@ class CloudFormationBuddy(object):
             resources[stack] = self.load_stack_resources(stack)
         return resources
 
+    def _print_stack_events(self):
+        events = []
+        res = self.client.describe_stack_events(StackName=self.stack_name)
+        res_list = res['StackEvents']
+        while res_list is not None:
+            events.extend(res_list)
+            next_ = res.get('NextToken', None)
+            if next_:
+                res = self.client.describe_stack_events(StackName=self.stack_name, NextToken=next_)
+                res_list = res['StackEvents']
+            else:
+                res_list = None
+        for ev in events:
+            print_utility.warn(
+                "{Timestamp}\t{ResourceStatus}\t{ResourceType}\t{LogicalResourceId}\t{ResourceStatusReason}".format(
+                    **ev))

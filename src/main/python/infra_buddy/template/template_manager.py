@@ -84,7 +84,10 @@ class TemplateManager(object):
         # type: (str) -> Template
         try:
             template = NamedLocalTemplate(artifact_directory)
-            return template
+            if template.valid:
+                return template
+            else:
+                return None
         except click.UsageError as e:
             return None
 

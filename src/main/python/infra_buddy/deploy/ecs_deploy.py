@@ -18,9 +18,12 @@ class ECSDeploy(Deploy):
             return None
         if self.ecs_buddy.requires_update():
             self.ecs_buddy.perform_update()
+
+            print_utility.warn("ECS Deploy updated service {} to use image {}".format(self.ecs_buddy.ecs_service,
+                                                                                           self.ecs_buddy.new_image))
             return True
         else:
-            print_utility.info("ECS using already using image - "
+            print_utility.warn("ECS already using image - "
                                "{artifact_location}:{artifact_id}".
                                format(artifact_location=self.artifact_location,
                                       artifact_id=self.artifact_id))

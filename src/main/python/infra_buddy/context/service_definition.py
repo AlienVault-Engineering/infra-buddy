@@ -99,6 +99,8 @@ class ServiceDefinition(object):
             ret.append(CloudFormationDeploy(stack_name=deploy_ctx.resource_stack_name,
                                             template=resource_deploy,
                                             deploy_ctx=deploy_ctx))
+        else:
+            print_utility.info("Addition resource template not located (aws-resources.template).")
         for mod in self.service_modifications:
             template = template_manager.get_known_service_modification(self.service_type,mod)
             ret.append(CloudFormationDeploy(stack_name=deploy_ctx.generate_modification_stack_name(mod),
