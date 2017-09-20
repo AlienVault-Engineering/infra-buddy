@@ -50,7 +50,7 @@ class CloudFormationBuddy(object):
 
     def delete_change_set(self):
         self._validate_changeset_operation_ready('delete_change_set')
-        if self.get_change_set_execution_status() == 'EXECUTE_FAILED':
+        if self.get_change_set_execution_status(refresh=True) == 'EXECUTE_FAILED':
             print_utility.info(
                 "Skipping Delete ChangeSet - ChangeSetID: {} Execution Status Failed".format(
                     self.existing_change_set_id))
