@@ -109,15 +109,9 @@ class CloudFormationBuddy(object):
             success = True
         except WaiterError as we:
             success = False
-
-        # final_status = self.get_stack_status()
-        # for in_progress in ["UPDATE_IN_PROGRESS", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS"]:
-        #     final_status = waitfor(self.get_stack_status, in_progress, interval_seconds=10, max_attempts=300,
-        #                            negate=True, args={"refresh": True})
-        # success = final_status == "UPDATE_COMPLETE"
         self._finish_update_event(action, success)
         if not success:
-            self._clean_change_set_and_exit(failed=True)
+            self._clean_change_set_and_exit(failed=True,failure_stage='execute')
 
     def _validate_changeset_operation_ready(self, operation):
         if not self.existing_change_set_id:
@@ -173,7 +167,7 @@ class CloudFormationBuddy(object):
             success = True
         except WaiterError as we:
             self.stack_description = we.last_response
-            self.log_stack_status()
+            self.log_stack_status(print_stack_events=True)
             success = False
         # final_status = self.get_stack_status()
         # final_status = waitfor(self.get_stack_status, "CREATE_IN_PROGRESS", interval_seconds=10, max_attempts=300,
@@ -193,10 +187,10 @@ class CloudFormationBuddy(object):
         print_utility.banner_warn("ChangeSet Details: {}".format(self.existing_change_set_id),
                                   str(self.change_set_description))
 
-    def _clean_change_set_and_exit(self, failed=False):
+    def _clean_change_set_and_exit(self, failed=False, failure_stage='create'):
         self.delete_change_set()
         if failed:
-            raise Exception("FAILED: Could not create changeset")
+            raise Exception("FAILED: Could not {} changeset".format(failure_stage))
         else:
             raise NOOPException("No change to execute")
         pass
@@ -217,7 +211,7 @@ class CloudFormationBuddy(object):
         else:
             self.deploy_ctx.notify_event(title=msg,
                                          type="error")
-            self.log_stack_status()
+            self.log_stack_status(print_stack_events=True)
 
     def get_export_value(self, param=None, fully_qualified_param_name=None):
         if not fully_qualified_param_name:
