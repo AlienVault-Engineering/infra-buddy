@@ -83,7 +83,7 @@ class TemplateManager(object):
     def get_resource_service(self, artifact_directory):
         # type: (str) -> Template
         try:
-            template = NamedLocalTemplate(artifact_directory)
+            template = NamedLocalTemplate(artifact_directory,err_on_failure_to_locate=False)
             if template.valid:
                 return template
             else:
