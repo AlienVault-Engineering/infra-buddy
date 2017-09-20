@@ -41,10 +41,12 @@ class Template(object):
             if err_on_failure_to_locate: print_utility.error("Template file could not be "
                                                              "located for service - {service_type}".format(
                 service_type=self.service_type), raise_exception=True)
+            return
         if not os.path.exists(self.get_parameter_file_path()):
             if err_on_failure_to_locate: print_utility.error("Parameter file could not be "
                                                              "located for service - {service_type}".format(
                 service_type=self.service_type), raise_exception=True)
+            return
         self.valid = True
 
     def _prep_download(self):
