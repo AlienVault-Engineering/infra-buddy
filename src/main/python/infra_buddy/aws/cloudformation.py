@@ -72,11 +72,12 @@ class CloudFormationBuddy(object):
         )
         self.existing_change_set_id = resp['Id']
         self.stack_id = resp['StackId']
-        print_utility.info("Created ChangeSet - ChangeSetID: {} StackID: {}".format(resp['Id'], resp['StackId']))
+        print_utility.info("Created ChangeSet:\nChangeSetID: {}\nStackID: {}\n{}".format(resp['Id'],
+                                                                                        resp['StackId'],
+                                                                                        pformat(resp,indent=1)))
         waiter = self.client.get_waiter('change_set_create_complete')
         try:
             waiter.wait(ChangeSetName=self.deploy_ctx.change_set_name, StackName=self.stack_id)
-            # status = self.get_change_set_status(refresh=True) #waitfor(self.get_change_set_status, ['CREATE_PENDING','CREATE_IN_PROGRESS'], 10, 300, args={"refresh": True},negate=True)
         except WaiterError as we:
             self.change_set_description = we.last_response
             self.log_changeset_status()
