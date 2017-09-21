@@ -44,8 +44,11 @@ def calculate_rule_priority(deploy_ctx,stack_name):
         return cf.get_existing_parameter_value('RulePriority')
     else:
         listenerArn = _get_cluster_stack_export_value(cf,deploy_ctx,"ListenerARN")
-        client = boto3.client('elbv2',region_name=deploy_ctx.region)
-        rules = client.describe_rules(ListenerArn=listenerArn)['Rules']
+        if listenerArn:
+            client = boto3.client('elbv2',region_name=deploy_ctx.region)
+            rules = client.describe_rules(ListenerArn=listenerArn)['Rules']
+        else:
+            rules = None
         if not rules or len(rules)==0:
             current_max = 30
         else:
