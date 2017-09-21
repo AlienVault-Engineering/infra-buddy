@@ -18,13 +18,15 @@ class S3Buddy(object):
         try:
             self.bucket.create(CreateBucketConfiguration={'LocationConstraint': self.deploy_ctx.region})
         except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:
-            pass
+            if 'BucketAlreadyOwnedByYou' not in str(err):
+                print_utility.info("Error during bucket create - {}".format(str(err)))
         self.bucket_name = bucket_name
         self.deploy_ctx = deploy_ctx
         self.s3 = boto3.resource('s3', region_name=self.deploy_ctx.region)
         self.key_root_path = root_path
         self.url_base = "https://s3-{region}.amazonaws.com/{bucket_name}".format(region=self.deploy_ctx.region,
                                                                                  bucket_name=self.bucket_name)
+
 
     def upload(self, file, key_name=None):
         key_name = self._get_upload_bucket_key_name(file, key_name)

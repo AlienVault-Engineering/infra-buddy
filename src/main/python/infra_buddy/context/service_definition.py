@@ -89,7 +89,7 @@ class ServiceDefinition(object):
             self.service_modifications = service_definition.get(_MODIFICATIONS, [])
 
     def generate_execution_plan(self, template_manager, deploy_ctx):
-        # type: (TemplateManager) -> list
+        # type: (TemplateManager) -> list(Deploy)
         ret = []
         ret.append(CloudFormationDeploy(stack_name=deploy_ctx.stack_name,
                                         template=template_manager.get_known_service(self.service_type),

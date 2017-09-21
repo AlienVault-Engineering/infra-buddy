@@ -235,17 +235,20 @@ class CloudFormationDeploy(Deploy):
         # render our parameter files
         parameter_file_rendered = self.get_rendered_param_file()
         # see if we are updating or creating
-        if cloud_formation.does_stack_exist():
+        if cloud_formation.should_create_change_set():
             cloud_formation.create_change_set(template_file_url=template_file_url,
                                               parameter_file=parameter_file_rendered)
-            # make sure it is avaiable and that there are no special conditions
+            # make sure it is available and that there are no special conditions
             if cloud_formation.should_execute_change_set():
+                print_utility.progress("Updating existing stack with ChangeSet - {}".format(self.stack_name))
                 cloud_formation.execute_change_set()
             else:
+                print_utility.progress("No computed changes for stack - {}".format(self.stack_name))
                 # if there are no changes then clean up and exit
                 cloud_formation.delete_change_set()
                 return
         else:
+            print_utility.progress("Creating new stack - {}".format(self.stack_name))
             cloud_formation.create_stack(template_file_url=template_file_url,
                                          parameter_file=parameter_file_rendered)
 

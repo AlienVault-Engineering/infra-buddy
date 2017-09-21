@@ -19,3 +19,6 @@ class Deploy(object):
     def _internal_deploy(self,dry_run):
         pass
 
+    def __str__(self):
+        return "{} - {}".format(self.__class__.__name__,self.stack_name)
+

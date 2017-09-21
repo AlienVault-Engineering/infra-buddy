@@ -179,7 +179,7 @@ class DeployContext(dict):
             os.remove(file)
 
     def get_execution_plan(self):
-        # type: () -> list(CloudFormationDeploy)
+        # type: () -> list(Deploy)
         service_plan = self.service_definition.generate_execution_plan(self.template_manager, self)
         artifact_plan = self.artifact_definition.generate_execution_plan(self)
         if artifact_plan:

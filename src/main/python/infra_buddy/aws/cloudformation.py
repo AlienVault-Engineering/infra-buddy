@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from pprint import pformat
 
 import boto3
 import botocore
@@ -36,7 +37,7 @@ class CloudFormationBuddy(object):
         try:
             stacks = self.client.describe_stacks(StackName=self.stack_name)['Stacks']
             if len(stacks) >= 1:
-                print_utility.info("Persisting stacks - {}".format(stacks))
+                print_utility.info("Stack Description - {}".format(pformat(stacks)))
                 self.stack_description = stacks[0]
                 self.stack_id = self.stack_description['StackId']
                 return True
@@ -128,11 +129,20 @@ class CloudFormationBuddy(object):
             if pydash.get(changes_[0], 'ResourceChange.ResourceType') == "AWS::ECS::Service":
                 if pydash.get(changes_[1], 'ResourceChange.ResourceType') == "AWS::ECS::TaskDefinition":
                     if self.deploy_ctx.should_skip_ecs_trivial_update():
-                        print_utility.warn(
+                        print_utility.info(
                             "WARN: Skipping changeset update because no computed changes except to service & task "
-                            "rerun with SKIP_SKIP=True to force")
+                            "rerun with SKIP_ECS=True to force")
                         return False
         return True
+
+    def should_create_change_set(self):
+        exists = self.does_stack_exist()
+        if exists:
+            if self.get_stack_status() == 'ROLLBACK_COMPLETE':
+                print_utility.error("Can not update stack in state 'ROLLBACK_COMPLETE' -"
+                                    " delete stack to recreate.",
+                                    raise_exception=True)
+        return exists
 
     def create_stack(self, template_file_url, parameter_file):
         action = 'create-stack'
@@ -167,7 +177,6 @@ class CloudFormationBuddy(object):
             success = True
         except WaiterError as we:
             self.stack_description = we.last_response
-            self.log_stack_status(print_stack_events=True)
             success = False
         # final_status = self.get_stack_status()
         # final_status = waitfor(self.get_stack_status, "CREATE_IN_PROGRESS", interval_seconds=10, max_attempts=300,
@@ -179,7 +188,7 @@ class CloudFormationBuddy(object):
             raise Exception("Cloudformation stack failed to create")
 
     def log_stack_status(self, print_stack_events=False):
-        print_utility.banner_warn("Stack Details: {}".format(self.stack_id), str(self.stack_description))
+        print_utility.banner_warn("Stack Details: {}".format(self.stack_id), pformat(self.stack_description,indent=2))
         if print_stack_events:
             self._print_stack_events()
 
@@ -293,6 +302,8 @@ class CloudFormationBuddy(object):
             else:
                 res_list = None
         for ev in events:
-            print_utility.warn(
-                "{Timestamp}\t{ResourceStatus}\t{ResourceType}\t{LogicalResourceId}\t{ResourceStatusReason}".format(
-                    **ev))
+            if "ResourceStatusReason" in ev:
+                template = "{Timestamp}\t{ResourceStatus}\t{ResourceType}\t{LogicalResourceId}\t{ResourceStatusReason}"
+            else:
+                template = "{Timestamp}\t{ResourceStatus}\t{ResourceType}\t{LogicalResourceId}"
+            print_utility.warn(template.format(**ev))

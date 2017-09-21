@@ -14,6 +14,9 @@ def info(msg):
 
 def warn(msg):
     click.secho(msg, fg="yellow")
+    
+def progress(msg):
+    click.secho(msg,fg='blue')
 
 
 def banner_warn(msg, data):

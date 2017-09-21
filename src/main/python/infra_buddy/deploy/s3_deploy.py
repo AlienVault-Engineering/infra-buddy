@@ -32,7 +32,7 @@ class S3Deploy(Deploy):
             else:
                 path = ''
             s3 = S3Buddy(self.deploy_ctx, path, split[0])
-            print_utility.warn("S3 Deploy: Uploading files to - {}".format(destination_bucket))
+            print_utility.progress("S3 Deploy: Uploading files to - {}".format(destination_bucket))
             for s3_key, path in to_upload.iteritems():
                 print_utility.info("{} - {}".format(destination_bucket, s3_key))
                 s3.upload(key_name=s3_key, file=path)
@@ -49,13 +49,7 @@ class S3Deploy(Deploy):
                 rel_paths[relative_path] = local_path
         return rel_paths
 
-        #
-        #  react-build-artifacts/react/web/web-dist-200.zip
-        # set -e
-        # WEB_DIST_SOURCENAME=$(cat web-dist.txt)
-        # ENVIRONMENT=${bamboo.deploy.environment}
-        # aws s3 cp s3://${WEB_DIST_SOURCENAME} .
-        # FILE=$(basename ${WEB_DIST_SOURCENAME})
-        # unzip ${FILE}
-        # cd dist
-        # aws s3 sync . s3://${ENVIRONMENT}-www-files
+    def __str__(self):
+       return "{} - {}:{}".format(self.__class__.__name__,self.location,self.artifact_id)
+
+

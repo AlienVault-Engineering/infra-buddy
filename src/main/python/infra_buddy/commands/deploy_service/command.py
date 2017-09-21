@@ -1,8 +1,12 @@
 import click
+import time
+
+import datetime
 
 from infra_buddy.commandline import cli
 from infra_buddy.context.deploy_ctx import DeployContext
 from infra_buddy.utility import print_utility
+current_milli_time = lambda: int(round(time.time() * 1000))
 
 
 @cli.command(name='deploy-service',short_help="Deploy and/or update a service as defined by a service definition "
@@ -19,5 +23,8 @@ def do_command(deploy_ctx, dry_run):
     # type: (DeployContext,bool) -> None
     plan = deploy_ctx.get_execution_plan()
     for deploy in plan:
-        print_utility.info("Starting deployment: {}".format(str(deploy)))
+        start = current_milli_time()
+        print_utility.progress("Starting Deployment: {}".format(str(deploy)))
         deploy.do_deploy(dry_run)
+        delta = current_milli_time() - start
+        print_utility.progress("Finished Deployment in {}: {}".format(datetime.timedelta(milliseconds=delta),str(deploy)))

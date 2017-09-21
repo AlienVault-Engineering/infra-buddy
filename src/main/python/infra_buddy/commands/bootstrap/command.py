@@ -12,7 +12,7 @@ from infra_buddy.utility import print_utility
 
 
 @cli.command(name='bootstrap', short_help="Generate keys for a new environment to be managed by infra-buddy.")
-@click.argument('--environments', nargs=-1)
+@click.argument('environments', nargs=-1)
 @click.pass_obj
 def deploy_cloudformation(deploy_ctx, environments):
     # type: (DeployContext,list) -> None
