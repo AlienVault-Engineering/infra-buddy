@@ -180,11 +180,14 @@ class DeployContext(dict):
 
     def get_execution_plan(self):
         # type: () -> list(Deploy)
-        service_plan = self.service_definition.generate_execution_plan(self.template_manager, self)
+        execution_plan = self.service_definition.generate_execution_plan(self.template_manager, self)
         artifact_plan = self.artifact_definition.generate_execution_plan(self)
         if artifact_plan:
-            service_plan.append(artifact_plan)
-        return service_plan
+            execution_plan.append(artifact_plan)
+        print_utility.progress("Execution Plan:")
+        for deploy in execution_plan:
+            print_utility.progress("\t"+str(deploy))
+        return execution_plan
 
     def expandvars(self, template_string, aux_dict=None):
         if not template_string: return template_string #if you pass none, return none

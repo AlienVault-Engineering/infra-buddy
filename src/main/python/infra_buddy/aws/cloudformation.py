@@ -81,10 +81,12 @@ class CloudFormationBuddy(object):
         except WaiterError as we:
             self.change_set_description = we.last_response
             self.log_changeset_status()
-            status_reason_ = self.change_set_description['StatusReason']
-            terminal = "The submitted information didn't contain changes. Submit different information to create a change set." != status_reason_
-            print_utility.info("ChangeSet Failed to Create - {}".format(status_reason_))
-            self._clean_change_set_and_exit(failed=terminal)
+            noop =  self._is_noop_changeset()
+            print_utility.info("ChangeSet Failed to Create - {}".format(self.change_set_description['StatusReason']))
+            if not noop: self._clean_change_set_and_exit()
+
+    def _is_noop_changeset(self):
+        return "The submitted information didn't contain changes." in self.change_set_description.get('StatusReason','')
 
     def get_change_set_status(self, refresh=False):
         self._validate_changeset_operation_ready('get_change_set_status')
@@ -121,10 +123,9 @@ class CloudFormationBuddy(object):
 
     def should_execute_change_set(self):
         self._validate_changeset_operation_ready('should_execute_change_set')
-        if "AVAILABLE" != self.get_change_set_execution_status():
-            waitfor(self.get_change_set_execution_status, expected_result="AVAILABLE",
-                    interval_seconds=10,
-                    max_attempts=10, args={"refresh": True})
+        self.describe_change_set()
+        if self._is_noop_changeset():
+            return False
         changes_ = self.change_set_description['Changes']
         if len(changes_) == 2:
             if pydash.get(changes_[0], 'ResourceChange.ResourceType') == "AWS::ECS::Service":
@@ -179,10 +180,6 @@ class CloudFormationBuddy(object):
         except WaiterError as we:
             self.stack_description = we.last_response
             success = False
-        # final_status = self.get_stack_status()
-        # final_status = waitfor(self.get_stack_status, "CREATE_IN_PROGRESS", interval_seconds=10, max_attempts=300,
-        #                        negate=True, args={"refresh": True})
-        # success = final_status == "CREATE_COMPLETE"
         self._finish_update_event(action, success)
         print_utility.info("Created Stack -  StackID: {}".format(resp['StackId']))
         if not success:
@@ -201,9 +198,6 @@ class CloudFormationBuddy(object):
         self.delete_change_set()
         if failed:
             raise Exception("FAILED: Could not {} changeset".format(failure_stage))
-        else:
-            raise NOOPException("No change to execute")
-        pass
 
     def _start_update_event(self, action):
         self.deploy_ctx.notify_event(
@@ -214,10 +208,10 @@ class CloudFormationBuddy(object):
         msg = "{action} stack {stack_name} {status}".format(action=action,
                                                             stack_name=self.deploy_ctx.stack_name,
                                                             status='completed' if success else 'failed')
+        print_utility.progress(msg)
         if success:
             self.deploy_ctx.notify_event(title=msg,
                                          type="success")
-            print_utility.warn(msg)
         else:
             self.deploy_ctx.notify_event(title=msg,
                                          type="error")

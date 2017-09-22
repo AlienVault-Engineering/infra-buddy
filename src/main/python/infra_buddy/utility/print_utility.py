@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import click
 
 VERBOSE = False
@@ -14,9 +16,10 @@ def info(msg):
 
 def warn(msg):
     click.secho(msg, fg="yellow")
-    
+
+
 def progress(msg):
-    click.secho(msg,fg='blue')
+    click.secho(msg, fg='blue')
 
 
 def banner_warn(msg, data):
@@ -24,8 +27,8 @@ def banner_warn(msg, data):
     info_banner(data)
 
 
-def error(err_msg,raise_exception=False):
-    click.secho(err_msg,fg="red")
+def error(err_msg, raise_exception=False):
+    click.secho(err_msg, fg="red")
     if raise_exception:
         raise click.UsageError(err_msg)
 
@@ -35,3 +38,15 @@ def banner(data):
 
 def info_banner(data):
     click.secho(data, fg='green')
+
+def print_time_delta(tdelta):
+    # type: (timedelta) -> object
+    d = {"days": tdelta.days}
+    d["hours"], rem = divmod(tdelta.seconds, 3600)
+    d["minutes"], d["seconds"] = divmod(rem, 60)
+    format_ = "{minutes}:{seconds}"
+    if d['days'] > 0:
+        format_ = "{days} days " + format_
+    if d['hours'] > 0:
+        format_ = "{hours}:" + format_
+    return format_.format(**d)
