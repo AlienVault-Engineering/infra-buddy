@@ -50,7 +50,7 @@ class ECSBuddy(object):
             new_task_def['containerDefinitions'][0]['memoryReservation'] = self.deploy_ctx['TASK_SOFT_MEMORY']
         if 'TASK_CPU' in self.deploy_ctx and self.deploy_ctx['TASK_CPU']:
             new_task_def['containerDefinitions'][0]['cpu'] = self.deploy_ctx['TASK_CPU']
-        updated_task_definition = self.client.register_task_definition(new_task_def)['taskDefinition']
+        updated_task_definition = self.client.register_task_definition(**new_task_def)['taskDefinition']
         new_task_def_arn = updated_task_definition['taskDefinitionArn']
         self.deploy_ctx.notify_event(
             title="Update of ecs service {service} started".format(service=self.ecs_service),
