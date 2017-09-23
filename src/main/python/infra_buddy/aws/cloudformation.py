@@ -80,10 +80,11 @@ class CloudFormationBuddy(object):
             waiter.wait(ChangeSetName=self.deploy_ctx.change_set_name, StackName=self.stack_id)
         except WaiterError as we:
             self.change_set_description = we.last_response
-            self.log_changeset_status()
-            noop =  self._is_noop_changeset()
+            noop = self._is_noop_changeset()
             print_utility.info("ChangeSet Failed to Create - {}".format(self.change_set_description['StatusReason']))
-            if not noop: self._clean_change_set_and_exit()
+            if not noop:
+                self.log_changeset_status()
+                self._clean_change_set_and_exit()
 
     def _is_noop_changeset(self):
         return "The submitted information didn't contain changes." in self.change_set_description.get('StatusReason','')
@@ -191,9 +192,13 @@ class CloudFormationBuddy(object):
         if print_stack_events:
             self._print_stack_events()
 
-    def log_changeset_status(self):
-        print_utility.banner_warn("ChangeSet Details: {}".format(self.existing_change_set_id),
-                                  str(self.change_set_description))
+    def log_changeset_status(self, warn=True):
+        if warn:
+            print_utility.banner_warn("ChangeSet Details: {}".format(self.existing_change_set_id),
+                                  pformat(self.change_set_description))
+        else:
+            print_utility.info("ChangeSet Details: {}".format(self.existing_change_set_id))
+            print_utility.info_banner(pformat(self.change_set_description))
 
     def _clean_change_set_and_exit(self, failed=False, failure_stage='create'):
         self.delete_change_set()
