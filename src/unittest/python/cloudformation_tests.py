@@ -39,7 +39,7 @@ class CloudFormationTestCase(ParentTestCase):
             try:
                 cloudformation.create_change_set(template_file_url=template_file_url,
                                                  parameter_file=parameter_file_rendered)
-                self.fail("Failed to identify noop changeset")
+                self.assertFalse(cloudformation.should_execute_change_set(),"Failed to id noop changeset")
             except NOOPException as noop:
                 pass
             self.test_deploy_ctx['RANDOM'] = self.randomWord(5)
@@ -49,6 +49,8 @@ class CloudFormationTestCase(ParentTestCase):
                                                  parameter_file=parameter_file_rendered)
                 self.assertEqual(cloudformation.get_change_set_status(refresh=True), "CREATE_COMPLETE",
                                  "Did not get expected cs status")
+                self.assertTrue(cloudformation.should_execute_change_set(),"Failed to id good changeset")
+
             except NOOPException as noop:
                 self.fail("Failed to identify updated changeset")
             if not cloudformation.should_execute_change_set():

@@ -90,16 +90,17 @@ class CloudFormationBuddy(object):
 
     def get_change_set_status(self, refresh=False):
         self._validate_changeset_operation_ready('get_change_set_status')
-        if not self.change_set_description or refresh: self.describe_change_set()
+        self.describe_change_set(refresh=refresh)
         return self.change_set_description['Status']
 
-    def describe_change_set(self):
+    def describe_change_set(self,refresh=False):
         self._validate_changeset_operation_ready('describe_change_set')
-        self.change_set_description = self.client.describe_change_set(ChangeSetName=self.existing_change_set_id)
+        if not self.change_set_description or refresh:
+            self.change_set_description = self.client.describe_change_set(ChangeSetName=self.existing_change_set_id)
 
     def get_change_set_execution_status(self, refresh=False):
         self._validate_changeset_operation_ready('get_change_set_execution_status')
-        if not self.change_set_description or refresh: self.describe_change_set()
+        self.describe_change_set(refresh=refresh)
         return self.change_set_description['ExecutionStatus']
 
     def execute_change_set(self):
