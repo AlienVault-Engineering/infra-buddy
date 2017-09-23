@@ -186,7 +186,7 @@ class DeployContext(dict):
             execution_plan.append(artifact_plan)
         print_utility.progress("Execution Plan:")
         for deploy in execution_plan:
-            print_utility.progress("\t"+str(deploy))
+            print_utility.info_banner("\t"+str(deploy))
         return execution_plan
 
     def expandvars(self, template_string, aux_dict=None):

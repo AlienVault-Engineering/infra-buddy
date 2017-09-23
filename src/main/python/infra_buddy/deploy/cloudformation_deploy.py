@@ -243,7 +243,7 @@ class CloudFormationDeploy(Deploy):
                 print_utility.progress("Updating existing stack with ChangeSet - {}".format(self.stack_name))
                 cloud_formation.execute_change_set()
             else:
-                print_utility.progress("No computed changes for stack - {}".format(self.stack_name))
+                print_utility.warn("No computed changes for stack - {}".format(self.stack_name))
                 # if there are no changes then clean up and exit
                 cloud_formation.delete_change_set()
                 return

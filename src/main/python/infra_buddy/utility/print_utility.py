@@ -44,9 +44,9 @@ def print_time_delta(tdelta):
     d = {"days": tdelta.days}
     d["hours"], rem = divmod(tdelta.seconds, 3600)
     d["minutes"], d["seconds"] = divmod(rem, 60)
-    format_ = "{minutes}:{seconds}"
+    format_ = "{minutes}m {seconds}s"
     if d['days'] > 0:
         format_ = "{days} days " + format_
     if d['hours'] > 0:
-        format_ = "{hours}:" + format_
+        format_ = "{hours}h " + format_
     return format_.format(**d)
