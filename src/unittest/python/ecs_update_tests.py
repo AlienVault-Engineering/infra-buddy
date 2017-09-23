@@ -15,7 +15,7 @@ class FakeEcsClient(object):
     def describe_task_definition(self,taskDefinition):
         return self.test_task_definition
 
-    def register_task_definition(self,new_task_def):
+    def register_task_definition(self,**kwargs):
         return self.test_task_definition
 
     def update_service(self,
