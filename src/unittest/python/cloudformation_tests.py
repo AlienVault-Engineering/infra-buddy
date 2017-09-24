@@ -61,7 +61,7 @@ class CloudFormationTestCase(ParentTestCase):
         template = ParentTestCase._get_resource_path("cloudformation/aws-resources.template")
         parameter_file = ParentTestCase._get_resource_path("cloudformation/aws-resources.parameters.json")
         config_templates = ParentTestCase._get_resource_path("cloudformation/config/")
-        deploy = CloudFormationDeploy(self.test_deploy_ctx.stack_name, LocalTemplate(template, parameter_file, config_templates), self.test_deploy_ctx)
+        deploy = CloudFormationDeploy(self.test_deploy_ctx.stack_name, LocalTemplate(template, ), self.test_deploy_ctx)
         deploy.do_deploy(dry_run=False)
         cloudformation = CloudFormationBuddy(self.test_deploy_ctx)
         s3 = CloudFormationDeployS3Buddy(self.test_deploy_ctx)

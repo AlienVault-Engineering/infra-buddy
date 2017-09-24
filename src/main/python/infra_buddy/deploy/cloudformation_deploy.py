@@ -5,6 +5,7 @@ from collections import defaultdict
 from pprint import pformat
 
 import pydash
+from copy import deepcopy
 from jsonschema import validate
 
 from infra_buddy.aws.cloudformation import CloudFormationBuddy
@@ -45,10 +46,10 @@ class CloudFormationDeploy(Deploy):
         self.parameter_file = template.get_parameter_file_path()
         self.template_file = template.get_template_file_path()
         self.default_path = template.get_defaults_file_path()
-        self._load_defaults()
+        self._load_defaults(template.get_default_env_values())
 
-    def _load_defaults(self):
-        self.defaults = {}
+    def _load_defaults(self, default_env_values):
+        self.defaults = deepcopy(default_env_values)
         if self.default_path and os.path.exists(self.default_path):
             with open(self.default_path, 'r') as default_fp:
                 def_obj = json.load(default_fp)

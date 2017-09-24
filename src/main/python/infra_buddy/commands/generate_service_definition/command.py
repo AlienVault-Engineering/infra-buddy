@@ -31,7 +31,7 @@ def do_command(deploy_ctx, service_template_directory=None, service_type=None, d
         deploy = CloudFormationDeploy(stack_name=deploy_ctx.stack_name, template=template, deploy_ctx=deploy_ctx)
     else:
         deploy = CloudFormationDeploy(stack_name=deploy_ctx.stack_name,
-                                      template=NamedLocalTemplate(service_template_directory, service_type),
+                                      template=NamedLocalTemplate(service_template_directory, ),
                                       deploy_ctx=deploy_ctx)
     return ServiceDefinition.save_to_file(application=deploy_ctx.application,
                                           role=deploy_ctx.role,

@@ -5,7 +5,7 @@ from collections import defaultdict
 import click
 from jsonschema import validate
 
-from infra_buddy.template.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template
+from infra_buddy.template.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template, AliasTemplate
 from infra_buddy.utility import print_utility
 
 
@@ -21,6 +21,8 @@ class TemplateManager(object):
             "properties": {
                 "type": {"type": "string"},
                 "owner": {"type": "string"},
+                "lookup": {"type": "string"},
+                "default-values": {"type": "object"},
                 "compatible": {
                     "type": "array",
                     "items": {
@@ -83,7 +85,7 @@ class TemplateManager(object):
     def get_resource_service(self, artifact_directory):
         # type: (str) -> Template
         try:
-            template = NamedLocalTemplate(artifact_directory,err_on_failure_to_locate=False)
+            template = NamedLocalTemplate(artifact_directory, )
             if template.valid:
                 return template
             else:
@@ -117,6 +119,8 @@ class TemplateManager(object):
 
     def _load_templates(self, templates, service_modification=False):
         # type: (dict, bool) -> None
+        alias_templates = []
+        all_service_mods = {}
         for name, values in templates.iteritems():
             type_ = values['type']
             if type_ == "github":
@@ -125,6 +129,9 @@ class TemplateManager(object):
                 template = S3Template(service_type=name, values=values)
             elif type_ == "url":
                 template = URLTemplate(service_type=name, values=values)
+            elif type_ == "alias":
+                template = AliasTemplate(service_type=name, values=values)
+                alias_templates.append(template)
             else:
                 print_utility.error("Can not locate resource. Requested unknown template type - {}".format(type_),
                                     raise_exception=True)
@@ -134,6 +141,11 @@ class TemplateManager(object):
                 for service in compatibility:
                     if service == "*":
                         self.default_service_modification_templates[name] = template
-                    self.service_modification_templates[service][name] = template
+                    else:
+                        self.service_modification_templates[service][name] = template
+                    all_service_mods[name]=(template)
             else:
                 self.deploy_templates[name] = template
+        for alias in alias_templates:
+            alias.resolve(all_service_mods if service_modification else self.deploy_templates)
+

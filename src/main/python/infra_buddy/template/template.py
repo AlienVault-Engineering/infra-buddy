@@ -3,18 +3,23 @@ import tempfile
 from zipfile import ZipFile
 
 import requests
+from copy import deepcopy
 
 from infra_buddy.aws import s3
 from infra_buddy.utility import print_utility
 
 
 class Template(object):
-    def __init__(self, service_type):
+    def __init__(self, service_type, values):
         super(Template, self).__init__()
         self.service_type = service_type
         self.destination_relative = None
         self.destination = None
         self.valid = False
+        self.default_env_values = values.get('default-values',{})
+
+    def get_default_env_values(self):
+        return self.default_env_values
 
     def get_parameter_file_path(self):
         return os.path.join(self._get_template_location(),
@@ -59,7 +64,7 @@ class Template(object):
 
 class URLTemplate(Template):
     def __init__(self, service_type, values):
-        super(URLTemplate, self).__init__(service_type)
+        super(URLTemplate, self).__init__(service_type, values)
         self.download_url = values.get('url', None)
 
     def download_template(self):
@@ -75,6 +80,41 @@ class URLTemplate(Template):
         self._validate_template_dir()
 
 
+class AliasTemplate(Template):
+
+    def __init__(self, service_type, values):
+        super(AliasTemplate, self).__init__(service_type, values=values)
+        self.lookup = values.get('lookup', None)
+        self.delegate = None
+
+    def resolve(self,templates):
+        # type: (dict()) -> None
+        if self.lookup in templates:
+            self.delegate = templates[self.lookup]
+        else:
+            raise Exception("Unable to resolve alias template - {}".format(self.lookup))
+
+    def download_template(self):
+        self.delegate.download_template()
+
+    def get_template_file_path(self):
+        return self.delegate.get_template_file_path()
+
+    def get_defaults_file_path(self):
+        return self.delegate.get_defaults_file_path()
+
+    def get_config_dir(self):
+        return self.delegate.get_config_dir()
+
+    def get_parameter_file_path(self):
+        return self.delegate.get_parameter_file_path()
+
+    def get_default_env_values(self):
+        values = deepcopy(self.delegate.get_default_env_values())
+        values.update(self.default_env_values)
+        return values
+
+
 class GitHubTemplate(URLTemplate):
     def __init__(self, service_type, values):
         super(GitHubTemplate, self).__init__(service_type=service_type, values=values)
@@ -85,14 +125,14 @@ class GitHubTemplate(URLTemplate):
 
 class NamedLocalTemplate(Template):
     def __init__(self, directory, service_type="aws-resources", err_on_failure_to_locate=True):
-        super(NamedLocalTemplate, self).__init__(service_type)
+        super(NamedLocalTemplate, self).__init__(service_type, values={})
         self.destination = directory
         self._validate_template_dir(err_on_failure_to_locate=err_on_failure_to_locate)
 
 
 class S3Template(Template):
     def __init__(self, service_type, values):
-        super(S3Template, self).__init__(service_type)
+        super(S3Template, self).__init__(service_type, values=values)
         self.s3_location = values['location']
 
     def download_template(self):
@@ -102,7 +142,7 @@ class S3Template(Template):
 
 class LocalTemplate(Template):
     def __init__(self, template, parameter_file, config_dir=None):
-        super(LocalTemplate, self).__init__("")
+        super(LocalTemplate, self).__init__("", values={})
         self.config_dir = config_dir
         self.parameter_file = parameter_file
         self.template = template

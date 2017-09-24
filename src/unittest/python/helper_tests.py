@@ -38,7 +38,7 @@ class HelperTestCase(ParentTestCase):
         cloudformation = CloudFormationBuddy(ctx)
         try:
             template_dir = ParentTestCase._get_resource_path("helper_func_tests/")
-            deploy = CloudFormationDeploy(ctx.stack_name, NamedLocalTemplate(template_dir), ctx)
+            deploy = CloudFormationDeploy(ctx.stack_name, NamedLocalTemplate(template_dir, ), ctx)
             deploy.do_deploy(dry_run=False)
             rp = helper_functions.calculate_rule_priority(ctx,ctx.stack_name)
             self.assertEqual(rp,"10","Failed to detect existing rule priority")

@@ -18,5 +18,5 @@ from infra_buddy.template.template import LocalTemplate
                                                "parameter values for the deployment.")
 @click.pass_obj
 def deploy_cloudformation(deploy_ctx, template, parameter_file, config_templates,dry_run):
-    deploy_plan = CloudFormationDeploy(deploy_ctx.stack_name, LocalTemplate(template, parameter_file, config_templates), deploy_ctx)
+    deploy_plan = CloudFormationDeploy(deploy_ctx.stack_name, LocalTemplate(template, ), deploy_ctx)
     deploy_plan.do_deploy(dry_run)

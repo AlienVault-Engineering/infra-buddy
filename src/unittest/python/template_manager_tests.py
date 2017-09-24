@@ -106,4 +106,12 @@ class TemplateManagerTestCase(ParentTestCase):
         self.assertTrue(template_manager.get_known_template('autoscale'),"Failed to locate known template mod template")
         self.assertTrue(template_manager.get_known_template('cluster'),"Failed to locate wildcard service mod template")
 
+    def test_service_alias(self):
+        template_manager = TemplateManager()
+        template = template_manager.get_known_template('default-api-service')
+        self.assertTrue(template, "Failed to locate alias template")
+        self.assertTrue(template.delegate, "Failed to locate alias template delegate")
+        self.assertEquals(template.lookup,'ecs-service', "Failed to locate ecs-service template delegate")
+        deploy = CloudFormationDeploy("foo", template, deploy_ctx=self.test_deploy_ctx)
+        self.assertTrue(deploy.defaults['DEFAULT_LOAD_BALANCER_TARGET'],"Did not populate expect default variables")
 
