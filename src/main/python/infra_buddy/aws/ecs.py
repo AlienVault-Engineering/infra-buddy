@@ -14,12 +14,24 @@ class ECSBuddy(object):
         self.deploy_ctx = deploy_ctx
         self.client = boto3.client('ecs', region_name=self.deploy_ctx.region)
         cf = CloudFormationBuddy(deploy_ctx)
+        ecs_cluster_export_key = "{}-ECSCluster".format(self.deploy_ctx.cluster_stack_name)
         self.cluster = cf.get_export_value(
-            fully_qualified_param_name="{}-ECSCluster".format(self.deploy_ctx.cluster_stack_name))
+            fully_qualified_param_name=ecs_cluster_export_key)
+        if not self.cluster:
+            print_utility.error("Could not locate export value for cluster - {}".format(ecs_cluster_export_key),
+                                raise_exception=True)
+        ecs_service_export_key = "{}-ECSService".format(self.deploy_ctx.stack_name)
         self.ecs_service = cf.get_export_value(
-            fully_qualified_param_name="{}-ECSService".format(self.deploy_ctx.stack_name))
+            fully_qualified_param_name=ecs_service_export_key)
+        if not self.ecs_service:
+            print_utility.error("Could not locate export value - {}".format(ecs_service_export_key),
+                                raise_exception=True)
+        ecs_task_family_export_key = "{}-ECSTaskFamily".format(self.deploy_ctx.stack_name)
         self.ecs_task_family = cf.get_export_value(
-            fully_qualified_param_name="{}-ECSTaskFamily".format(self.deploy_ctx.stack_name))
+            fully_qualified_param_name=ecs_task_family_export_key)
+        if not self.ecs_task_family:
+                    print_utility.error("Could not locate export value - {}".format(ecs_task_family_export_key),
+                                        raise_exception=True)
         self.task_definition_description = None
         self.new_image = None
 
