@@ -24,7 +24,7 @@ def do_command(deploy_ctx, service_template_directory=None, service_type=None):
         print_utility.warn(
             "Service template directory was not provided.  Assuming service-type '{}' is built-in.".format(
                 service_type))
-        template = deploy_ctx.template_manager.get_known_template(service_type=service_type)
+        template = deploy_ctx.template_manager.get_known_template(template_name=service_type)
         deploy = CloudFormationDeploy(stack_name=deploy_ctx.stack_name, template=template, deploy_ctx=deploy_ctx)
     else:
         deploy = CloudFormationDeploy(stack_name=deploy_ctx.stack_name,
