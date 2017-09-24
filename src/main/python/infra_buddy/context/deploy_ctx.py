@@ -140,6 +140,8 @@ class DeployContext(dict):
         self.stack_name_cache = []
         if self.get('DATADOG_KEY','') is not '':
             self.notifier = DataDogNotifier(key=self['DATADOG_KEY'],deploy_context=self)
+        else:
+            self.notifier = None
 
     def get_deploy_templates(self):
         return self.get('service-templates', {})

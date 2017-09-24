@@ -3,3 +3,4 @@ boto3
 pydash
 jsonschema
 requests
+datadog
