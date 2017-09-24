@@ -9,6 +9,7 @@ from pprint import pformat
 from infra_buddy.aws import s3
 from infra_buddy.context.artifact_definition import ArtifactDefinition
 from infra_buddy.context.service_definition import ServiceDefinition
+from infra_buddy.notifier.datadog import DataDogNotifier
 from infra_buddy.template.template_manager import TemplateManager
 from infra_buddy.utility import print_utility
 
@@ -16,6 +17,7 @@ STACK_NAME = 'STACK_NAME'
 
 DOCKER_REGISTRY = 'DOCKER_REGISTRY_URL'
 ROLE = 'ROLE'
+IMAGE = 'IMAGE'
 APPLICATION = 'APPLICATION'
 ENVIRONMENT = 'ENVIRONMENT'
 REGION = 'REGION'
@@ -100,6 +102,7 @@ class DeployContext(dict):
         self.update(service_definition.deployment_parameters)
         self.service_definition = service_definition
         self.artifact_definition = ArtifactDefinition.create_from_directory(artifact_directory)
+        self.artifact_definition.register_env_variables(self)
 
     def _initialize_environment_variables(self):
         application = self['APPLICATION']
@@ -121,7 +124,6 @@ class DeployContext(dict):
 
     def _initalize_defaults(self, defaults,environment):
         self['DATADOG_KEY'] = ""
-        self['REGION'] = "us-west-1"
         self['ENVIRONMENT'] = environment.lower() if environment else "dev"
         if defaults:
             print_utility.info("Loading default settings from path: {}".format(defaults))
@@ -129,8 +131,15 @@ class DeployContext(dict):
                 config = json.load(fp)
                 self.update(config)
         self.update(os.environ)
+        if 'REGION' not in self:
+            print_utility.warn("Region not configured using default 'us-west-1'. "
+                               "This is probably not what you want - N. California is slow, like real slow."
+                               "  Set the environment variable 'REGION' or pass a default configuration file to override. ")
+            self['REGION'] = 'us-west-1'
         self.template_manager = TemplateManager(self.get_deploy_templates(),self.get_service_modification_templates())
         self.stack_name_cache = []
+        if self.get('DATADOG_KEY','') is not '':
+            self.notifier = DataDogNotifier(key=self['DATADOG_KEY'],deploy_context=self)
 
     def get_deploy_templates(self):
         return self.get('service-templates', {})
@@ -156,7 +165,10 @@ class DeployContext(dict):
         return region
 
     def notify_event(self, title, type, message=None):
-        pass
+        if self.notifier:
+            self.notifier.notify_event(title,type,message)
+        else:
+            print_utility.warn("Notify {type}: {title} - {message}".format(type=type,title=title,message=message))
 
     def get_service_modifications(self):
         return self.service_definition.service_modifications

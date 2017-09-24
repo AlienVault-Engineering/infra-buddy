@@ -105,3 +105,8 @@ class ArtifactDefinition(object):
                        _ARTIFACT_LOCATION: self.artifact_location,
                        _ARTIFACT_IDENTIFIER: self.artifact_id}, file)
         return path
+
+    def register_env_variables(self, deploy_ctx):
+        if self.artifact_type == _ECS_ARTIFACT_TYPE:
+            # For first time deploys of ECS services
+            deploy_ctx['IMAGE'] = "{location}:{tag}".format(location=self.artifact_location,tag=self.artifact_id)
