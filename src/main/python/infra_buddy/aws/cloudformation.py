@@ -227,7 +227,10 @@ class CloudFormationBuddy(object):
         if not fully_qualified_param_name:
             fully_qualified_param_name = "{stack_name}-{param}".format(stack_name=self.stack_name, param=param)
         if len(self.exports) == 0: self._load_export_values()
-        return self.exports.get(fully_qualified_param_name, None)
+        val = self.exports.get(fully_qualified_param_name, None)
+        if val is None:
+            print_utility.warn("Could not locate export value - {}".format(fully_qualified_param_name))
+        return val
 
     def _load_export_values(self):
         export_results = self.client.list_exports()
