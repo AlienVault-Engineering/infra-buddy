@@ -17,7 +17,9 @@ class S3Deploy(Deploy):
 
     def _internal_deploy(self, dry_run):
         mkdtemp = tempfile.mkdtemp()
-        artifact_download = "s3://{location}/{artifact_id}.zip".format(location=self.location,artifact_id=self.artifact_id)
+        if not self.artifact_id.endswith(".zip" ):
+            self.artifact_id = "{}.zip".format(self.artifact_id)
+        artifact_download = "s3://{location}/{artifact_id}".format(location=self.location,artifact_id=self.artifact_id)
         destination_bucket = self.cloud_formation_buddy.get_export_value(param="WWW-Files")
         s3util.download_zip_from_s3_url(artifact_download,destination=mkdtemp)
 
