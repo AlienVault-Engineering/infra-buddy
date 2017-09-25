@@ -229,8 +229,8 @@ class DeployContext(dict):
 
     def push_deploy_ctx(self, deploy_):
         # type: (CloudFormationDeploy) -> None
-        self.stack_name_cache.append(self[STACK_NAME])
         if deploy_.stack_name:
+            self.stack_name_cache.append(self[STACK_NAME])
             self._update_stack_name(deploy_.stack_name)
         self.current_deploy = deploy_
 
