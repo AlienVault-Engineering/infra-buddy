@@ -61,6 +61,7 @@ def download_zip_from_s3_url(s3_url, destination):
     s3 = boto3.resource('s3')
     with tempfile.NamedTemporaryFile() as temporary_file:
         temp_file_path = temporary_file.name
+    print_utility.info("Downloading zip from s3: {} - {}:{}".format(s3_url,key,temp_file_path))
     s3.Bucket(bucket).download_file(key, temp_file_path)
     with ZipFile(temp_file_path) as zf:
         zf.extractall(destination)
