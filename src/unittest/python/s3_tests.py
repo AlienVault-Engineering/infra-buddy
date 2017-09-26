@@ -48,6 +48,7 @@ class S3TestCase(ParentTestCase):
             with open(changeset,'r') as cs:
                 change_set_string = cs.read()
                 self.assertEqual(s3_buddy.get_file_as_string('sample_changeset.json'),change_set_string,"Failed to get file as string")
+            self.assertEqual(s3_buddy._get_s3_object('sample_changeset.json')['ContentType'],'application/json',"Did not persist correct content type")
         finally:
             self.clean_s3(s3_buddy)
 

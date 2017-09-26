@@ -1,3 +1,4 @@
+import mimetypes
 import os
 import tempfile
 import urlparse
@@ -5,6 +6,7 @@ from zipfile import ZipFile
 
 import boto3
 import botocore
+from boto3.s3.transfer import S3Transfer
 
 from infra_buddy.utility import print_utility
 
@@ -27,10 +29,9 @@ class S3Buddy(object):
         self.url_base = "https://s3-{region}.amazonaws.com/{bucket_name}".format(region=self.deploy_ctx.region,
                                                                                  bucket_name=self.bucket_name)
 
-
     def upload(self, file, key_name=None):
         key_name = self._get_upload_bucket_key_name(file, key_name)
-        self.bucket.put_object(Key=key_name, Body=open(file, 'rb'))
+        self.bucket.put_object(Key=key_name, Body=open(file, 'rb'),ContentType=self._guess_content_type(file))
         print_utility.info("Uploaded file to S3 - Bucket: {} Key: {}".format(self.bucket_name, key_name))
         return "{}/{}".format(self.url_base, key_name)
 
@@ -42,8 +43,34 @@ class S3Buddy(object):
         return key_name
 
     def get_file_as_string(self, filename):
+        obj = self._get_s3_object(filename)
+        return obj['Body'].read()
+
+    def _get_s3_object(self, filename):
         key_name = self._get_upload_bucket_key_name(file=None, key_name=filename)
-        return self.s3.meta.client.get_object(Bucket=self.bucket_name, Key=key_name)['Body'].read()
+        obj = self.s3.meta.client.get_object(Bucket=self.bucket_name, Key=key_name)
+        return obj
+
+    def _guess_content_type(self,filename):
+        """Given a filename, guess it's content type.
+        If the type cannot be guessed, a value of None is returned.
+        """
+        try:
+            return mimetypes.guess_type(filename)[0]
+        # This catches a bug in the mimetype libary where some MIME types
+        # specifically on windows machines cause a UnicodeDecodeError
+        # because the MIME type in the Windows registery has an encoding
+        # that cannot be properly encoded using the default system encoding.
+        # https://bugs.python.org/issue9291
+        #
+        # So instead of hard failing, just log the issue and fall back to the
+        # default guessed content type of None.
+        except UnicodeDecodeError:
+            LOGGER.debug(
+                'Unable to guess content type for %s due to '
+                'UnicodeDecodeError: ', filename, exc_info=True
+            )
+
 
 
 class CloudFormationDeployS3Buddy(S3Buddy):
@@ -61,7 +88,7 @@ def download_zip_from_s3_url(s3_url, destination):
     s3 = boto3.resource('s3')
     with tempfile.NamedTemporaryFile() as temporary_file:
         temp_file_path = temporary_file.name
-    print_utility.info("Downloading zip from s3: {} - {}:{}".format(s3_url,key,temp_file_path))
+    print_utility.info("Downloading zip from s3: {} - {}:{}".format(s3_url, key, temp_file_path))
     s3.Bucket(bucket).download_file(key, temp_file_path)
     with ZipFile(temp_file_path) as zf:
         zf.extractall(destination)

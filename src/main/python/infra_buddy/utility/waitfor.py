@@ -15,7 +15,7 @@ def _compare(expected_result, param, negate):
         return expected_result != param
 
 
-def waitfor(function_pointer, expected_result, interval_seconds, max_attempts, negate=False, args=None):
+def waitfor(function_pointer, expected_result, interval_seconds, max_attempts, negate=False, args=None,exception=True):
     if args is None:
         args = {}
     attempt = 1
@@ -27,6 +27,7 @@ def waitfor(function_pointer, expected_result, interval_seconds, max_attempts, n
         attempt += 1
     if attempt >= max_attempts:
         # we failed
-        raise Exception("Wait condition failed: {func}".format(func=function_pointer))
+        if exception: raise Exception("Wait condition failed: {func}".format(func=function_pointer))
+        return None
     else:
         return latest
