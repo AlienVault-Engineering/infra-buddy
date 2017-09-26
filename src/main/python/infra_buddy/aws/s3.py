@@ -31,7 +31,11 @@ class S3Buddy(object):
 
     def upload(self, file, key_name=None):
         key_name = self._get_upload_bucket_key_name(file, key_name)
-        self.bucket.put_object(Key=key_name, Body=open(file, 'rb'),ContentType=self._guess_content_type(file))
+        args = {"Key":key_name, "Body":open(file, 'rb')}
+        content_type = self._guess_content_type(file)
+        if content_type:
+            args['ContentType'] = content_type
+        self.bucket.put_object(**args)
         print_utility.info("Uploaded file to S3 - Bucket: {} Key: {}".format(self.bucket_name, key_name))
         return "{}/{}".format(self.url_base, key_name)
 
