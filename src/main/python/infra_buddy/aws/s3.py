@@ -36,7 +36,9 @@ class S3Buddy(object):
         if content_type:
             args['ContentType'] = content_type
         self.bucket.put_object(**args)
-        print_utility.info("Uploaded file to S3 - Bucket: {} Key: {}".format(self.bucket_name, key_name))
+        print_utility.info("Uploaded file to S3 - Bucket: {} Key: {} Content-Type: {}".format(self.bucket_name,
+                                                                                              key_name,
+                                                                                              content_type))
         return "{}/{}".format(self.url_base, key_name)
 
     def _get_upload_bucket_key_name(self, file, key_name=None):
