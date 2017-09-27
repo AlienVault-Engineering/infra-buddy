@@ -210,16 +210,22 @@ class DeployContext(dict):
         def replace_var(m):
             if aux_dict:
                 val = aux_dict.get(m.group(2) or m.group(1), None)
-                if val is not None: return str(val)
+                if val is not None:return transform(val)
             # if we are in a deployment values set in that context take precedent
             if self.current_deploy is not None:
                 val = self.current_deploy.defaults.get(m.group(2) or m.group(1), None)
-                if val is not None: return str(val)
-            return str(self.get(m.group(2) or m.group(1), m.group(0)))
+                if val is not None:return transform(val)
+            return transform(self.get(m.group(2) or m.group(1), m.group(0)))
+
+        def transform( val):
+            if isinstance(val, bool):
+                return str(val).lower()
+            return str(val)
 
         reVar = r'(?<!\\)\$(\w+|\{([^}]*)\})'
         sub = re.sub(reVar, replace_var, template_string)
         return sub
+
 
         # rerun otx:notify-datadog \
         #     --title "${ACTION} stack ${STACK_NAME} started"   \
