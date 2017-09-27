@@ -49,13 +49,14 @@ class CloudFormationDeploy(Deploy):
         self._load_defaults(template.get_default_env_values())
 
     def _load_defaults(self, default_env_values):
-        self.defaults = deepcopy(default_env_values)
+        self.defaults = {}
         if self.default_path and os.path.exists(self.default_path):
             with open(self.default_path, 'r') as default_fp:
                 def_obj = json.load(default_fp)
                 validate(def_obj, self.schema)
             for key, value in def_obj.iteritems():
                 self.defaults[key] = self._load_value(value)
+        self.defaults.update(default_env_values)
 
     def _load_value(self, value):
         type_ = value['type']
@@ -80,8 +81,10 @@ class CloudFormationDeploy(Deploy):
                     "Can not locate function for defaults.json: Stack {} Function {}".format(self.stack_name,
                                                                                              func_name))
         elif type_ == _PARAM_TYPE_PROPERTY:
-            return self.deploy_ctx.get(value['key'],
-                                       self.deploy_ctx.expandvars(str(value.get('default', None)), self.defaults))
+            default_value = value.get('default', None)
+            if isinstance(default_value, basestring):
+                default_value = self.deploy_ctx.expandvars(str(default_value), self.defaults)
+            return self.deploy_ctx.get(value['key'],default_value)
 
     def get_rendered_config_files(self):
         self._prep_render_destination()

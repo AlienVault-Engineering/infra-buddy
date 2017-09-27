@@ -114,4 +114,10 @@ class TemplateManagerTestCase(ParentTestCase):
         self.assertEquals(template.lookup,'ecs-service', "Failed to locate ecs-service template delegate")
         deploy = CloudFormationDeploy("foo", template, deploy_ctx=self.test_deploy_ctx)
         self.assertTrue(deploy.defaults['DEFAULT_LOAD_BALANCER_TARGET'],"Did not populate expect default variables")
+        template = template_manager.get_known_template('api-service')
+        self.assertTrue(template, "Failed to locate alias template")
+        self.assertTrue(template.delegate, "Failed to locate alias template delegate")
+        self.assertEquals(template.lookup,'ecs-service', "Failed to locate ecs-service template delegate")
+        deploy = CloudFormationDeploy("foo", template, deploy_ctx=self.test_deploy_ctx)
+        self.assertTrue(deploy.defaults['CREATE_API'],"Did not populate expect default variables")
 
