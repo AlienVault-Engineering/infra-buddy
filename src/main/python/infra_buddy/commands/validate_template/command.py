@@ -28,7 +28,7 @@ def do_command(deploy_ctx, service_template_directory=None, service_type=None):
         deploy = CloudFormationDeploy(stack_name=deploy_ctx.stack_name, template=template, deploy_ctx=deploy_ctx)
     else:
         deploy = CloudFormationDeploy(stack_name=deploy_ctx.stack_name,
-                                      template=NamedLocalTemplate(service_template_directory, ),
+                                      template=NamedLocalTemplate(service_template_directory,service_type=service_type ),
                                       deploy_ctx=deploy_ctx)
     errs = deploy.analyze()
     if errs > 0:
