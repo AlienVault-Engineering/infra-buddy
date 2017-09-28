@@ -44,7 +44,7 @@ class TemplateManagerTestCase(ParentTestCase):
                                 template_def={
                                     "type": "github",
                                     "owner": "AlienVault-Engineering",
-                                    "repo": "service-template-vpc"
+                                    "repo": "infra-buddy-vpc"
                                 })
 
     def test_invalid_template(self):
