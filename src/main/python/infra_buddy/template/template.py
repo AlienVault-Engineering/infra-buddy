@@ -12,6 +12,7 @@ from infra_buddy.utility import print_utility
 class Template(object):
     def __init__(self, service_type, values, template_name='cloudformation'):
         super(Template, self).__init__()
+        self.template_name = template_name
         self.service_type = service_type
         self.destination_relative = None
         self.destination = None
@@ -23,7 +24,7 @@ class Template(object):
 
     def get_parameter_file_path(self):
         return os.path.join(self._get_template_location(),
-                            "{service_type}.parameters.json".format(service_type=self.service_type))
+                            "{template_name}.parameters.json".format(template_name=self.template_name))
 
     def get_defaults_file_path(self):
         return os.path.join(self._get_template_location(),
@@ -31,7 +32,7 @@ class Template(object):
 
     def get_template_file_path(self):
         return os.path.join(self._get_template_location(),
-                            "{service_type}.template".format(service_type=self.service_type))
+                            "{template_name}.template".format(template_name=self.template_name))
 
     def get_config_dir(self):
         config_path = os.path.join(self._get_template_location(), "config")
