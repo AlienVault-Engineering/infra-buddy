@@ -10,7 +10,7 @@ from infra_buddy.utility import print_utility
 
 
 class Template(object):
-    def __init__(self, service_type, values):
+    def __init__(self, service_type, values, template_name='cloudformation'):
         super(Template, self).__init__()
         self.service_type = service_type
         self.destination_relative = None
@@ -124,8 +124,8 @@ class GitHubTemplate(URLTemplate):
 
 
 class NamedLocalTemplate(Template):
-    def __init__(self, directory, service_type="aws-resources", err_on_failure_to_locate=True):
-        super(NamedLocalTemplate, self).__init__(service_type, values={})
+    def __init__(self, directory, service_type="local-template", err_on_failure_to_locate=True, template_name="cloudformation"):
+        super(NamedLocalTemplate, self).__init__(service_type, values={},template_name=template_name)
         self.destination = directory
         self._validate_template_dir(err_on_failure_to_locate=err_on_failure_to_locate)
 

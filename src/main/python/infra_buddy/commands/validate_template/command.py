@@ -11,7 +11,7 @@ from infra_buddy.utility import print_utility
                                                  "errors and usability issues.")
 @click.option("--service-template-directory", type=click.Path(exists=True), help="The directory containing "
                                                                          "the service template.")
-@click.option("--service-type", help="The service-type that corresponds with the provided template directory.")
+@click.option("--service-type", help="The service-type of an internal template.")
 @click.pass_obj
 def deploy_cloudformation(deploy_ctx, service_template_directory, service_type):
     # type: (DeployContext,str,str) -> None
@@ -28,7 +28,7 @@ def do_command(deploy_ctx, service_template_directory=None, service_type=None):
         deploy = CloudFormationDeploy(stack_name=deploy_ctx.stack_name, template=template, deploy_ctx=deploy_ctx)
     else:
         deploy = CloudFormationDeploy(stack_name=deploy_ctx.stack_name,
-                                      template=NamedLocalTemplate(service_template_directory,service_type=service_type ),
+                                      template=NamedLocalTemplate(service_template_directory ),
                                       deploy_ctx=deploy_ctx)
     errs = deploy.analyze()
     if errs > 0:
