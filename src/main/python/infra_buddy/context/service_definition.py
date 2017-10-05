@@ -85,6 +85,8 @@ class ServiceDefinition(object):
                 self.deployment_parameters = service_definition[_DEPLOYMENT_PARAMETERS]
             env_deployment_parameters = '{environment}-deployment-parameters'.format(environment=environment)
             if env_deployment_parameters in service_definition:
+                print_utility.info("Updating deployment params with environment"
+                                   " specific settings - {}".format(env_deployment_parameters))
                 self.deployment_parameters.update(service_definition[env_deployment_parameters])
             self.service_modifications = service_definition.get(_MODIFICATIONS, [])
 

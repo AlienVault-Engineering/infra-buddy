@@ -120,6 +120,16 @@ class DeployContextTestCase(ParentTestCase):
                          "Failed to load artifact definition parameters")
         self.assertIsNotNone(deploy_ctx.service_definition, "Failed to populate service definition")
 
+    def test_service_definition_env_params(self):
+        artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_service_definition')
+        for env in ['unit-test','ci','prod']:
+            deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
+                                                                 environment=env,
+                                                                 defaults=self.default_config)
+            self.assertEqual(deploy_ctx['OVERRIDE'], "{}bar".format(env), "Failed to load {} value".format(env))
+            self.assertEqual(deploy_ctx['API_PATH'], "bar", "Failed to load static value")
+
+
     def test_artifact_directory_execution_plan(self):
         artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_execution_plan_test')
         deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,

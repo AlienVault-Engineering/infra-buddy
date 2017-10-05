@@ -4,7 +4,14 @@
   "service-type": "pylib-remote",
   "registry-url": "https://docker.io/my-registry",
   "deployment-parameters": {
-    "API_PATH":"bar"
+    "API_PATH":"bar",
+    "OVERRIDE":"unit-testbar"
+  },
+  "ci-deployment-parameters": {
+    "OVERRIDE":"cibar"
+  },
+  "prod-deployment-parameters": {
+    "OVERRIDE":"prodbar"
   },
   "service-modifications": [
     "autoscale"
