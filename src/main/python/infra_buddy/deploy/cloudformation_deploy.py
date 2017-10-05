@@ -151,7 +151,7 @@ class CloudFormationDeploy(Deploy):
         warning = defaultdict(list)
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
-            template_params = pydash.get(template_obj, 'Parameters', '')
+            template_params = pydash.get(template_obj, 'Parameters', {})
             for key, value in template_params.iteritems():
                 description = value.get('Description', None)
                 default = value.get('Default', None)
@@ -198,7 +198,7 @@ class CloudFormationDeploy(Deploy):
         warnings = defaultdict(list)
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
-            template_exports = pydash.get(template_obj, 'Outputs', '')
+            template_exports = pydash.get(template_obj, 'Outputs', {})
             for key, value in template_exports.iteritems():
                 export = value.get('Export', None)
                 value = value.get('Value', None)
