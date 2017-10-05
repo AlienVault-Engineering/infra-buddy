@@ -31,7 +31,7 @@ def _get_max_priority(rules):
     rules = sorted(rules, key=lambda k: k["Priority"],reverse=True)
     for rule in rules:
         priority_ = rule['Priority']
-        if priority_ is not "default":
+        if priority_ != "default":
             return int(priority_)
 
 
@@ -45,7 +45,7 @@ def calculate_rule_priority(deploy_ctx,stack_name):
     else:
         listenerArn = _get_cluster_stack_export_value(cf,deploy_ctx,"ListenerARN")
         if listenerArn:
-            client = boto3.client('elbv2',region_name=deploy_ctx.region)
+            client = get_boto_client(deploy_ctx)
             rules = client.describe_rules(ListenerArn=listenerArn)['Rules']
         else:
             rules = None
@@ -72,3 +72,7 @@ def calculate_rule_priority(deploy_ctx,stack_name):
     # //    #increment by 30 to allow plenty of room for explicit rule creation
     # //    CURRENT_NUMBER_OF_RULES=$((CURRENT_MAX+1))
     # //fi
+
+
+def get_boto_client(deploy_ctx):
+    return boto3.client('elbv2', region_name=deploy_ctx.region)
