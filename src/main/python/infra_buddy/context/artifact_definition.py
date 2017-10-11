@@ -11,6 +11,7 @@ _ARTIFACT_FILE = "artifact.json"
 
 _ECS_ARTIFACT_TYPE = "ecs"
 _S3_ARTIFACT_TYPE = "s3"
+_NOOP_ARTIFACT_TYPE = "noop"
 
 _ARTIFACT_TYPE = "artifact-type"
 _ARTIFACT_IDENTIFIER = "artifact-identifier"
@@ -33,11 +34,18 @@ class ArtifactDefinition(object):
     }
 
     @classmethod
-    def create(cls, artifact_type, artifact_location, artifact_identifier):
+    def create(cls, artifact_type=None, artifact_location=None, artifact_identifier=None):
         # type: (str, str, str) -> ArtifactDefinition
-        ad = ArtifactDefinition(artifact_type, artifact_location, artifact_identifier)
-
-        return ad
+        if artifact_type == _ECS_ARTIFACT_TYPE:
+            return ECSArtifactDefinition(artifact_location=artifact_location,
+                                         artifact_identifier=artifact_identifier)
+        elif artifact_type == _S3_ARTIFACT_TYPE:
+            return S3ArtifactDefinition(artifact_location=artifact_location,
+                                        artifact_identifier=artifact_identifier)
+        elif artifact_type:
+            raise Exception("Unknown artifact type")
+        else:
+            return NOOPArtifactDefinition( None, None)
 
     @classmethod
     def create_from_directory(cls, artifact_directory):
@@ -47,18 +55,18 @@ class ArtifactDefinition(object):
             definition = ArtifactDefinition._search_for_legacy_implementation(artifact_directory)
         if definition:
             validate(definition, ArtifactDefinition.schema)
-            return ArtifactDefinition(artifact_type=definition[_ARTIFACT_TYPE],
-                                      artifact_location=definition[_ARTIFACT_LOCATION],
-                                      artifact_identifier=definition[_ARTIFACT_IDENTIFIER])
+            return cls.create(definition[_ARTIFACT_TYPE], definition[_ARTIFACT_LOCATION],
+                              definition[_ARTIFACT_IDENTIFIER])
         else:
-            return ArtifactDefinition(None, None, None)
+            return cls.create()
 
-    def __init__(self, artifact_type, artifact_location, artifact_identifier):
+
+    def __init__(self,artifact_type, artifact_location, artifact_identifier):
         super(ArtifactDefinition, self).__init__()
         self.artifact_type = artifact_type
         self.artifact_location = artifact_location
         self.artifact_id = artifact_identifier
-        self.noop = self.artifact_type is None and self.artifact_location is None and self.artifact_id is None
+        self.noop = artifact_type == _NOOP_ARTIFACT_TYPE
 
     @staticmethod
     def _search_for_legacy_implementation(artifact_directory):
@@ -109,4 +117,23 @@ class ArtifactDefinition(object):
     def register_env_variables(self, deploy_ctx):
         if self.artifact_type == _ECS_ARTIFACT_TYPE:
             # For first time deploys of ECS services
-            deploy_ctx['IMAGE'] = "{location}:{tag}".format(location=self.artifact_location,tag=self.artifact_id)
+            deploy_ctx['IMAGE'] = "{location}:{tag}".format(location=self.artifact_location, tag=self.artifact_id)
+
+
+class ECSArtifactDefinition(ArtifactDefinition):
+
+    def __init__(self, artifact_location, artifact_identifier):
+        super(ECSArtifactDefinition, self).__init__(_ECS_ARTIFACT_TYPE,artifact_location, artifact_identifier)
+
+
+class S3ArtifactDefinition(ArtifactDefinition):
+
+    def __init__(self, artifact_location, artifact_identifier):
+        super(S3ArtifactDefinition, self).__init__(_S3_ARTIFACT_TYPE,artifact_location, artifact_identifier)
+
+
+class NOOPArtifactDefinition(ArtifactDefinition):
+
+    def __init__(self, artifact_location, artifact_identifier):
+        super(NOOPArtifactDefinition, self).__init__(_NOOP_ARTIFACT_TYPE,artifact_location, artifact_identifier)
+
