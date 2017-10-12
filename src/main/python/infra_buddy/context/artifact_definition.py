@@ -9,7 +9,7 @@ from infra_buddy.utility import print_utility
 
 _ARTIFACT_FILE = "artifact.json"
 
-_ECS_ARTIFACT_TYPE = "ecs"
+_CONTAINER_ARTIFACT_TYPE = "container"
 _S3_ARTIFACT_TYPE = "s3"
 _NOOP_ARTIFACT_TYPE = "noop"
 
@@ -22,7 +22,7 @@ class ArtifactDefinition(object):
     schema = {
         "type": "object",
         "properties": {
-            _ARTIFACT_TYPE: {"type": "string", "enum": [_ECS_ARTIFACT_TYPE, _S3_ARTIFACT_TYPE]},
+            _ARTIFACT_TYPE: {"type": "string", "enum": [_CONTAINER_ARTIFACT_TYPE, _S3_ARTIFACT_TYPE]},
             _ARTIFACT_IDENTIFIER: {"type": "string"},
             _ARTIFACT_LOCATION: {"type": "string"}
         },
@@ -36,7 +36,7 @@ class ArtifactDefinition(object):
     @classmethod
     def create(cls, artifact_type=None, artifact_location=None, artifact_identifier=None):
         # type: (str, str, str) -> ArtifactDefinition
-        if artifact_type == _ECS_ARTIFACT_TYPE:
+        if artifact_type == _CONTAINER_ARTIFACT_TYPE:
             return ECSArtifactDefinition(artifact_location=artifact_location,
                                          artifact_identifier=artifact_identifier)
         elif artifact_type == _S3_ARTIFACT_TYPE:
@@ -71,7 +71,7 @@ class ArtifactDefinition(object):
     @staticmethod
     def _search_for_legacy_implementation(artifact_directory):
         image_definition = os.path.join(artifact_directory, "containerurl.txt")
-        ret = {_ARTIFACT_TYPE: _ECS_ARTIFACT_TYPE}
+        ret = {_ARTIFACT_TYPE: _CONTAINER_ARTIFACT_TYPE}
         if os.path.exists(image_definition):
             print_utility.warn("Defining ECS service udpate with deprecated containerurl.txt artifact")
             with open(image_definition, 'r') as image:
@@ -96,7 +96,7 @@ class ArtifactDefinition(object):
 
     def generate_execution_plan(self, deploy_ctx):
         if self.noop: return None
-        if self.artifact_type == _ECS_ARTIFACT_TYPE:
+        if self.artifact_type == _CONTAINER_ARTIFACT_TYPE:
             return ECSDeploy(self.artifact_id, self.artifact_location, deploy_ctx)
         elif self.artifact_type == _S3_ARTIFACT_TYPE:
             return S3Deploy(self.artifact_id, self.artifact_location, deploy_ctx)
@@ -115,7 +115,7 @@ class ArtifactDefinition(object):
         return path
 
     def register_env_variables(self, deploy_ctx):
-        if self.artifact_type == _ECS_ARTIFACT_TYPE:
+        if self.artifact_type == _CONTAINER_ARTIFACT_TYPE:
             # For first time deploys of ECS services
             deploy_ctx['IMAGE'] = "{location}:{tag}".format(location=self.artifact_location, tag=self.artifact_id)
 
@@ -123,7 +123,7 @@ class ArtifactDefinition(object):
 class ECSArtifactDefinition(ArtifactDefinition):
 
     def __init__(self, artifact_location, artifact_identifier):
-        super(ECSArtifactDefinition, self).__init__(_ECS_ARTIFACT_TYPE,artifact_location, artifact_identifier)
+        super(ECSArtifactDefinition, self).__init__(_CONTAINER_ARTIFACT_TYPE, artifact_location, artifact_identifier)
 
 
 class S3ArtifactDefinition(ArtifactDefinition):

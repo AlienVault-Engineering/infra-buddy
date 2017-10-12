@@ -116,7 +116,7 @@ class DeployContextTestCase(ParentTestCase):
                          "Failed to load artifact definition parameters")
         self.assertEqual(deploy_ctx.artifact_definition.artifact_location, "https://docker.io/my-registry/artifact",
                          "Failed to load artifact definition parameters")
-        self.assertEqual(deploy_ctx.artifact_definition.artifact_type, "ecs",
+        self.assertEqual(deploy_ctx.artifact_definition.artifact_type, "container",
                          "Failed to load artifact definition parameters")
         self.assertIsNotNone(deploy_ctx.service_definition, "Failed to populate service definition")
 

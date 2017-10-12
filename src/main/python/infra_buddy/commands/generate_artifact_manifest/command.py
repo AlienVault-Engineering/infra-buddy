@@ -8,7 +8,7 @@ from infra_buddy.context.deploy_ctx import DeployContext
 @cli.command(name='generate-artifact-manifest',
              short_help="Generate an artifact manifest for use by the deploy-service command.")
 @click.option("--artifact-type",
-              help="The type of artifact referenced in the manifest ( 'ecs' or 's3' currently supported).")
+              help="The type of artifact referenced in the manifest ( 'container' or 's3' currently supported).")
 @click.option("--artifact-location",
               help="The location of the artifact referenced in the manifest (Docker registry or S3 bucket and path).")
 @click.option("--artifact-identifier",
