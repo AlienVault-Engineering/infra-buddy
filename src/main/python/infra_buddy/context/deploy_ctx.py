@@ -9,7 +9,7 @@ from pprint import pformat
 from infra_buddy.aws import s3
 from infra_buddy.context.artifact_definition import ArtifactDefinition
 from infra_buddy.context.service_definition import ServiceDefinition
-from infra_buddy.notifier.datadog import DataDogNotifier
+from infra_buddy.notifier.datadog_notifier import DataDogNotifier
 from infra_buddy.template.template_manager import TemplateManager
 from infra_buddy.utility import print_utility
 
