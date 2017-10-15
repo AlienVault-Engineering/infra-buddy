@@ -3,6 +3,7 @@ import os
 
 import boto3
 import click
+from click import UsageError
 
 from infra_buddy.commandline import cli
 from infra_buddy.context.deploy_ctx import DeployContext
@@ -22,6 +23,8 @@ def deploy_cloudformation(deploy_ctx, environments):
 def do_command(deploy_ctx, environments, destination=None):
     # type: (DeployContext,list) -> None
     client = boto3.client('ec2', region_name=deploy_ctx.region)
+    if len(environments) == 0:
+        raise UsageError("Expected at least one environment (ci, prod)")
     for env in environments:
         key_name = "{env}-{application}".format(env=env, application=deploy_ctx.application)
         res = client.create_key_pair(KeyName=key_name)
