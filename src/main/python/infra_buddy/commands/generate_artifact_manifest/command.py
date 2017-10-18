@@ -3,6 +3,7 @@ import click
 from infra_buddy.commandline import cli
 from infra_buddy.context.artifact_definition import ArtifactDefinition
 from infra_buddy.context.deploy_ctx import DeployContext
+from infra_buddy.utility import print_utility
 
 
 @cli.command(name='generate-artifact-manifest',
@@ -18,7 +19,9 @@ def deploy_cloudformation(artifact_type, artifact_location, artifact_identifier)
     do_command(artifact_type, artifact_location, artifact_identifier)
 
 
+
 def do_command(artifact_type, artifact_location, artifact_identifier, destination=None):
     # type: (str,str,str) -> str
     ad = ArtifactDefinition.create(artifact_type, artifact_location, artifact_identifier)
+    print_utility.info("Generated artifact manifest - {}".format(ad.__class__.__class__))
     return ad.save_to_file(destination_dir=destination)
