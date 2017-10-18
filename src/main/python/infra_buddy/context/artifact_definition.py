@@ -108,6 +108,7 @@ class ArtifactDefinition(object):
             path = os.path.join(destination_dir, _ARTIFACT_FILE)
         else:
             path = _ARTIFACT_FILE
+        print_utility.info("Persisting artifact manfiest - {}".format(path))
         with open(path, 'w') as file:
             json.dump({_ARTIFACT_TYPE: self.artifact_type,
                        _ARTIFACT_LOCATION: self.artifact_location,

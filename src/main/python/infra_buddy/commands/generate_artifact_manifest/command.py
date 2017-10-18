@@ -16,7 +16,9 @@ from infra_buddy.utility import print_utility
               help="The identifier for the artifact. (Docker tag or filename excluding 'zip' extension).")
 def deploy_cloudformation(artifact_type, artifact_location, artifact_identifier):
     # type: (str,str,str) -> None
-    do_command(artifact_type, artifact_location, artifact_identifier)
+    path  = do_command(artifact_type, artifact_location, artifact_identifier)
+    print_utility.info("Artifact Manifest saved to - {}".format(path))
+
 
 
 
