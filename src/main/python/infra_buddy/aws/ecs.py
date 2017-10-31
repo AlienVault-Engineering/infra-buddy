@@ -79,8 +79,8 @@ class ECSBuddy(object):
                         ]
                         )
         except Exception as e:
-            print_utility.error("Error waiting for service to stabilize - {}".format(e.message))
             success = False
+            print_utility.error("Error waiting for service to stabilize - {}".format(e.message),raise_exception=True)
         finally:
             self.deploy_ctx.notify_event(
                 title="Update of ecs service {service} completed".format(service=self.ecs_service,
