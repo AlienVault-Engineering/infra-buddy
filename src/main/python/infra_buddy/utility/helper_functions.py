@@ -3,6 +3,7 @@ from operator import itemgetter
 import boto3
 
 from infra_buddy.aws.cloudformation import CloudFormationBuddy
+from infra_buddy.utility import print_utility
 
 
 def _get_all_export_values(client):
@@ -26,6 +27,8 @@ def _get_cluster_stack_export_value(cf, deploy_ctx, param):
     try:
         cf.stack_name = deploy_ctx.cluster_stack_name
         val = cf.get_export_value(param)
+    except Exception as e:
+        print_utility.warn("Exception getting export for helper function - {}".format(e))
     finally:
         return val
 
