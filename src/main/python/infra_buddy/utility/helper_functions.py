@@ -22,9 +22,12 @@ def load_balancer_name(deploy_ctx):
 
 def _get_cluster_stack_export_value(cf, deploy_ctx, param):
     # type: (CloudFormationBuddy,DeployContext) -> str
-    cf.stack_name = deploy_ctx.cluster_stack_name
-    val = cf.get_export_value(param)
-    return val
+    val = None
+    try:
+        cf.stack_name = deploy_ctx.cluster_stack_name
+        val = cf.get_export_value(param)
+    finally:
+        return val
 
 
 def _get_max_priority(rules):
