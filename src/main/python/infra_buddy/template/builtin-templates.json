@@ -96,6 +96,14 @@
         "DEFAULT_LOAD_BALANCER_TARGET": false
       }
     },
+    "listener": {
+      "type": "alias",
+      "lookup": "ecs-service",
+      "default-values": {
+        "CREATE_API": false,
+        "DEFAULT_LOAD_BALANCER_TARGET": false
+      }
+    },
     "rds-aurora": {
       "type": "github",
       "owner": "AlienVault-Engineering",
