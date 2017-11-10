@@ -93,9 +93,12 @@ class ServiceDefinition(object):
     def generate_execution_plan(self, template_manager, deploy_ctx):
         # type: (TemplateManager) -> list(Deploy)
         ret = []
+        template = template_manager.get_known_service(self.service_type)
         ret.append(CloudFormationDeploy(stack_name=deploy_ctx.stack_name,
-                                        template=template_manager.get_known_service(self.service_type),
+                                        template=template,
                                         deploy_ctx=deploy_ctx))
+        if template.has_monitor_definition():
+            ret.extend(template.get_monitor_artifact().generate_execution_plan(deploy_ctx))
         resource_deploy = template_manager.get_resource_service(self.artifact_directory)
         if resource_deploy:
             ret.append(CloudFormationDeploy(stack_name=deploy_ctx.resource_stack_name,
@@ -108,6 +111,8 @@ class ServiceDefinition(object):
             ret.append(CloudFormationDeploy(stack_name=deploy_ctx.generate_modification_stack_name(mod),
                                             template=template,
                                             deploy_ctx=deploy_ctx))
+            if template.has_monitor_definition():
+                ret.extend(template.get_monitor_artifact().generate_execution_plan(deploy_ctx))
         return ret
 
     @classmethod

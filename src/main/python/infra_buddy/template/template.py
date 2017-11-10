@@ -6,6 +6,8 @@ import requests
 from copy import deepcopy
 
 from infra_buddy.aws import s3
+from infra_buddy.context import monitor_definition
+from infra_buddy.context.monitor_definition import MonitorDefinition
 from infra_buddy.utility import print_utility
 
 
@@ -21,6 +23,7 @@ class Template(object):
 
     def get_default_env_values(self):
         return self.default_env_values
+
 
     def get_parameter_file_path(self):
         return os.path.join(self._get_template_location(),
@@ -61,6 +64,15 @@ class Template(object):
 
     def _set_download_relative_path(self, path):
         self.destination_relative = path
+
+    def has_monitor_definition(self):
+        return os.path.exists(self.get_monitor_definition_file())
+
+    def get_monitor_artifact(self):
+        return MonitorDefinition.create_from_directory(self._get_template_location())
+
+    def get_monitor_definition_file(self):
+        return os.path.join(self._get_template_location(),monitor_definition._ARTIFACT_FILE)
 
 
 class URLTemplate(Template):

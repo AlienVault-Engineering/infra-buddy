@@ -118,7 +118,7 @@ class ECSArtifactDefinition(ArtifactDefinition):
         super(ECSArtifactDefinition, self).__init__(_CONTAINER_ARTIFACT_TYPE, artifact_location, artifact_identifier)
 
     def generate_execution_plan(self, deploy_ctx):
-        return S3Deploy(self.artifact_id, self.artifact_location, deploy_ctx)
+        return ECSDeploy(self.artifact_id, self.artifact_location, deploy_ctx)
 
 
 class S3ArtifactDefinition(ArtifactDefinition):
@@ -126,7 +126,7 @@ class S3ArtifactDefinition(ArtifactDefinition):
         super(S3ArtifactDefinition, self).__init__(_S3_ARTIFACT_TYPE, artifact_location, artifact_identifier)
 
     def generate_execution_plan(self, deploy_ctx):
-        return ECSDeploy(self.artifact_id, self.artifact_location, deploy_ctx)
+        return S3Deploy(self.artifact_id, self.artifact_location, deploy_ctx)
 
 
 class NOOPArtifactDefinition(ArtifactDefinition):
