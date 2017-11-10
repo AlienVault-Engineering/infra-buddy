@@ -8,6 +8,7 @@ from pprint import pformat
 
 from infra_buddy.aws import s3
 from infra_buddy.context.artifact_definition import ArtifactDefinition
+from infra_buddy.context.monitor_definition import MonitorDefinition
 from infra_buddy.context.service_definition import ServiceDefinition
 from infra_buddy.notifier.datadog_notifier import DataDogNotifier
 from infra_buddy.template.template_manager import TemplateManager
@@ -102,6 +103,7 @@ class DeployContext(dict):
         self.update(service_definition.deployment_parameters)
         self.service_definition = service_definition
         self.artifact_definition = ArtifactDefinition.create_from_directory(artifact_directory)
+        self.monitor_definition = MonitorDefinition.create_from_directory(artifact_directory)
         self.artifact_definition.register_env_variables(self)
 
     def _initialize_environment_variables(self):
@@ -198,6 +200,9 @@ class DeployContext(dict):
         artifact_plan = self.artifact_definition.generate_execution_plan(self)
         if artifact_plan:
             execution_plan.append(artifact_plan)
+        monitor_plan = self.monitor_definition.generate_execution_plan(self)
+        if monitor_plan:
+            execution_plan.append(monitor_plan)
         print_utility.progress("Execution Plan:")
         for deploy in execution_plan:
             print_utility.info_banner("\t"+str(deploy))
@@ -226,12 +231,22 @@ class DeployContext(dict):
         sub = re.sub(reVar, replace_var, template_string)
         return sub
 
+    def recursive_expand_vars(self,source):
+        if isinstance(source,dict):
+            ret = {}
+            for key,value in source.iteritems():
+                ret[key] = self.recursive_expand_vars(value)
+            return ret
+        elif isinstance(source, list):
+            ret = []
+            for item in source:
+                ret.append(self.recursive_expand_vars(item))
+            return ret
+        elif isinstance(source,basestring):
+            return self.expandvars(source)
+        else:
+            return source
 
-        # rerun otx:notify-datadog \
-        #     --title "${ACTION} stack ${STACK_NAME} started"   \
-        #     --message "The ${ACTION} of stack ${STACK_NAME} has been started" \
-        #     --type success \
-        #     --tags "application:${application} ROLE:${ROLE} ENVIRONMENT:${ENVIRONMENT} system:${application}-${ROLE}"
 
     def push_deploy_ctx(self, deploy_):
         # type: (CloudFormationDeploy) -> None

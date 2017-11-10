@@ -8,6 +8,7 @@ class Deploy(object):
         super(Deploy, self).__init__()
         self.deploy_ctx = deploy_ctx
         self.stack_name = None
+        self.defaults = {}
 
     def do_deploy(self,dry_run=False):
         self.deploy_ctx.push_deploy_ctx(self)
