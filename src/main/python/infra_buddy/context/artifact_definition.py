@@ -45,7 +45,7 @@ class ArtifactDefinition(object):
         elif artifact_type:
             raise Exception("Unknown artifact type")
         else:
-            return NOOPArtifactDefinition( None, None)
+            return NOOPArtifactDefinition(None, None)
 
     @classmethod
     def create_from_directory(cls, artifact_directory):
@@ -60,13 +60,11 @@ class ArtifactDefinition(object):
         else:
             return cls.create()
 
-
-    def __init__(self,artifact_type, artifact_location, artifact_identifier):
+    def __init__(self, artifact_type, artifact_location, artifact_identifier):
         super(ArtifactDefinition, self).__init__()
         self.artifact_type = artifact_type
         self.artifact_location = artifact_location
         self.artifact_id = artifact_identifier
-        self.noop = artifact_type == _NOOP_ARTIFACT_TYPE
 
     @staticmethod
     def _search_for_legacy_implementation(artifact_directory):
@@ -95,13 +93,7 @@ class ArtifactDefinition(object):
         return None
 
     def generate_execution_plan(self, deploy_ctx):
-        if self.noop: return None
-        if self.artifact_type == _CONTAINER_ARTIFACT_TYPE:
-            return ECSDeploy(self.artifact_id, self.artifact_location, deploy_ctx)
-        elif self.artifact_type == _S3_ARTIFACT_TYPE:
-            return S3Deploy(self.artifact_id, self.artifact_location, deploy_ctx)
-        else:
-            raise Exception("Well, this is unexpected")
+        raise Exception("Well, this is unexpected")
 
     def save_to_file(self, destination_dir=None):
         if destination_dir:
@@ -122,19 +114,24 @@ class ArtifactDefinition(object):
 
 
 class ECSArtifactDefinition(ArtifactDefinition):
-
     def __init__(self, artifact_location, artifact_identifier):
         super(ECSArtifactDefinition, self).__init__(_CONTAINER_ARTIFACT_TYPE, artifact_location, artifact_identifier)
 
+    def generate_execution_plan(self, deploy_ctx):
+        return S3Deploy(self.artifact_id, self.artifact_location, deploy_ctx)
+
 
 class S3ArtifactDefinition(ArtifactDefinition):
-
     def __init__(self, artifact_location, artifact_identifier):
-        super(S3ArtifactDefinition, self).__init__(_S3_ARTIFACT_TYPE,artifact_location, artifact_identifier)
+        super(S3ArtifactDefinition, self).__init__(_S3_ARTIFACT_TYPE, artifact_location, artifact_identifier)
+
+    def generate_execution_plan(self, deploy_ctx):
+        return ECSDeploy(self.artifact_id, self.artifact_location, deploy_ctx)
 
 
 class NOOPArtifactDefinition(ArtifactDefinition):
-
     def __init__(self, artifact_location, artifact_identifier):
-        super(NOOPArtifactDefinition, self).__init__(_NOOP_ARTIFACT_TYPE,artifact_location, artifact_identifier)
+        super(NOOPArtifactDefinition, self).__init__(_NOOP_ARTIFACT_TYPE, artifact_location, artifact_identifier)
 
+    def generate_execution_plan(self, deploy_ctx):
+        return None
