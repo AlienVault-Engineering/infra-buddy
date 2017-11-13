@@ -110,6 +110,15 @@ class AliasTemplate(Template):
     def download_template(self):
         self.delegate.download_template()
 
+    def has_monitor_definition(self):
+        return self.delegate.has_monitor_definition()
+
+    def get_monitor_artifact(self):
+        return self.delegate.get_monitor_artifact()
+
+    def get_monitor_definition_file(self):
+        return self.delegate.get_monitor_definition_file()
+
     def get_template_file_path(self):
         return self.delegate.get_template_file_path()
 
