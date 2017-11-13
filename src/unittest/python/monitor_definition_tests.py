@@ -38,7 +38,7 @@ class MonitorDefinitionTestCase(ParentTestCase):
     def test_monitor_expansion(self):
         monitor_directory = self._get_resource_path('monitor_definition_tests/artifact_monitor_definition')
         md = MonitorDefinition.create_from_directory(monitor_directory)
-        dd_deploy = md.generate_execution_plan(self.test_deploy_ctx)
+        dd_deploy = md.generate_execution_plan(self.test_deploy_ctx)[0]
         expanded = dd_deploy.expand_monitors()
         first_monitor = expanded[0]
 
@@ -56,7 +56,7 @@ class MonitorDefinitionTestCase(ParentTestCase):
     def test_monitor_creation(self):
         monitor_directory = self._get_resource_path('monitor_definition_tests/artifact_monitor_definition')
         md = MonitorDefinition.create_from_directory(monitor_directory)
-        dd_deploy = md.generate_execution_plan(self.test_deploy_ctx)
+        dd_deploy = md.generate_execution_plan(self.test_deploy_ctx)[0]
         expanded = dd_deploy.expand_monitors()
         first_monitor = expanded[0]
         name = first_monitor['name']
