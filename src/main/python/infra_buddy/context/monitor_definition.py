@@ -132,7 +132,7 @@ class MonitorDefinition(object):
 
 class DatadogMonitorDefinition(MonitorDefinition):
     def generate_execution_plan(self, deploy_ctx):
-        return DataDogMonitorDeploy(self.monitors, deploy_ctx)
+        return [DataDogMonitorDeploy(self.monitors, deploy_ctx)]
 
 
 class NOOPMonitorDefinition(MonitorDefinition):
