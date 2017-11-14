@@ -199,10 +199,10 @@ class DeployContext(dict):
         execution_plan = self.service_definition.generate_execution_plan(self.template_manager, self)
         artifact_plan = self.artifact_definition.generate_execution_plan(self)
         if artifact_plan:
-            execution_plan.append(artifact_plan)
+            execution_plan.extend(artifact_plan)
         monitor_plan = self.monitor_definition.generate_execution_plan(self)
         if monitor_plan:
-            execution_plan.append(monitor_plan)
+            execution_plan.extend(monitor_plan)
         print_utility.progress("Execution Plan:")
         for deploy in execution_plan:
             print_utility.info_banner("\t"+str(deploy))
