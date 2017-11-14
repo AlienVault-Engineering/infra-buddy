@@ -1,0 +1,61 @@
+{
+  "provider": "datadog",
+  "monitors": [
+    {
+      "name": "ELB 500s High",
+      "type": "query alert",
+      "query": "avg(last_30m):sum:aws.applicationelb.httpcode_elb_5xx{application:${APPLICATION},environment:${ENVIRONMENT}} by {loadbalancer}.as_count() / sum:aws.applicationelb.request_count{application:${APPLICATION},environment:${ENVIRONMENT}} by {loadbalancer}.as_count() > 0.00",
+      "message": "{{#is_warning}}\nThe ${APPLICATION} load balancer is returning a low but unusual number of 500s, need to look into it. Disregard if you're deploying or have stuff down deliberately.\n{{/is_warning}} \n{{#is_alert}}\nThe ${APPLICATION} load balancer is returning a high number of 500s, need to look into it. \n{{#is_match \"environment\" \"prod\"}}\n${DATADOG_NOTIFICATION_LIST}\n{{/is_match}} \n{{/is_alert}} \n{{#is_recovery}}\nThe ${APPLICATION} load balancer has stopped throwing 500 errors. \n\n{{#is_match \"environment\" \"prod\"}}\n${DATADOG_NOTIFICATION_LIST}\n{{/is_match}} \n{{/is_recovery}}  ",
+      "tags": [
+        "application:${APPLICATION}",
+        "role:${ROLE}",
+        "environment:${ENVIRONMENT}"
+      ],
+      "options": {
+        "timeout_h": 0,
+        "notify_no_data": false,
+        "no_data_timeframe": null,
+        "notify_audit": false,
+        "require_full_window": true,
+        "new_host_delay": 300,
+        "include_tags": false,
+        "escalation_message": "",
+        "locked": false,
+        "renotify_interval": 0,
+        "evaluation_delay": 900,
+        "thresholds": {
+          "critical": 0.01,
+          "warning": 0.001
+        }
+      }
+    },
+    {
+      "name": "ELB Target 500s High",
+      "type": "query alert",
+      "query": "avg(last_30m):sum:aws.applicationelb.httpcode_target_5xx{application:${APPLICATION},environment:${ENVIRONMENT}} by {loadbalancer}.as_count() / sum:aws.applicationelb.request_count{application:${APPLICATION},environment:${ENVIRONMENT}} by {loadbalancer}.as_count() > 0.00",
+      "message": "{{#is_warning}}\nThe ${APPLICATION} load balancer is returning a low but unusual number of 500s, need to look into it. Disregard if you're deploying or have stuff down deliberately.\n{{/is_warning}} \n{{#is_alert}}\nThe ${APPLICATION} load balancer is returning a high number of 500s, need to look into it. \n{{#is_match \"environment\" \"prod\"}}\n${DATADOG_NOTIFICATION_LIST}\n{{/is_match}} \n{{/is_alert}} \n{{#is_recovery}}\nThe ${APPLICATION} load balancer has stopped throwing 500 errors. \n\n{{#is_match \"environment\" \"prod\"}}\n${DATADOG_NOTIFICATION_LIST}\n{{/is_match}} \n{{/is_recovery}}  ",
+      "tags": [
+        "application:${APPLICATION}",
+        "role:${ROLE}",
+        "environment:${ENVIRONMENT}"
+      ],
+      "options": {
+        "timeout_h": 0,
+        "notify_no_data": false,
+        "no_data_timeframe": null,
+        "notify_audit": false,
+        "require_full_window": true,
+        "new_host_delay": 300,
+        "include_tags": false,
+        "escalation_message": "",
+        "locked": false,
+        "renotify_interval": 0,
+        "evaluation_delay": 900,
+        "thresholds": {
+          "critical": 0.01,
+          "warning": 0.001
+        }
+      }
+    }
+  ]
+}

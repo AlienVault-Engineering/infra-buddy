@@ -1,6 +1,8 @@
 import os
 import tempfile
 
+import click
+
 from infra_buddy.aws import s3
 from infra_buddy.aws.cloudformation import CloudFormationBuddy
 from infra_buddy.aws.s3 import S3Buddy
@@ -36,14 +38,9 @@ class MonitorDefinitionTestCase(ParentTestCase):
             pass
 
     def test_monitor_expansion(self):
-        monitor_directory = self._get_resource_path('monitor_definition_tests/artifact_monitor_definition')
-        md = MonitorDefinition.create_from_directory(monitor_directory)
-        dd_deploy = md.generate_execution_plan(self.test_deploy_ctx)[0]
-        expanded = dd_deploy.expand_monitors()
-        first_monitor = expanded[0]
-
+        dd_deploy, first_monitor = self.load_monitor_artifact('monitor_definition_tests/artifact_monitor_definition')
         self.assertEqual(first_monitor['name'],
-                         "{} {}-{}: ELB 500s High".format(self.test_deploy_ctx.environment,
+                         "{}-{}-{}: ELB 500s High".format(self.test_deploy_ctx.environment,
                                                       self.test_deploy_ctx.application,
                                                       self.test_deploy_ctx.role),
                          "Did not get expanded name")
@@ -54,14 +51,10 @@ class MonitorDefinitionTestCase(ParentTestCase):
         self.assertEqual(first_monitor['type'],"metric alert","Did not rationalize metric type")
 
     def test_monitor_creation(self):
-        monitor_directory = self._get_resource_path('monitor_definition_tests/artifact_monitor_definition')
-        md = MonitorDefinition.create_from_directory(monitor_directory)
-        dd_deploy = md.generate_execution_plan(self.test_deploy_ctx)[0]
-        expanded = dd_deploy.expand_monitors()
-        first_monitor = expanded[0]
+        dd_deploy, first_monitor = self.load_monitor_artifact('monitor_definition_tests/artifact_monitor_definition')
         name = first_monitor['name']
-        dd_deploy.do_deploy()
         try:
+            dd_deploy.do_deploy()
             existing = dd_deploy.get_all_monitors_by_name(name)
             self.assertEqual(len(existing),1)
             #validate an update happens next time through
@@ -72,6 +65,30 @@ class MonitorDefinitionTestCase(ParentTestCase):
             self.assertEqual(existing[0]['options']['timeout_h'],1,'Update failed to occur')
         finally:
             dd_deploy.delete_all_by_name(name)
+
+    def test_monitor_fail_creation(self):
+        dd_deploy, first_monitor = self.load_monitor_artifact('monitor_definition_tests/failed_monitor_create')
+        name = first_monitor['name']
+        try:
+            dd_deploy.do_deploy()
+            existing = dd_deploy.get_all_monitors_by_name(name)
+            self.assertEqual(len(existing),1)
+            #validate an update happens next time through
+            dd_deploy.monitors[0]['options']['timeout_h'] = 1
+            dd_deploy.do_deploy()
+            self.fail("Did not fail on bad monitor def")
+        except click.UsageError as ue:
+             pass
+        finally:
+            dd_deploy.delete_all_by_name(name)
+
+    def load_monitor_artifact(self, definition):
+        monitor_directory = self._get_resource_path(definition)
+        md = MonitorDefinition.create_from_directory(monitor_directory)
+        dd_deploy = md.generate_execution_plan(self.test_deploy_ctx)[0]
+        expanded = dd_deploy.expand_monitors()
+        first_monitor = expanded[0]
+        return dd_deploy, first_monitor
 
 
         
