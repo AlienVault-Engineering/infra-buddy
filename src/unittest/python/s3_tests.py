@@ -44,9 +44,13 @@ class S3TestCase(ParentTestCase):
                              "Did not init correct path")
             self.assertEqual(s3_buddy.bucket.name, self.test_deploy_ctx.cf_bucket_name,
                              "Did not init correct bucket")
+            if deploy_ctx.region == 'us-east-1':
+                base = 's3'
+            else:
+                base ="s3-{}".format(deploy_ctx.region)
             self.assertEqual(s3_buddy.url_base,
-                             "https://s3-{}.amazonaws.com/unit-test-foo-cloudformation-deploy-resources".format(
-                                 deploy_ctx.region),
+                             "https://{}.amazonaws.com/unit-test-foo-cloudformation-deploy-resources".format(
+                                 base),
                              "Did not init correct url")
         finally:
             self.clean_s3(s3_buddy)
