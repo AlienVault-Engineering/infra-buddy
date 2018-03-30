@@ -1,6 +1,8 @@
 import os
 import tempfile
 
+from infra_buddy.context.deploy_ctx import DeployContext
+
 from infra_buddy.aws import s3
 from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
 from infra_buddy.deploy.s3_deploy import S3Deploy
@@ -28,19 +30,29 @@ class S3TestCase(ParentTestCase):
         super(S3TestCase, cls).setUpClass()
 
     def test_bucket_configuration(self):
-        s3_buddy = CloudFormationDeployS3Buddy(self.test_deploy_ctx)
+        self._validate_s3(self.test_deploy_ctx)
+
+    def test_bucket_configuration_us_east_1(self):
+        test_deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar-{}".format(self.run_random_word), environment="unit-test",
+                                            defaults=ParentTestCase._get_resource_path("east_config.json"))
+        self._validate_s3(test_deploy_ctx)
+
+    def _validate_s3(self, deploy_ctx):
+        s3_buddy = CloudFormationDeployS3Buddy(deploy_ctx)
         try:
             self.assertEqual(s3_buddy.key_root_path, self.test_deploy_ctx.cf_deploy_resource_path,
                              "Did not init correct path")
             self.assertEqual(s3_buddy.bucket.name, self.test_deploy_ctx.cf_bucket_name,
                              "Did not init correct bucket")
             self.assertEqual(s3_buddy.url_base,
-                             "https://s3-us-west-1.amazonaws.com/unit-test-foo-cloudformation-deploy-resources",
+                             "https://s3-{}.amazonaws.com/unit-test-foo-cloudformation-deploy-resources".format(
+                                 deploy_ctx.region),
                              "Did not init correct url")
         finally:
             self.clean_s3(s3_buddy)
-        
+
     def test_file_operations(self):
+
         s3_buddy = CloudFormationDeployS3Buddy(self.test_deploy_ctx)
         try:
             changeset = ParentTestCase._get_resource_path("cloudformation/sample_changeset.json")
