@@ -28,6 +28,14 @@ class DeployContextTestCase(ParentTestCase):
                                                          defaults=self.default_config)
         self.assertEqual(deploy_ctx.vpcapp, "foo", "Failed to generate generate_short_app_name")
 
+    def test_s3_config_url_path(self):
+        east_deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar-{}".format(self.run_random_word), environment="unit-test",
+                                            defaults=self.east_config)
+        self.assertTrue("s3." in east_deploy_ctx.config_templates_url)
+        test_deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar-{}".format(self.run_random_word), environment="unit-test",
+                                            defaults=self.default_config)
+        self.assertTrue("s3-us-west-1." in test_deploy_ctx.config_templates_url)
+
     def _validate_deploy_ctx(self, deploy_ctx):
         # type: (DeployContext) -> None
         self.assertEqual(deploy_ctx.cf_bucket_name, "unit-test-foo-cloudformation-deploy-resources",

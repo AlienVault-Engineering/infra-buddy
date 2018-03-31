@@ -35,6 +35,7 @@ env_variables['CF_BUCKET_NAME'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deplo
 env_variables['TEMPLATE_BUCKET'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources" # alias
 env_variables['CF_DEPLOY_RESOURCE_PATH'] = "${STACK_NAME}/${DEPLOY_DATE}"
 env_variables['CONFIG_TEMPLATES_URL'] = "https://s3-${REGION}.amazonaws.com/${CF_BUCKET_NAME}/${CF_DEPLOY_RESOURCE_PATH}"
+env_variables['CONFIG_TEMPLATES_EAST_URL'] = "https://s3.amazonaws.com/${CF_BUCKET_NAME}/${CF_DEPLOY_RESOURCE_PATH}"
 env_variables['CLUSTER_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-cluster"
 env_variables['RESOURCE_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-${ROLE}-resources"
 env_variables['ECS_SERVICE_RESOURCE_STACK_NAME'] = "${RESOURCE_STACK_NAME}"  # alias
@@ -123,6 +124,10 @@ class DeployContext(dict):
             evaluated_template = self.expandvars(template)
             self[variable] = evaluated_template
             self.__dict__[variable.lower()] = evaluated_template
+        #s3 has non-standardized behavior in us-east-1 you can not use the region in the url
+        if self['REGION'] == 'us-east-1':
+            self['CONFIG_TEMPLATES_URL'] = self['CONFIG_TEMPLATES_EAST_URL']
+            self.__dict__['CONFIG_TEMPLATES_URL'.lower()] = self['CONFIG_TEMPLATES_EAST_URL']
 
     def _initalize_defaults(self, defaults,environment):
         self['DATADOG_KEY'] = ""

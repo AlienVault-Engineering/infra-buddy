@@ -24,9 +24,9 @@ class ParentTestCase(unittest.TestCase):
     def setUpClass(cls):
         super(ParentTestCase, cls).setUpClass()
         cls.resource_directory = RESOURCE_DIR
-        config = 'default_config.json'
         cls.run_random_word = cls.randomWord(5)
-        cls.default_config = ParentTestCase._get_resource_path(config)
+        cls.default_config = ParentTestCase._get_resource_path('default_config.json')
+        cls.east_config = ParentTestCase._get_resource_path('east_config.json')
         cls.test_deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar-{}".format(cls.run_random_word), environment="unit-test",
                                             defaults=cls.default_config)
         print_utility.configure(True)
