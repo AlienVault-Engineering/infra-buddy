@@ -38,6 +38,18 @@
       "owner": "AlienVault-Engineering",
       "repo": "infra-buddy-ecs-service-sqs-threshold"
     },
+    "sqs-queue": {
+      "type": "github",
+      "compatible": [
+        "default-api-service",
+        "api-service",
+        "listener",
+        "batch-service",
+        "ecs-service"
+      ],
+      "owner": "AlienVault-Engineering",
+      "repo": "infra-buddy-ecs-service-sqs-queue"
+    },
     "target-connection-error": {
       "type": "github",
       "compatible": [
