@@ -48,7 +48,7 @@
         "ecs-service"
       ],
       "owner": "AlienVault-Engineering",
-      "repo": "infra-buddy-ecs-service-sqs-queue"
+      "repo": "infra-buddy-sqs-queue"
     },
     "target-connection-error": {
       "type": "github",
