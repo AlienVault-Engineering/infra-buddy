@@ -168,8 +168,9 @@ class CloudFormationDeploy(Deploy):
                     known_param[key_]['variable'] = param['ParameterValue']
                     value_to_key[param['ParameterValue'].replace("$","").replace("{","").replace("}","")] = key_
                     expandvars = self.deploy_ctx.expandvars(param['ParameterValue'], self.defaults)
-                    if "${" in expandvars: errors[key_].append(
-                        "Parameter did not appear to validate - {}".format(expandvars))
+                    if "${" in expandvars: warning[key_].append(
+                        "Parameter did not appear to validate ensure it is populated when using the template - {}"
+                            .format(expandvars))
                     known_param[key_]['default_value'] = expandvars
                 else:
                     # exists in param file but not in template
