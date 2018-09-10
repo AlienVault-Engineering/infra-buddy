@@ -40,7 +40,7 @@ class HelperTestCase(ParentTestCase):
                                                   defaults=self.default_config)
         cloudformation = CloudFormationBuddy(ctx)
         try:
-            template_dir = ParentTestCase._get_resource_path("helper_func_tests/")
+            template_dir = ParentTestCase._get_resource_path("parameter_load_tests/helper_func")
             deploy = CloudFormationDeploy(ctx.stack_name, NamedLocalTemplate(template_dir), ctx)
             deploy.do_deploy(dry_run=False)
             rp = helper_functions.calculate_rule_priority(ctx, ctx.stack_name)

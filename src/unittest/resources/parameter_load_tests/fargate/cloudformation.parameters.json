@@ -1,0 +1,56 @@
+[
+
+    
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "${ENVIRONMENT}"
+    },
+    {
+        "ParameterKey": "VPCStack",
+        "ParameterValue": "${VPC_STACK_NAME}"
+    },
+    {
+        "ParameterKey": "ClusterStack",
+        "ParameterValue": "${CLUSTER_STACK_NAME}"
+    },
+    {
+        "ParameterKey": "DesiredCapacity",
+        "ParameterValue": "${DESIRED_CAPACITY}"
+    },
+    {
+        "ParameterKey": "ContainerImage",
+        "ParameterValue": "${IMAGE}"
+    },
+    {
+        "ParameterKey": "ContainerPort",
+        "ParameterValue": "${CONTAINER_PORT}"
+    },
+    {
+        "ParameterKey": "APIPath",
+        "ParameterValue": "${API_PATH}"
+    },
+    {
+        "ParameterKey": "RulePriority",
+        "ParameterValue": "${RULE_PRIORITY}"
+    },
+    {
+        "ParameterKey": "TaskMemory",
+        "ParameterValue": "${TASK_SOFT_MEMORY}"
+    },
+    {
+        "ParameterKey": "TaskCPU",
+        "ParameterValue": "${TASK_CPU}"
+    },
+    {
+        "ParameterKey": "CreateAPI",
+        "ParameterValue": "${CREATE_API}"
+    },
+    {
+        "ParameterKey": "DefaultLoadBalancerTarget",
+        "ParameterValue": "${DEFAULT_LOAD_BALANCER_TARGET}"
+    },
+    {
+        "ParameterKey": "UseFargate",
+        "ParameterValue": "${USE_FARGATE}"
+    }
+]

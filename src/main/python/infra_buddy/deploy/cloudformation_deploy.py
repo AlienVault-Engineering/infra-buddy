@@ -14,6 +14,7 @@ from infra_buddy.deploy.deploy import Deploy
 from infra_buddy.utility import helper_functions, print_utility
 
 _PARAM_TYPE_PROPERTY = "property"
+_PARAM_TYPE_TRANSFORM = "transform"
 
 _PARAM_TYPE_FUNC = "func"
 
@@ -28,7 +29,8 @@ class CloudFormationDeploy(Deploy):
             "properties": {
                 "type": {"type": "string", "enum": [_PARAM_TYPE_PROPERTY,
                                                     _PARAM_TYPE_FUNC,
-                                                    _PARAM_TYPE_TEMPLATE]},
+                                                    _PARAM_TYPE_TEMPLATE,
+                                                    _PARAM_TYPE_TRANSFORM]},
                 "value": {"type": "string"},
                 "default_value": {"type": "string"},
                 "key": {"type": "string"}
@@ -54,11 +56,19 @@ class CloudFormationDeploy(Deploy):
             with open(self.default_path, 'r') as default_fp:
                 def_obj = json.load(default_fp)
                 validate(def_obj, self.schema)
-            for key, value in def_obj.iteritems():
-                self.defaults[key] = self._load_value(value)
+            self._process_default_dict(def_obj)
         self.defaults.update(default_env_values)
 
-    def _load_value(self, value):
+    def _process_default_dict(self, def_obj):
+        _transformations = {}
+        for key, value in def_obj.iteritems():
+            self.defaults[key] = self._load_value(value, key, _transformations)
+        for key, value in _transformations.iteritems():
+            transform = self.transform(value,self.defaults.get(key,None))
+            if transform is not None:
+                self.defaults[key] = transform
+
+    def _load_value(self, value, key, transformations):
         type_ = value['type']
         if type_ == _PARAM_TYPE_TEMPLATE:
             return self.deploy_ctx.expandvars(value['value'], self.defaults)
@@ -84,7 +94,29 @@ class CloudFormationDeploy(Deploy):
             default_value = value.get('default', None)
             if isinstance(default_value, basestring):
                 default_value = self.deploy_ctx.expandvars(str(default_value), self.defaults)
-            return self.deploy_ctx.get(value['key'],default_value)
+            return self.deploy_ctx.get(value['key'], default_value)
+        elif type_ == _PARAM_TYPE_TRANSFORM:
+            # add it to the list of properties to transform after load
+            transformations[key] = value
+            # Load like a normal property, so override the type
+            value['type'] = _PARAM_TYPE_PROPERTY
+            # and recurse
+            return self._load_value(value, None, None)
+        else:
+            # should die on JSON validation but to be complete
+            print_utility.error(
+                "Can not load value for type in defaults.json: Stack {} Type {}".format(self.stack_name, type_))
+
+    def transform(self, definition, value):
+        func_name = definition['func_name']
+        if 'transform_fargate_cpu' == func_name:
+            return helper_functions.transform_fargate_cpu(self.defaults, value)
+        elif 'transform_fargate_memory' == func_name:
+            return helper_functions.transform_fargate_memory(self.defaults, value)
+        else:
+            print_utility.error(
+                "Can not locate function for defaults.json: Stack {} Function {}".format(self.stack_name,
+                                                                                         func_name))
 
     def get_rendered_config_files(self):
         self._prep_render_destination()
@@ -166,7 +198,7 @@ class CloudFormationDeploy(Deploy):
                 key_ = param['ParameterKey']
                 if key_ in known_param:
                     known_param[key_]['variable'] = param['ParameterValue']
-                    value_to_key[param['ParameterValue'].replace("$","").replace("{","").replace("}","")] = key_
+                    value_to_key[param['ParameterValue'].replace("$", "").replace("{", "").replace("}", "")] = key_
                     expandvars = self.deploy_ctx.expandvars(param['ParameterValue'], self.defaults)
                     if "${" in expandvars: warning[key_].append(
                         "Parameter did not appear to validate ensure it is populated when using the template - {}"
@@ -186,7 +218,6 @@ class CloudFormationDeploy(Deploy):
                     else:
                         # exists in param file but not in template
                         errors[key_].append("Parameter does not exist in parameter file but defined in defaults file")
-
 
         for key, value in known_param.iteritems():
             if 'variable' not in value:

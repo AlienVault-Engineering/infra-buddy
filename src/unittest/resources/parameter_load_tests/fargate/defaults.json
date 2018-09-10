@@ -1,0 +1,49 @@
+{
+  "RULE_PRIORITY": {
+    "type": "func",
+    "default_key": "RULE_PRIORITY",
+    "func_name": "rule_priority"
+  },
+  "TASK_CPU": {
+    "type": "transform",
+    "key": "TASK_CPU",
+    "default": 64,
+    "func_name": "transform_fargate_cpu"
+  },
+  "DESIRED_CAPACITY": {
+    "type": "property",
+    "key": "DESIRED_CAPACITY",
+    "default": 1
+  },
+  "TASK_SOFT_MEMORY": {
+    "type": "transform",
+    "key": "TASK_SOFT_MEMORY",
+    "default": 512,
+    "func_name": "transform_fargate_memory"
+  },
+  "CONTAINER_PORT": {
+    "type": "property",
+    "key": "CONTAINER_PORT",
+    "default": 5000
+  },
+  "API_PATH": {
+    "type": "property",
+    "key": "API_PATH",
+    "default": "${ROLE}"
+  },
+  "CREATE_API": {
+    "type": "property",
+    "key": "CREATE_API",
+    "default": false
+  },
+  "USE_FARGATE": {
+    "type": "property",
+    "key": "USE_FARGATE",
+    "default": false
+  },
+  "DEFAULT_LOAD_BALANCER_TARGET": {
+    "type": "property",
+    "key": "DEFAULT_LOAD_BALANCER_TARGET",
+    "default": false
+  }
+}
