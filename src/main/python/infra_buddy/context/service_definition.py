@@ -3,7 +3,7 @@ import os
 
 import datetime
 from jsonschema import validate
-
+from pprint import pformat
 from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
 from infra_buddy.template.template_manager import TemplateManager
 from infra_buddy.utility import print_utility
@@ -88,7 +88,9 @@ class ServiceDefinition(object):
                 print_utility.info("Updating deployment params with environment"
                                    " specific settings - {}".format(env_deployment_parameters))
                 self.deployment_parameters.update(service_definition[env_deployment_parameters])
+            print_utility.info("Loaded deployment parameters: " + pformat(self.deployment_parameters, indent=4))
             self.service_modifications = service_definition.get(_MODIFICATIONS, [])
+
 
     def generate_execution_plan(self, template_manager, deploy_ctx):
         # type: (TemplateManager) -> list(Deploy)
