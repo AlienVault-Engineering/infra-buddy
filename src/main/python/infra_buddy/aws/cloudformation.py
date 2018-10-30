@@ -86,8 +86,9 @@ class CloudFormationBuddy(object):
                 self.log_changeset_status()
                 self._clean_change_set_and_exit()
 
-    def _is_noop_changeset(self):
-        return "The submitted information didn't contain changes." in self.change_set_description.get('StatusReason','')
+        status_reason = self.change_set_description.get('StatusReason','')
+        return "No updates are to be performed." in status_reason or \
+               "The submitted information didn't contain changes." in status_reason
 
     def get_change_set_status(self, refresh=False):
         self._validate_changeset_operation_ready('get_change_set_status')
