@@ -100,8 +100,6 @@ _valid_fargate_resources = {
 
 _valid_fargate_memories = set([item for sublist in _valid_fargate_resources.itervalues() for item in sublist])
 
-print_utility.warn("Valid fargate resource mapping = {}".format(_valid_fargate_resources))
-print_utility.warn("Valid fargate memory  = {}".format(_valid_fargate_memories))
 
 
 def _validate_fargate_resource_allocation(cpu, memory, deploy_ctx):
