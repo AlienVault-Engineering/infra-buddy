@@ -183,7 +183,7 @@ class DeployContext(dict):
         return self.service_definition.service_modifications
 
     def should_skip_ecs_trivial_update(self):
-        return self.get(SKIP_ECS, os.environ.get(SKIP_ECS, True))
+        return self.get(SKIP_ECS, os.environ.get(SKIP_ECS, "True")) == "True"
 
     def render_template(self, file,destination):
         with open(file, 'r') as source:
