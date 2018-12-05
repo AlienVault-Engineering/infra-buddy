@@ -36,7 +36,7 @@ class S3Buddy(object):
     def _get_url_base(self):
         if self.deploy_ctx.region == 'us-east-1':
                return "https://s3.amazonaws.com/{bucket_name}".format(region=self.deploy_ctx.region,
-                                                                                       bucket_name=self.bucket_name)
+                                                                      bucket_name=self.bucket_name)
         return "https://s3-{region}.amazonaws.com/{bucket_name}".format(region=self.deploy_ctx.region,
                                                                         bucket_name=self.bucket_name)
 
