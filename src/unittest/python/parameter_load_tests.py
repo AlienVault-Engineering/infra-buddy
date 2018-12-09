@@ -32,7 +32,7 @@ class ParameterLoadTestCase(ParentTestCase):
             self.assertEqual(deploy.defaults['TASK_CPU'], 64, 'Did not respect defaut')
             ctx['USE_FARGATE'] = 'true'
             deploy = CloudFormationDeploy(ctx.stack_name, NamedLocalTemplate(template_dir), ctx)
-            self.assertEqual(deploy.defaults['TASK_SOFT_MEMORY'], '0.5GB', 'Did not transform memory')
+            self.assertEqual(deploy.defaults['TASK_SOFT_MEMORY'], '512', 'Did not transform memory')
             self.assertEqual(deploy.defaults['TASK_CPU'], 256, 'Did not transform cpu')
         finally:
             pass
@@ -55,27 +55,26 @@ class ParameterLoadTestCase(ParentTestCase):
             self.assertEqual(helper_functions.transform_fargate_cpu(ctx,to_transform), expected,
                              'Did not transform correctly')
         memory_transforms = {
-            128: '0.5GB',
-            12: '0.5GB',
-            257: '0.5GB',
-            1023: '1GB',
-            1024: '1GB',
-            '1GB': '1GB',
-            2000: '2GB',
-            10000: '10GB',
+            128: '512',
+            12: '512',
+            257: '512',
+            1023: '1024',
+            1024: '1024',
+            2000: '2048',
+            10000: '10240',
         }
         for to_transform, expected in memory_transforms.iteritems():
             self.assertEqual(helper_functions.transform_fargate_memory(ctx,to_transform), expected,
                              'Did not transform correctly')
 
         valid_configurations = [
-            [256,'0.5GB'],
-            [2048,'5GB'],
-            [1024,'2GB'],
+            [256,'512'],
+            [2048,'5120'],
+            [1024,'2048'],
         ]
         invalid_configuration = [
-            [256,'5GB'],
-            [4096,'5GB']
+            [256,'5120'],
+            [4096,'5120']
         ]
         for config in valid_configurations:
             helper_functions._validate_fargate_resource_allocation(config[0],config[1],{})

@@ -50,15 +50,15 @@ def _get_max_priority(rules):
 def _get_valid_fargate_memory(_value):
     if _value <= 512:
         print_utility.info("Transforming memory value of {} to '0.5GB' - min value".format(_value))
-        return '0.5'
+        return '512'
     elif _value < 1024:
         print_utility.info("Transforming memory value of {} to '1GB' - next legitimate value".format(_value))
-        return '1'
+        return '1024'
     else:
         memory = int(math.ceil(_value/1024.0))
         if memory > 30:
             print_utility.info("Transforming memory value of {} to '30GB' - max value".format(_value))
-            memory = 30
+            memory = 30720
         else:
             print_utility.info("Transforming memory value of {} to '{}GB'".format(_value, memory))
         return memory
@@ -91,11 +91,11 @@ def _get_valid_fargate_cpu(_value):
 # 2048 (2 vCPU) - Available memory values: Between 4GB and 16GB in 1GB increments
 # 4096 (4 vCPU) - Available memory values: Between 8GB and 30GB in 1GB increments
 _valid_fargate_resources = {
-    256: ['0.5GB', '1GB', '2GB'],
-    512: ["{}GB".format(i) for i in range(1, 4)],
-    1024: ["{}GB".format(i) for i in range(2, 8)],
-    2048: ["{}GB".format(i) for i in range(4, 16)],
-    4096: ["{}GB".format(i) for i in range(8, 30)],
+    256: ['512', '1024', '2048'],
+    512: ["{}".format(i*1024) for i in range(1, 4)],
+    1024: ["{}".format(i*1024) for i in range(2, 8)],
+    2048: ["{}".format(i*1024) for i in range(4, 16)],
+    4096: ["{}".format(i*1024) for i in range(8, 30)],
 }
 
 _valid_fargate_memories = set([item for sublist in _valid_fargate_resources.itervalues() for item in sublist])
@@ -136,7 +136,7 @@ def _using_fargate(deploy_ctx):
 
 def transform_fargate_memory(deploy_ctx, _value):
     if _using_fargate(deploy_ctx):
-        if isinstance(_value, basestring) and 'GB' in _value:
+        if isinstance(_value, basestring):
             if _value not in _valid_fargate_memories:
                 print_utility.error(
                     'Attempting to use fargate with invalid memory.  {} Memory Valid Values: {}'.format(_value,
@@ -145,8 +145,7 @@ def transform_fargate_memory(deploy_ctx, _value):
             else:
                 memory = _value
         else:
-            # transform from MB to GB
-            memory = "{}GB".format(_get_valid_fargate_memory(_value))
+            memory = "{}".format(_get_valid_fargate_memory(_value))
         _validate_fargate_resource_allocation(None, memory, deploy_ctx)
         return memory
 
