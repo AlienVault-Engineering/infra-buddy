@@ -56,7 +56,8 @@ def _get_valid_fargate_memory(_value):
         return '1024'
     else:
         memory = int(math.ceil(_value/1024.0))
-        if memory > 30:
+        memory = memory * 1024 #normalize to closest interval of 1GB
+        if memory > 30720:
             print_utility.info("Transforming memory value of {} to '30GB' - max value".format(_value))
             memory = 30720
         else:
