@@ -18,6 +18,7 @@ class S3Buddy(object):
         self.s3 = boto3.resource('s3', region_name=self.deploy_ctx.region)
         self.bucket = self.s3.Bucket(bucket_name)
         try:
+            print_utility.info("S3Buddy using bucket_name={}, root_path={}".format(bucket_name, root_path))
             configuration = self._get_bucket_configuration()
             if configuration:
                 self.bucket.create(CreateBucketConfiguration=configuration)
@@ -35,7 +36,7 @@ class S3Buddy(object):
     def _get_url_base(self):
         if self.deploy_ctx.region == 'us-east-1':
                return "https://s3.amazonaws.com/{bucket_name}".format(region=self.deploy_ctx.region,
-                                                                                       bucket_name=self.bucket_name)
+                                                                      bucket_name=self.bucket_name)
         return "https://s3-{region}.amazonaws.com/{bucket_name}".format(region=self.deploy_ctx.region,
                                                                         bucket_name=self.bucket_name)
 

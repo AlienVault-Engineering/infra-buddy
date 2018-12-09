@@ -129,6 +129,8 @@ class DeployContext(dict):
             self['CONFIG_TEMPLATES_URL'] = self['CONFIG_TEMPLATES_EAST_URL']
             self.__dict__['CONFIG_TEMPLATES_URL'.lower()] = self['CONFIG_TEMPLATES_EAST_URL']
 
+        print_utility.info("deploy_ctx = {}".format(repr(self.__dict__)))
+
     def _initalize_defaults(self, defaults,environment):
         self['DATADOG_KEY'] = ""
         self['ENVIRONMENT'] = environment.lower() if environment else "dev"
