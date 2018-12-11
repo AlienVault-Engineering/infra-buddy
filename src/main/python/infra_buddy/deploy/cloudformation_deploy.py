@@ -181,6 +181,7 @@ class CloudFormationDeploy(Deploy):
         known_param = {}
         errors = defaultdict(list)
         warning = defaultdict(list)
+        ssm_keys = []
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
             template_params = pydash.get(template_obj, 'Parameters', {})
@@ -188,8 +189,13 @@ class CloudFormationDeploy(Deploy):
                 description = value.get('Description', None)
                 default = value.get('Default', None)
                 if not description: warning[key].append("Parameter does not contain a description")
-                if default: warning[key].append(
-                    "Parameter has default value defined in CloudFormation Template - {}".format(default))
+                if default:
+                    type = value.get('Type',None)
+                    if type:
+                        if type and 'AWS::SSM' in type:
+                            ssm_keys.append(key)
+                    else:
+                        warning[key].append("Parameter has default value defined in CloudFormation Template - {}".format(default))
                 known_param[key] = {'description': description, 'type': value['Type']}
         value_to_key = {}
         with open(self.parameter_file, 'r') as params:
@@ -205,8 +211,9 @@ class CloudFormationDeploy(Deploy):
                             .format(expandvars))
                     known_param[key_]['default_value'] = expandvars
                 else:
-                    # exists in param file but not in template
-                    errors[key_].append("Parameter does not exist in template but defined in param file")
+                    if key_ not in ssm_keys:
+                        # exists in param file but not in template
+                        errors[key_].append("Parameter does not exist in template but defined in param file")
         if self.default_path and os.path.exists(self.default_path):
             with open(self.default_path, 'r') as defs:
                 defs = json.load(defs)
