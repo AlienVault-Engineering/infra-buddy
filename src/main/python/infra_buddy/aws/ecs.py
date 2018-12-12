@@ -52,7 +52,8 @@ class ECSBuddy(object):
         new_task_def = {
             'family':self.task_definition_description['family'],
             'containerDefinitions':self.task_definition_description['containerDefinitions'],
-            'volumes':self.task_definition_description['volumes']
+            'volumes':self.task_definition_description['volumes'],
+            'compatibilities':self.task_definition_description['compatibilities']
         }
         new_task_def['containerDefinitions'][0]['image'] = self.new_image
         if 'TASK_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_MEMORY']:
