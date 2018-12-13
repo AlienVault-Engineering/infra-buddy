@@ -55,7 +55,7 @@ class ECSBuddy(object):
             'volumes':self.task_definition_description['volumes']
         }
         if 'compatibilities' in  self.task_definition_description :
-            new_task_def['compatibilities'] = self.task_definition_description['compatibilities']
+            new_task_def['requiresCompatibilities'] = self.task_definition_description['compatibilities']
         new_task_def['containerDefinitions'][0]['image'] = self.new_image
         if 'TASK_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_MEMORY']:
             new_task_def['containerDefinitions'][0]['memory'] = self.deploy_ctx['TASK_MEMORY']
