@@ -52,10 +52,9 @@ class ECSBuddy(object):
         new_task_def = {
             'family':self.task_definition_description['family'],
             'containerDefinitions':self.task_definition_description['containerDefinitions'],
-            'volumes':self.task_definition_description['volumes']
+            'volumes':self.task_definition_description['volumes'],
+            'networkMode':self.task_definition_description['networkMode']
         }
-        if 'compatibilities' in  self.task_definition_description :
-            new_task_def['requiresCompatibilities'] = self.task_definition_description['compatibilities']
         new_task_def['containerDefinitions'][0]['image'] = self.new_image
         if 'TASK_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_MEMORY']:
             new_task_def['containerDefinitions'][0]['memory'] = self.deploy_ctx['TASK_MEMORY']
@@ -63,6 +62,8 @@ class ECSBuddy(object):
             new_task_def['containerDefinitions'][0]['memoryReservation'] = self.deploy_ctx['TASK_SOFT_MEMORY']
         if 'TASK_CPU' in self.deploy_ctx and self.deploy_ctx['TASK_CPU']:
             new_task_def['containerDefinitions'][0]['cpu'] = self.deploy_ctx['TASK_CPU']
+        if 'USE_FARGATE' in self.deploy_ctx and self.deploy_ctx['USE_FARGATE']:
+            new_task_def['requiresCompatibilities'] = ['FARGATE']
         updated_task_definition = self.client.register_task_definition(**new_task_def)['taskDefinition']
         new_task_def_arn = updated_task_definition['taskDefinitionArn']
         self.deploy_ctx.notify_event(
