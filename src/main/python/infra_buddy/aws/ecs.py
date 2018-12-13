@@ -15,15 +15,15 @@ class ECSBuddy(object):
         self.client = boto3.client('ecs', region_name=self.deploy_ctx.region)
         cf = CloudFormationBuddy(deploy_ctx)
         ecs_cluster_export_key = "{}-ECSCluster".format(self.deploy_ctx.cluster_stack_name)
-        self.cluster = self._wait_for_export(cf=cf,fully_qualified_param_name=ecs_cluster_export_key)
+        self.cluster = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_cluster_export_key)
         ecs_service_export_key = "{}-ECSService".format(self.deploy_ctx.stack_name)
-        self.ecs_service = self._wait_for_export(cf=cf,fully_qualified_param_name=ecs_service_export_key)
+        self.ecs_service = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_service_export_key)
         ecs_task_family_export_key = "{}-ECSTaskFamily".format(self.deploy_ctx.stack_name)
-        self.ecs_task_family = self._wait_for_export(cf=cf,fully_qualified_param_name=ecs_task_family_export_key)
+        self.ecs_task_family = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_task_family_export_key)
         self.task_definition_description = None
         self.new_image = None
 
-    def _wait_for_export(self,cf,fully_qualified_param_name):
+    def _wait_for_export(self, cf, fully_qualified_param_name):
         # we are seeing an issue where immediately after stack create the export values are not
         # immediately available
         return waitfor.waitfor(function_pointer=cf.get_export_value,
@@ -31,11 +31,11 @@ class ECSBuddy(object):
                                interval_seconds=2,
                                max_attempts=5,
                                negate=True,
-                               args={"fully_qualified_param_name":fully_qualified_param_name},
+                               args={"fully_qualified_param_name": fully_qualified_param_name},
                                exception=False)
 
-    def set_container_image(self,location,tag):
-        self.new_image = "{location}:{tag}".format(location=location,tag=tag)
+    def set_container_image(self, location, tag):
+        self.new_image = "{location}:{tag}".format(location=location, tag=tag)
 
     def requires_update(self):
         if not self.new_image:
@@ -50,11 +50,12 @@ class ECSBuddy(object):
     def perform_update(self):
         self._describe_task_definition(refresh=True)
         new_task_def = {
-            'family':self.task_definition_description['family'],
-            'containerDefinitions':self.task_definition_description['containerDefinitions'],
-            'volumes':self.task_definition_description['volumes'],
-            'networkMode':self.task_definition_description['networkMode']
+            'family': self.task_definition_description['family'],
+            'containerDefinitions': self.task_definition_description['containerDefinitions'],
+            'volumes': self.task_definition_description['volumes']
         }
+        if 'networkMode' in self.task_definition_description:
+            new_task_def['networkMode'] = self.task_definition_description['networkMode']
         new_task_def['containerDefinitions'][0]['image'] = self.new_image
         if 'TASK_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_MEMORY']:
             new_task_def['containerDefinitions'][0]['memory'] = self.deploy_ctx['TASK_MEMORY']
@@ -83,7 +84,7 @@ class ECSBuddy(object):
                         )
         except Exception as e:
             success = False
-            print_utility.error("Error waiting for service to stabilize - {}".format(e.message),raise_exception=True)
+            print_utility.error("Error waiting for service to stabilize - {}".format(e.message), raise_exception=True)
         finally:
             self.deploy_ctx.notify_event(
                 title="Update of ecs service {service} completed".format(service=self.ecs_service,
