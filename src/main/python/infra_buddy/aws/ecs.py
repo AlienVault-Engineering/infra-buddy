@@ -20,6 +20,8 @@ class ECSBuddy(object):
         self.ecs_service = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_service_export_key)
         ecs_task_family_export_key = "{}-ECSTaskFamily".format(self.deploy_ctx.stack_name)
         self.ecs_task_family = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_task_family_export_key)
+        ecs_task_execution_role_export_key = "{}-ECSTaskRole".format(self.deploy_ctx.stack_name)
+        self.ecs_task_execution_role = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_task_execution_role_export_key)
         self.task_definition_description = None
         self.new_image = None
 
@@ -57,14 +59,22 @@ class ECSBuddy(object):
         if 'networkMode' in self.task_definition_description:
             new_task_def['networkMode'] = self.task_definition_description['networkMode']
         new_task_def['containerDefinitions'][0]['image'] = self.new_image
-        if 'TASK_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_MEMORY']:
-            new_task_def['containerDefinitions'][0]['memory'] = self.deploy_ctx['TASK_MEMORY']
-        if 'TASK_SOFT_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_SOFT_MEMORY']:
-            new_task_def['containerDefinitions'][0]['memoryReservation'] = self.deploy_ctx['TASK_SOFT_MEMORY']
-        if 'TASK_CPU' in self.deploy_ctx and self.deploy_ctx['TASK_CPU']:
-            new_task_def['containerDefinitions'][0]['cpu'] = self.deploy_ctx['TASK_CPU']
+        using_fargate=False
         if 'USE_FARGATE' in self.deploy_ctx and self.deploy_ctx['USE_FARGATE'] == 'true':
             new_task_def['requiresCompatibilities'] = ['FARGATE']
+            using_fargate = True
+        if 'TASK_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_MEMORY']:
+           new_task_def['containerDefinitions'][0]['memory'] = self.deploy_ctx['TASK_MEMORY']
+           # set at the task level for fargate definitions
+           if using_fargate: new_task_def['memory']  = self.deploy_ctx['TASK_MEMORY']
+        if 'TASK_SOFT_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_SOFT_MEMORY']:
+           new_task_def['containerDefinitions'][0]['memoryReservation'] = self.deploy_ctx['TASK_SOFT_MEMORY']
+        if 'TASK_CPU' in self.deploy_ctx and self.deploy_ctx['TASK_CPU']:
+           new_task_def['containerDefinitions'][0]['cpu'] = self.deploy_ctx['TASK_CPU']
+           # set at the task level for fargate definitions
+           if using_fargate: new_task_def['cpu']  = self.deploy_ctx['TASK_MEMORY']
+        if self.ecs_task_execution_role:
+            new_task_def['executionRoleArn'] = self.ecs_task_execution_role
         updated_task_definition = self.client.register_task_definition(**new_task_def)['taskDefinition']
         new_task_def_arn = updated_task_definition['taskDefinitionArn']
         self.deploy_ctx.notify_event(
@@ -78,10 +88,7 @@ class ECSBuddy(object):
         success = True
         try:
             waiter.wait(cluster=self.cluster,
-                        services=[
-                            self.ecs_service
-                        ]
-                        )
+                        services=[self.ecs_service ])
         except Exception as e:
             success = False
             print_utility.error("Error waiting for service to stabilize - {}".format(e.message), raise_exception=True)
