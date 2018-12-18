@@ -43,6 +43,9 @@ class ECSBuddy(object):
         if not self.new_image:
             print_utility.warn("Checking for ECS update without registering new image ")
             return False
+        if not  self.ecs_task_family:
+            print_utility.warn("No ECS Task family found - assuming first deploy of stack and skipping ECS update")
+            return False
         self._describe_task_definition()
         existing = pydash.get(self.task_definition_description, "containerDefinitions[0].image")
         print_utility.info("ECS task existing image - {}".format(existing))
