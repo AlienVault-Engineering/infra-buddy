@@ -1,4 +1,5 @@
 import boto3
+import logging
 import pydash
 from copy import deepcopy
 
@@ -62,24 +63,34 @@ class ECSBuddy(object):
         if 'networkMode' in self.task_definition_description:
             new_task_def['networkMode'] = self.task_definition_description['networkMode']
         new_task_def['containerDefinitions'][0]['image'] = self.new_image
-        using_fargate=False
+        using_fargate = False
+
         if 'USE_FARGATE' in self.deploy_ctx and self.deploy_ctx['USE_FARGATE'] == 'true':
             new_task_def['requiresCompatibilities'] = ['FARGATE']
             using_fargate = True
+
         if 'TASK_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_MEMORY']:
            new_task_def['containerDefinitions'][0]['memory'] = self.deploy_ctx['TASK_MEMORY']
            # set at the task level for fargate definitions
            if using_fargate: new_task_def['memory']  = self.deploy_ctx['TASK_MEMORY']
+
         if 'TASK_SOFT_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_SOFT_MEMORY']:
            new_task_def['containerDefinitions'][0]['memoryReservation'] = self.deploy_ctx['TASK_SOFT_MEMORY']
+
         if 'TASK_CPU' in self.deploy_ctx and self.deploy_ctx['TASK_CPU']:
            new_task_def['containerDefinitions'][0]['cpu'] = self.deploy_ctx['TASK_CPU']
            # set at the task level for fargate definitions
            if using_fargate: new_task_def['cpu'] = self.deploy_ctx['TASK_CPU']
+
         if self.ecs_task_execution_role:
             new_task_def['executionRoleArn'] = self.ecs_task_execution_role
+
+        logging.warn("deploy_ctx = %r", self.deploy_ctx)
+        logging.warn("new_task_def = %r", new_task_def)
+
         updated_task_definition = self.client.register_task_definition(**new_task_def)['taskDefinition']
         new_task_def_arn = updated_task_definition['taskDefinitionArn']
+
         self.deploy_ctx.notify_event(
             title="Update of ecs service {service} started".format(service=self.ecs_service),
             type="success")
