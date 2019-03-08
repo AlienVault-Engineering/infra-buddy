@@ -75,7 +75,7 @@ class ECSBuddy(object):
         if 'TASK_CPU' in self.deploy_ctx and self.deploy_ctx['TASK_CPU']:
            new_task_def['containerDefinitions'][0]['cpu'] = self.deploy_ctx['TASK_CPU']
            # set at the task level for fargate definitions
-           if using_fargate: new_task_def['cpu']  = self.deploy_ctx['TASK_MEMORY']
+           if using_fargate: new_task_def['cpu'] = self.deploy_ctx['TASK_CPU']
         if self.ecs_task_execution_role:
             new_task_def['executionRoleArn'] = self.ecs_task_execution_role
         updated_task_definition = self.client.register_task_definition(**new_task_def)['taskDefinition']
