@@ -1,6 +1,6 @@
-import logging
 import time
-from infra_buddy.utility import print_utility, waitfor
+from . import print_utility
+
 
 def _compare(expected_result, param, negate):
     if type(expected_result) is list:
@@ -29,7 +29,8 @@ def waitfor(function_pointer, expected_result, interval_seconds, max_attempts, n
         attempt += 1
     if attempt >= max_attempts:
         # we failed
-        if exception: raise Exception("Wait condition failed: {func}".format(func=function_pointer))
+        if exception:
+            raise Exception("Wait condition failed: {func}".format(func=function_pointer))
         return None
     else:
         return latest
