@@ -1,5 +1,4 @@
 import boto3
-import logging
 import pydash
 from copy import deepcopy
 
@@ -85,8 +84,8 @@ class ECSBuddy(object):
         if self.ecs_task_execution_role:
             new_task_def['executionRoleArn'] = self.ecs_task_execution_role
 
-        logging.warn("deploy_ctx = %r", self.deploy_ctx)
-        logging.warn("new_task_def = %r", new_task_def)
+        print_utility.info("deploy_ctx = {}".format(self.deploy_ctx.items()))
+        print_utility.info("new_task_def = {}".format(new_task_def.items()))
 
         updated_task_definition = self.client.register_task_definition(**new_task_def)['taskDefinition']
         new_task_def_arn = updated_task_definition['taskDefinitionArn']
