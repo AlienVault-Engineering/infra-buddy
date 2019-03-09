@@ -62,24 +62,26 @@ class ECSBuddy(object):
         if 'networkMode' in self.task_definition_description:
             new_task_def['networkMode'] = self.task_definition_description['networkMode']
         new_task_def['containerDefinitions'][0]['image'] = self.new_image
-        using_fargate = False
 
-        if 'USE_FARGATE' in self.deploy_ctx and self.deploy_ctx['USE_FARGATE'] == 'true':
-            new_task_def['requiresCompatibilities'] = ['FARGATE']
-            using_fargate = True
+        using_fargate = self.deploy_ctx.get('USE_FARGATE') == 'truee'
 
-        if 'TASK_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_MEMORY']:
-           new_task_def['containerDefinitions'][0]['memory'] = self.deploy_ctx['TASK_MEMORY']
-           # set at the task level for fargate definitions
-           if using_fargate: new_task_def['memory']  = self.deploy_ctx['TASK_MEMORY']
+        ctx_memory = self.deploy_ctx.get('TASK_MEMORY')
+        if ctx_memory:
+            new_task_def['containerDefinitions'][0]['memory'] = ctx_memory
 
         if 'TASK_SOFT_MEMORY' in self.deploy_ctx and self.deploy_ctx['TASK_SOFT_MEMORY']:
-           new_task_def['containerDefinitions'][0]['memoryReservation'] = self.deploy_ctx['TASK_SOFT_MEMORY']
+            new_task_def['containerDefinitions'][0]['memoryReservation'] = self.deploy_ctx['TASK_SOFT_MEMORY']
 
-        if 'TASK_CPU' in self.deploy_ctx and self.deploy_ctx['TASK_CPU']:
-           new_task_def['containerDefinitions'][0]['cpu'] = self.deploy_ctx['TASK_CPU']
-           # set at the task level for fargate definitions
-           if using_fargate: new_task_def['cpu'] = self.deploy_ctx['TASK_CPU']
+        ctx_cpu = self.deploy_ctx.get('TASK_CPU')
+        if ctx_cpu:
+            new_task_def['containerDefinitions'][0]['cpu'] = ctx_cpu
+
+        # set at the task level for fargate definitions
+        if using_fargate:
+            first_container = new_task_def['containerDefinitions'][0]
+            new_task_def['requiresCompatibilities'] = ['FARGATE']
+            new_task_def['cpu'] = ctx_cpu or first_container.get('cpu')
+            new_task_def['memory'] = ctx_memory or first_container.get('memory')
 
         if self.ecs_task_execution_role:
             new_task_def['executionRoleArn'] = self.ecs_task_execution_role
