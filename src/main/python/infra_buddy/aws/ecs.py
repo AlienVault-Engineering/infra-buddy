@@ -28,13 +28,16 @@ class ECSBuddy(object):
     def _wait_for_export(self, cf, fully_qualified_param_name):
         # we are seeing an issue where immediately after stack create the export values are not
         # immediately available
-        return waitfor.waitfor(function_pointer=cf.get_export_value,
+        value = waitfor.waitfor(function_pointer=cf.get_export_value,
                                expected_result=None,
                                interval_seconds=2,
                                max_attempts=5,
                                negate=True,
                                args={"fully_qualified_param_name": fully_qualified_param_name},
                                exception=False)
+
+        print_utility.info("[wait_for_export] {}={}", fully_qualified_param_name, value)
+        return value
 
     def set_container_image(self, location, tag):
         self.new_image = "{location}:{tag}".format(location=location, tag=tag)

@@ -1,6 +1,6 @@
 import logging
 import time
-
+from infra_buddy.utility import print_utility, waitfor
 
 def _compare(expected_result, param, negate):
     if type(expected_result) is list:
@@ -15,15 +15,17 @@ def _compare(expected_result, param, negate):
         return expected_result != param
 
 
-def waitfor(function_pointer, expected_result, interval_seconds, max_attempts, negate=False, args=None,exception=True):
+def waitfor(function_pointer, expected_result, interval_seconds, max_attempts, negate=False, args=None, exception=True):
     if args is None:
         args = {}
     attempt = 1
     latest = function_pointer(**args)
+    print_utility("[waitfor] value = {}".format(latest))
     while attempt < max_attempts and _compare(expected_result, latest, negate):
-        logging.info("Waiting for another attempt - {attempt}".format(attempt=attempt))
+        print_utility.info("Waiting for another attempt - {attempt}".format(attempt=attempt))
         time.sleep(interval_seconds)
         latest = function_pointer(**args)
+        print_utility("[waitfor] value = {}".format(latest))
         attempt += 1
     if attempt >= max_attempts:
         # we failed
