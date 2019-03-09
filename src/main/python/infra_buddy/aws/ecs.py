@@ -63,7 +63,7 @@ class ECSBuddy(object):
             new_task_def['networkMode'] = self.task_definition_description['networkMode']
         new_task_def['containerDefinitions'][0]['image'] = self.new_image
 
-        using_fargate = self.deploy_ctx.get('USE_FARGATE') == 'truee'
+        using_fargate = self.deploy_ctx.get('USE_FARGATE') == 'true'
 
         ctx_memory = self.deploy_ctx.get('TASK_MEMORY')
         if ctx_memory:
