@@ -39,7 +39,7 @@ class ECSBuddy(object):
             exception=False
         )
 
-        print_utility.info("[wait_for_export] {}={}", fully_qualified_param_name, value)
+        print_utility.info("[wait_for_export] {}={}".format(fully_qualified_param_name, value))
         return value
 
     def set_container_image(self, location, tag):
