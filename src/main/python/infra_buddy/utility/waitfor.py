@@ -1,5 +1,5 @@
+import logging
 import time
-from . import print_utility
 
 
 def _compare(expected_result, param, negate):
@@ -20,17 +20,14 @@ def waitfor(function_pointer, expected_result, interval_seconds, max_attempts, n
         args = {}
     attempt = 1
     latest = function_pointer(**args)
-    print_utility.info("[waitfor] value = {}".format(latest))
     while attempt < max_attempts and _compare(expected_result, latest, negate):
-        print_utility.info("Waiting for another attempt - {attempt}".format(attempt=attempt))
+        logging.info("Waiting for another attempt - {attempt}".format(attempt=attempt))
         time.sleep(interval_seconds)
         latest = function_pointer(**args)
-        print_utility.info("[waitfor] value = {}".format(latest))
         attempt += 1
     if attempt >= max_attempts:
         # we failed
-        if exception:
-            raise Exception("Wait condition failed: {func}".format(func=function_pointer))
+        if exception: raise Exception("Wait condition failed: {func}".format(func=function_pointer))
         return None
     else:
         return latest
