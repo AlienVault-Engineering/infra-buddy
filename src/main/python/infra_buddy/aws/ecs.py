@@ -80,8 +80,13 @@ class ECSBuddy(object):
         if using_fargate:
             first_container = new_task_def['containerDefinitions'][0]
             new_task_def['requiresCompatibilities'] = ['FARGATE']
-            new_task_def['cpu'] = ctx_cpu or first_container.get('cpu')
-            new_task_def['memory'] = ctx_memory or first_container.get('memory')
+            new_cpu = ctx_cpu or first_container.get('cpu')
+            if new_cpu:
+                new_task_def['cpu'] = str(new_cpu)  # not sure if this is right but AWS says it should be str
+
+            new_memory = ctx_memory or first_container.get('memory')
+            if new_memory:
+                new_task_def['memory'] = str(new_memory)  # not sure if this is right but AWS says it should be str
 
         if self.ecs_task_execution_role:
             new_task_def['executionRoleArn'] = self.ecs_task_execution_role
