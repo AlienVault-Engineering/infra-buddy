@@ -25,16 +25,19 @@ class ECSBuddy(object):
         self.task_definition_description = None
         self.new_image = None
 
-    def _wait_for_export(self, cf, fully_qualified_param_name):
+    @classmethod
+    def _wait_for_export(cls, cf, fully_qualified_param_name):
         # we are seeing an issue where immediately after stack create the export values are not
         # immediately available
-        value = waitfor.waitfor(function_pointer=cf.get_export_value,
-                               expected_result=None,
-                               interval_seconds=2,
-                               max_attempts=5,
-                               negate=True,
-                               args={"fully_qualified_param_name": fully_qualified_param_name},
-                               exception=False)
+        value = waitfor.waitfor(
+            function_pointer=cf.get_export_value,
+            expected_result=None,
+            interval_seconds=2,
+            max_attempts=5,
+            negate=True,
+            args={"fully_qualified_param_name": fully_qualified_param_name},
+            exception=False
+        )
 
         print_utility.info("[wait_for_export] {}={}", fully_qualified_param_name, value)
         return value
@@ -46,7 +49,7 @@ class ECSBuddy(object):
         if not self.new_image:
             print_utility.warn("Checking for ECS update without registering new image ")
             return False
-        if not  self.ecs_task_family:
+        if not self.ecs_task_family:
             print_utility.warn("No ECS Task family found - assuming first deploy of stack and skipping ECS update")
             return False
         self._describe_task_definition()
@@ -113,8 +116,10 @@ class ECSBuddy(object):
         waiter = self.client.get_waiter('services_stable')
         success = True
         try:
-            waiter.wait(cluster=self.cluster,
-                        services=[self.ecs_service ])
+            waiter.wait(
+                cluster=self.cluster,
+                services=[self.ecs_service]
+            )
         except Exception as e:
             success = False
             print_utility.error("Error waiting for service to stabilize - {}".format(e.message), raise_exception=True)
@@ -125,6 +130,7 @@ class ECSBuddy(object):
                 type="success" if success else "error")
 
     def _describe_task_definition(self, refresh=False):
-        if self.task_definition_description and not refresh: return
+        if self.task_definition_description and not refresh:
+            return
         self.task_definition_description = self.client.describe_task_definition(taskDefinition=self.ecs_task_family)[
             'taskDefinition']
