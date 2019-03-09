@@ -84,8 +84,11 @@ class ECSBuddy(object):
         if self.ecs_task_execution_role:
             new_task_def['executionRoleArn'] = self.ecs_task_execution_role
 
-        print_utility.info("deploy_ctx = {}".format(self.deploy_ctx.items()))
-        print_utility.info("new_task_def = {}".format(new_task_def.items()))
+        for k, v in self.deploy_ctx.items():
+            print_utility.info('[deploy_ctx] {} = {}'.format(k, repr(v)))
+
+        for k, v in new_task_def.items():
+            print_utility.info('[new_task_def] {} = {}'.format(k, repr(v)))
 
         updated_task_definition = self.client.register_task_definition(**new_task_def)['taskDefinition']
         new_task_def_arn = updated_task_definition['taskDefinitionArn']
