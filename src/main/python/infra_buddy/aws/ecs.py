@@ -1,6 +1,5 @@
 import boto3
 import pydash
-from copy import deepcopy
 
 from infra_buddy.utility import print_utility, waitfor
 
@@ -90,7 +89,7 @@ class ECSBuddy(object):
             if new_cpu:
                 new_task_def['cpu'] = str(new_cpu)  # not sure if this is right but AWS says it should be str
 
-            new_memory = ctx_memory or first_container.get('memory')
+            new_memory = ctx_memory or first_container.get('memoryReservation')
             if new_memory:
                 new_task_def['memory'] = str(new_memory)  # not sure if this is right but AWS says it should be str
 
