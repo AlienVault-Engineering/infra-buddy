@@ -83,6 +83,8 @@ class URLTemplate(Template):
     def download_template(self):
         self._prep_download()
         r = requests.get(self.download_url, stream=True)
+        if r.status_code != 200:
+            print_utility.error("Template cloud not be downloaded - {body}".format(body=r.text))
         temporary_file = tempfile.NamedTemporaryFile()
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:  # filter out keep-alive new chunks
