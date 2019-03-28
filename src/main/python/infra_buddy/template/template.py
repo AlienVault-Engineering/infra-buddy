@@ -84,15 +84,23 @@ class URLTemplate(Template):
         self._prep_download()
         r = requests.get(self.download_url, stream=True)
         if r.status_code != 200:
-            print_utility.error("Template cloud not be downloaded - {status} {body}".format(status=r.status_code,
-                                                                                            body=r.text))
+            print_utility.error("Template cloud not be downloaded. status: {status} body: {body}, url: {url}".format(
+                status=r.status_code,
+                body=r.text,
+                url=self.download_url,
+            ))
         temporary_file = tempfile.NamedTemporaryFile()
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:  # filter out keep-alive new chunks
                 temporary_file.write(chunk)
         temporary_file.seek(0)
-        with ZipFile(temporary_file) as zf:
-            zf.extractall(self.destination)
+        try:
+            with ZipFile(temporary_file) as zf:
+                zf.extractall(self.destination)
+        except Exception as e:
+            print_utility.error('Unable to process Zipfile. url: {url}'.format(url=self.download_url))
+            raise e
+
         self._validate_template_dir()
 
 
