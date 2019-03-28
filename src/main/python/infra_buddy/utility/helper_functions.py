@@ -102,7 +102,6 @@ _valid_fargate_resources = {
 _valid_fargate_memories = set([item for sublist in _valid_fargate_resources.itervalues() for item in sublist])
 
 
-
 def _validate_fargate_resource_allocation(cpu, memory, deploy_ctx):
     if cpu is None:
         discovered_cpu = deploy_ctx.get('TASK_CPU', None)

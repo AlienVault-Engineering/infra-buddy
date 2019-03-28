@@ -15,7 +15,7 @@ def _compare(expected_result, param, negate):
         return expected_result != param
 
 
-def waitfor(function_pointer, expected_result, interval_seconds, max_attempts, negate=False, args=None,exception=True):
+def waitfor(function_pointer, expected_result, interval_seconds, max_attempts, negate=False, args=None, exception=True):
     if args is None:
         args = {}
     attempt = 1
