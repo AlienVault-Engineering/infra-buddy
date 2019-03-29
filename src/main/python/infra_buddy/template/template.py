@@ -19,11 +19,10 @@ class Template(object):
         self.destination_relative = None
         self.destination = None
         self.valid = False
-        self.default_env_values = values.get('default-values',{})
+        self.default_env_values = values.get('default-values', {})
 
     def get_default_env_values(self):
         return self.default_env_values
-
 
     def get_parameter_file_path(self):
         return os.path.join(self._get_template_location(),
@@ -72,7 +71,7 @@ class Template(object):
         return MonitorDefinition.create_from_directory(self._get_template_location())
 
     def get_monitor_definition_file(self):
-        return os.path.join(self._get_template_location(),monitor_definition._ARTIFACT_FILE)
+        return os.path.join(self._get_template_location(), monitor_definition._ARTIFACT_FILE)
 
 
 class URLTemplate(Template):
@@ -84,8 +83,9 @@ class URLTemplate(Template):
         self._prep_download()
         r = requests.get(self.download_url, stream=True)
         if r.status_code != 200:
-            print_utility.error("Template cloud not be downloaded - {status} {body}".format(status=r.status_code,
-                                                                                            body=r.text))
+            print_utility.error("Template could not be downloaded - {url} {status} {body}".format(url=self.download_url,
+                                                                                                  status=r.status_code,
+                                                                                                  body=r.text))
         temporary_file = tempfile.NamedTemporaryFile()
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:  # filter out keep-alive new chunks
@@ -103,7 +103,7 @@ class AliasTemplate(Template):
         self.lookup = values.get('lookup', None)
         self.delegate = None
 
-    def resolve(self,templates):
+    def resolve(self, templates):
         # type: (dict()) -> None
         if self.lookup in templates:
             self.delegate = templates[self.lookup]
@@ -149,8 +149,9 @@ class GitHubTemplate(URLTemplate):
 
 
 class NamedLocalTemplate(Template):
-    def __init__(self, directory, service_type="local-template", err_on_failure_to_locate=True, template_name="cloudformation"):
-        super(NamedLocalTemplate, self).__init__(service_type, values={},template_name=template_name)
+    def __init__(self, directory, service_type="local-template", err_on_failure_to_locate=True,
+                 template_name="cloudformation"):
+        super(NamedLocalTemplate, self).__init__(service_type, values={}, template_name=template_name)
         self.destination = directory
         self._validate_template_dir(err_on_failure_to_locate=err_on_failure_to_locate)
 

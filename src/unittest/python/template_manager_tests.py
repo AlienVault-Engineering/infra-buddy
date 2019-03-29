@@ -47,6 +47,19 @@ class TemplateManagerTestCase(ParentTestCase):
                                     "repo": "infra-buddy-vpc"
                                 })
 
+    def test_invalid_github_template(self):
+        try:
+            self.test_deploy_ctx.template_manager._load_templates({'vpc': {
+                                                            "type": "github",
+                                                            "owner": "AlienVault-Engineering-Fail",
+                                                            "repo": "infra-buddy-vpc"
+                                                        }})
+            template = self.test_deploy_ctx.template_manager.get_known_service('vpc')
+            self.fail("Did not error on bad github template")
+        except:
+            pass
+
+
     def test_invalid_template(self):
         template = self.test_deploy_ctx.template_manager.get_resource_service(
             ParentTestCase._get_resource_path("template_tests/invalid_template"))
