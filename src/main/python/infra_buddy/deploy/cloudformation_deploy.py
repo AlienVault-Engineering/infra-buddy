@@ -182,13 +182,19 @@ class CloudFormationDeploy(Deploy):
         errors = defaultdict(list)
         warning = defaultdict(list)
         ssm_keys = []
+        # load cloudformation template
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
+            # get the parameters
             template_params = pydash.get(template_obj, 'Parameters', {})
+            # loop through
             for key, value in template_params.iteritems():
+                # Identify params without description
                 description = value.get('Description', None)
-                default = value.get('Default', None)
                 if not description: warning[key].append("Parameter does not contain a description")
+                # Identify params with defaults - should be done in defaults.json
+                # unless a special case default (i.e. AWS::SSM)
+                default = value.get('Default', None)
                 if default:
                     type = value.get('Type',None)
                     if type:
@@ -197,12 +203,15 @@ class CloudFormationDeploy(Deploy):
                     else:
                         warning[key].append("Parameter has default value defined in CloudFormation Template - {}".format(default))
                 known_param[key] = {'description': description, 'type': value['Type']}
+        # Load the parameters file
         value_to_key = {}
         with open(self.parameter_file, 'r') as params:
             param_file_params = json.load(params)
             for param in param_file_params:
                 key_ = param['ParameterKey']
+                # Determine if the loaded key is defined in the CF tempalte
                 if key_ in known_param:
+                    # if so identify the logic for population and validate
                     known_param[key_]['variable'] = param['ParameterValue']
                     value_to_key[param['ParameterValue'].replace("$", "").replace("{", "").replace("}", "")] = key_
                     expandvars = self.deploy_ctx.expandvars(param['ParameterValue'], self.defaults)
@@ -211,9 +220,11 @@ class CloudFormationDeploy(Deploy):
                             .format(expandvars))
                     known_param[key_]['default_value'] = expandvars
                 else:
+                    # If it is not see if it is a special case
                     if key_ not in ssm_keys:
                         # exists in param file but not in template
                         errors[key_].append("Parameter does not exist in template but defined in param file")
+        # finally load our own defaults file
         if self.default_path and os.path.exists(self.default_path):
             with open(self.default_path, 'r') as defs:
                 defs = json.load(defs)
@@ -225,9 +236,10 @@ class CloudFormationDeploy(Deploy):
                     else:
                         # exists in param file but not in template
                         errors[key_].append("Parameter does not exist in parameter file but defined in defaults file")
-
+        # now loop through the CF defined params
         for key, value in known_param.iteritems():
-            if 'variable' not in value:
+            # if there is not variable and not a special case then err
+            if 'variable' not in value and key not in ssm_keys:
                 errors[key].append("Parameter does not exist in param file but defined in template")
         return known_param, warning, errors
 
