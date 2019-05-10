@@ -68,6 +68,14 @@
       ],
       "owner": "AlienVault-Engineering",
       "repo": "infra-buddy-rds-aurora"
+    },
+    "elasticsearch": {
+      "type": "github",
+      "compatible": [
+        "*"
+      ],
+      "owner": "AlienVault-Engineering",
+      "repo": "infra-buddy-elasticsearch"
     }
   },
   "service-templates": {
