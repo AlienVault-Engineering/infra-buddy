@@ -19,8 +19,10 @@ class ECSBuddy(object):
         self.ecs_service = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_service_export_key)
         ecs_task_family_export_key = "{}-ECSTaskFamily".format(self.deploy_ctx.stack_name)
         self.ecs_task_family = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_task_family_export_key)
-        ecs_task_execution_role_export_key = "{}-ECSTaskRole".format(self.deploy_ctx.stack_name)
+        ecs_task_execution_role_export_key = "{}-ECSTaskExecutionRole".format(self.deploy_ctx.stack_name)
         self.ecs_task_execution_role = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_task_execution_role_export_key)
+        ecs_task_role_export_key = "{}-ECSTaskRole".format(self.deploy_ctx.stack_name)
+        self.ecs_task_role = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_task_role_export_key)
         self.task_definition_description = None
         self.new_image = None
 
@@ -95,6 +97,8 @@ class ECSBuddy(object):
 
         if self.ecs_task_execution_role:
             new_task_def['executionRoleArn'] = self.ecs_task_execution_role
+        if self.ecs_task_role:
+            new_task_def['taskRoleArn'] = self.ecs_task_role
 
         for k, v in self.deploy_ctx.items():
             print_utility.info('[deploy_ctx] {} = {}'.format(k, repr(v)))
