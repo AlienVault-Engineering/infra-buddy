@@ -129,6 +129,11 @@
       "owner": "AlienVault-Engineering",
       "repo": "infra-buddy-rds-aurora"
     },
+    "elasticsearch": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "infra-buddy-elasticsearch"
+    },
     "cloudfront-angular": {
       "type": "github",
       "owner": "AlienVault-Engineering",
