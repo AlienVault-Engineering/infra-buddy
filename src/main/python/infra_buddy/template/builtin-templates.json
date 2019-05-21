@@ -138,6 +138,12 @@
       "type": "github",
       "owner": "AlienVault-Engineering",
       "repo": "infra-buddy-cloudfront-angular"
+    },
+    "cloudfront-angular-otx": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "infra-buddy-cloudfront-angular-otx"
     }
+,
   }
 }
