@@ -69,6 +69,14 @@
       "owner": "AlienVault-Engineering",
       "repo": "infra-buddy-rds-aurora"
     },
+    "rds-aurora-mysql-5.7": {
+      "type": "github",
+      "compatible": [
+        "*"
+      ],
+      "owner": "AlienVault-Engineering",
+      "repo": "infra-buddy-rds-aurora-mysql-5.7"
+    },
     "elasticsearch": {
       "type": "github",
       "compatible": [
@@ -128,6 +136,11 @@
       "type": "github",
       "owner": "AlienVault-Engineering",
       "repo": "infra-buddy-rds-aurora"
+    },
+    "rds-aurora-mysql-5.7": {
+      "type": "github",
+      "owner": "AlienVault-Engineering",
+      "repo": "infra-buddy-rds-aurora-mysql-5.7"
     },
     "elasticsearch": {
       "type": "github",
