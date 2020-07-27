@@ -61,7 +61,7 @@ def _get_valid_fargate_memory(_value):
             print_utility.info("Transforming memory value of {} to '30GB' - max value".format(_value))
             memory = 30720
         else:
-            print_utility.info("Transforming memory value of {} to '{}GB'".format(_value, memory))
+            print_utility.info("Transforming memory value of {} to '{}'".format(_value, memory))
         return memory
 
 
@@ -93,10 +93,10 @@ def _get_valid_fargate_cpu(_value):
 # 4096 (4 vCPU) - Available memory values: Between 8GB and 30GB in 1GB increments
 _valid_fargate_resources = {
     256: ['512', '1024', '2048'],
-    512: ["{}".format(i*1024) for i in range(1, 4)],
-    1024: ["{}".format(i*1024) for i in range(2, 8)],
-    2048: ["{}".format(i*1024) for i in range(4, 16)],
-    4096: ["{}".format(i*1024) for i in range(8, 30)],
+    512: ["{}".format(i*1024) for i in range(1, 5)],
+    1024: ["{}".format(i*1024) for i in range(2, 9)],
+    2048: ["{}".format(i*1024) for i in range(4, 17)],
+    4096: ["{}".format(i*1024) for i in range(8, 31)],
 }
 
 _valid_fargate_memories = set([item for sublist in _valid_fargate_resources.itervalues() for item in sublist])
