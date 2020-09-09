@@ -48,7 +48,7 @@ class HelperTestCase(ParentTestCase):
             rp = helper_functions.calculate_rule_priority(ctx, "foo-bar")
             self.assertEqual(rp, "31", "Failed to calculate rule priority")
             name = helper_functions.load_balancer_name(ctx)
-            print "Name: " + name
+            print("Name: " + name)
             self.assertEqual(name.count('/'), 2, "Failed to trim")
             self.assertEqual(name.count(':'), 0, "Failed to trim")
             self.assertTrue(name.startswith('app'), "Failed to trim")

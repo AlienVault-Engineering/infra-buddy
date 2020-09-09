@@ -59,4 +59,3 @@ class ArtifactDefinitionTestCase(ParentTestCase):
         finally:
             self.clean_dir(mkdtemp)
 
-

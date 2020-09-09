@@ -249,7 +249,7 @@ class DeployContext(dict):
             for item in source:
                 ret.append(self.recursive_expand_vars(item))
             return ret
-        elif isinstance(source,basestring):
+        elif isinstance(source, str):
             return self.expandvars(source)
         else:
             return source

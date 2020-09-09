@@ -18,7 +18,7 @@ class ParentTestCase(unittest.TestCase):
 
     def assertEqual(self, first, second, msg=None):
         msg = "{msg} - actual: {first} expected: {second}".format(msg=msg, first=first, second=second)
-        super(ParentTestCase, self).assertEqual(first, second, msg)
+        super().assertEqual(first, second, msg)
 
     @classmethod
     def setUpClass(cls):
@@ -64,8 +64,8 @@ class ParentTestCase(unittest.TestCase):
                 os.remove(file)
             os.removedirs(director)
         except Exception as e:
-            print 'Error cleaning up '+ e.message
+            print('Error cleaning up '+ str(e))
 
     @classmethod
     def randomWord(cls, param):
-        return ''.join(random.choice(string.lowercase) for i in range(param))
+        return ''.join(random.choice(string.ascii_lowercase) for i in range(param))

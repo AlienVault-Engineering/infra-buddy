@@ -35,7 +35,7 @@ def _get_cluster_stack_export_value(cf, deploy_ctx, param):
 
 
 def _get_max_priority(rules):
-    rules = sorted(rules, key=lambda k: k["Priority"], reverse=True)
+    rules = sorted(rules, key=lambda v: (isinstance(v['Priority'], str), v['Priority']), reverse=True)
     for rule in rules:
         priority_ = rule['Priority']
         if priority_ != "default":
@@ -136,7 +136,7 @@ def _using_fargate(deploy_ctx):
 
 def transform_fargate_memory(deploy_ctx, _value):
     if _using_fargate(deploy_ctx):
-        if isinstance(_value, basestring):
+        if isinstance(_value, str):
             if _value not in _valid_fargate_memories:
                 print_utility.error(
                     'Attempting to use fargate with invalid memory.  {} Memory Valid Values: {}'.format(_value,
