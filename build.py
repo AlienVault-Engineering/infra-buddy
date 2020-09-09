@@ -29,8 +29,8 @@ def initialize(project):
     project.url = "https://github.com/AlienVault-Engineering/infra-buddy"
     project.depends_on_requirements("requirements.txt")
     #Build and test settings
-    project.set_property("run_unit_tests_propagate_stdout",True)
-    project.set_property("run_unit_tests_propagate_stderr",True)
+    project.set_property("run_unit_tests_propagate_stdout", True)
+    project.set_property("run_unit_tests_propagate_stderr", True)
     project.set_property("coverage_branch_threshold_warn", 50)
     project.set_property("coverage_branch_partial_threshold_warn", 50)
     project.include_file('infra_buddy',"template/builtin-templates.json")
