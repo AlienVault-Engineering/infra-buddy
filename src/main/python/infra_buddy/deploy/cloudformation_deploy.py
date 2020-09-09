@@ -156,20 +156,23 @@ class CloudFormationDeploy(Deploy):
     def print_known_parameters(self):
         # type: (DeployContext) -> int
         known_param, warnings, errors = self._analyze_parameters()
-        print_utility.banner_warn("Parameters", pformat(known_param))
-        print_utility.warn("Parameter Warnings")
-        self._print_info(warnings)
-        print_utility.warn("Parameter Errors")
-        self._print_error(errors)
+        print_utility.banner_info("Parameters", pformat(known_param))
+        if warnings:
+            print_utility.banner_warn("Parameter Warnings", warnings)
+
+        if errors:
+            print_utility.banner_warn("Parameter Errors", errors)
+
         return len(errors)
 
     def print_export(self):
         # type: () -> int
         known_exports, warnings, errors = self._analyze_export()
-        print_utility.warn("Export Values")
-        self._print_info(known_exports)
-        print_utility.warn("Export Values Warnings")
-        self._print_error(errors)
+        print_utility.banner_info("Export Values", known_exports)
+
+        if errors:
+            print_utility.banner_warn("Export Values Errors", errors)
+
         return len(errors)
 
     def analyze(self):

@@ -71,7 +71,7 @@ class S3Buddy(object):
 
     def get_file_as_string(self, filename):
         obj = self._get_s3_object(filename)
-        return obj['Body'].read()
+        return obj['Body'].read().decode('utf-8')
 
     def _get_s3_object(self, filename):
         key_name = self._get_upload_bucket_key_name(file=None, key_name=filename)

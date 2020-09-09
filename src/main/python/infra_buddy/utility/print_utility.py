@@ -11,7 +11,8 @@ def configure(verbose):
 
 
 def info(msg):
-    if VERBOSE: click.secho(msg, fg='green')
+    if VERBOSE:
+        click.secho(msg, fg='green')
 
 
 def warn(msg):
@@ -20,6 +21,12 @@ def warn(msg):
 
 def progress(msg):
     click.secho(msg, fg='blue')
+
+
+def banner_info(msg, data):
+    if VERBOSE:
+        banner(msg)
+        info_banner(data)
 
 
 def banner_warn(msg, data):
@@ -36,8 +43,11 @@ def error(err_msg, raise_exception=False):
 def banner(data):
     click.secho(data, fg="yellow")
 
+
 def info_banner(data):
-    click.secho(data, fg='green')
+    if VERBOSE:
+        click.secho(data, fg='green')
+
 
 def print_time_delta(tdelta):
     # type: (timedelta) -> object

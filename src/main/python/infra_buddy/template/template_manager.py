@@ -71,8 +71,11 @@ class TemplateManager(object):
         return ret
 
     def get_known_template(self, template_name):
-        template = self.deploy_templates.get(template_name,
-                                             self.default_service_modification_templates.get(template_name))
+        template = self.deploy_templates.get(
+            template_name,
+            self.default_service_modification_templates.get(template_name)
+        )
+
         if not template:
             for service, template_map in self.service_modification_templates.items():
                 template = template_map.get(template_name, None)
@@ -80,7 +83,10 @@ class TemplateManager(object):
             template.download_template()
             return template
         else:
-            print_utility.error("Unknown service template - {}".format(template_name), raise_exception=True)
+            print_utility.error("Unknown service template - {} - known templates are {} . {}".format(
+                template_name,
+                self.deploy_templates.keys(), self.default_service_modification_templates.keys(),
+            ), raise_exception=True)
 
     def get_resource_service(self, artifact_directory):
         # type: (str) -> Template
@@ -112,10 +118,12 @@ class TemplateManager(object):
         if not template:
             print_utility.error(
                 "Unknown service modification '{}' for type '{}'"
-                " Known modifications are {}".format(mod_type,
-                                                     service_type,
-                                                     self.get_service_modifications_for_service(
-                                                         service_type=service_type)),
+                " Known modifications are {}".format(
+                    mod_type,
+                    service_type,
+                    self.get_service_modifications_for_service(
+                    service_type=service_type)
+                ),
                 raise_exception=True)
         template.download_template()
         return template
