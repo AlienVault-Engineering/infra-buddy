@@ -1,6 +1,6 @@
 language: python
 python:
-- '2.7'
+- '3.7'
 install: 'pip install pybuilder==0.11.17 '
 script: pyb install_dependencies package  -P build_number=0.1.${TRAVIS_BUILD_NUMBER}
 deploy:
