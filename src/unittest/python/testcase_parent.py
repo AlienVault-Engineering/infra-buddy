@@ -29,7 +29,7 @@ class ParentTestCase(unittest.TestCase):
         cls.east_config = ParentTestCase._get_resource_path('east_config.json')
         cls.test_deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar-{}".format(cls.run_random_word), environment="unit-test",
                                             defaults=cls.default_config)
-        print_utility.configure(True)
+        print_utility.configure(False)
 
     @classmethod
     def _get_resource_path(cls, config):
@@ -58,13 +58,13 @@ class ParentTestCase(unittest.TestCase):
             return False
 
     @classmethod
-    def clean_dir(cls, director):
+    def clean_dir(cls, directory):
         try:
-            for file in os.listdir(director):
-                os.remove(file)
-            os.removedirs(director)
+            for file in os.listdir(directory):
+                os.remove(os.path.join(directory, file))
+            os.removedirs(directory)
         except Exception as e:
-            print('Error cleaning up '+ str(e))
+            print('Error cleaning up ' + str(e))
 
     @classmethod
     def randomWord(cls, param):
