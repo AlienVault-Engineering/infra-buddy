@@ -1,3 +1,4 @@
+pyrsistent==0.17.0
 click
 boto3
 pydash
