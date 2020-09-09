@@ -1,8 +1,13 @@
 import mimetypes
 import os
 import tempfile
-import urlparse
 from zipfile import ZipFile
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
 
 import boto3
 import botocore
@@ -104,7 +109,7 @@ class CloudFormationDeployS3Buddy(S3Buddy):
 
 def download_zip_from_s3_url(s3_url, destination):
     # type: (str, dest_directory) -> None
-    parsed = urlparse.urlparse(s3_url)
+    parsed = urlparse(s3_url)
     bucket = parsed.hostname
     key = parsed.path[1:]  # strip leading /
     s3 = boto3.resource('s3')
