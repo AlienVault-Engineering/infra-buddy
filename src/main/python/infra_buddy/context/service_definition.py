@@ -148,7 +148,7 @@ class ServiceDefinition(object):
             read.write("```\n\n")
             read.write("| Service Modification |\n")
             read.write("| --- |\n")
-            for key,val in known_service_modifications.iteritems():
+            for key,val in known_service_modifications.items():
                 read.write("| {} |\n".format(key))
             read.write("\n")
             read.write("## Deploy parameters\n\n")
@@ -158,7 +158,7 @@ class ServiceDefinition(object):
             if len(deploy_params) > 0:
                 read.write("| Parameter | Description | Default Value |\n")
                 read.write("| --- | --- | --- |\n")
-                for key_, definition in deploy_params.iteritems():
+                for key_, definition in deploy_params.items():
                     if 'default_type' in definition and definition["default_type"] == "property":
                         parameter = definition['key']
                         description = definition.get("description","<None>")
@@ -169,7 +169,7 @@ class ServiceDefinition(object):
     @classmethod
     def _get_params_without_default_values(cls, deploy_params):
         ret = {}
-        for key_, definition in deploy_params.iteritems():
+        for key_, definition in deploy_params.items():
                if 'default_type' in definition and definition["default_type"] == "property":
                    if 'default_value' not in definition:
                        definition_key_ = definition['key']

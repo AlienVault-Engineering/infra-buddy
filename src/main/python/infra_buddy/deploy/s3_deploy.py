@@ -35,7 +35,7 @@ class S3Deploy(Deploy):
                 path = ''
             s3 = S3Buddy(self.deploy_ctx, path, split[0])
             print_utility.progress("S3 Deploy: Uploading files to - {}".format(destination_bucket))
-            for s3_key, path in to_upload.iteritems():
+            for s3_key, path in to_upload.items():
                 print_utility.info("{} - {}".format(destination_bucket, s3_key))
                 s3.upload(key_name=s3_key, file=path)
 

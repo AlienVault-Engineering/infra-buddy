@@ -61,9 +61,9 @@ class CloudFormationDeploy(Deploy):
 
     def _process_default_dict(self, def_obj):
         _transformations = {}
-        for key, value in def_obj.iteritems():
+        for key, value in def_obj.items():
             self.defaults[key] = self._load_value(value, key, _transformations)
-        for key, value in _transformations.iteritems():
+        for key, value in _transformations.items():
             transform = self.transform(value,self.defaults.get(key,None))
             if transform is not None:
                 self.defaults[key] = transform
@@ -188,7 +188,7 @@ class CloudFormationDeploy(Deploy):
             # get the parameters
             template_params = pydash.get(template_obj, 'Parameters', {})
             # loop through
-            for key, value in template_params.iteritems():
+            for key, value in template_params.items():
                 # Identify params without description
                 description = value.get('Description', None)
                 if not description: warning[key].append("Parameter does not contain a description")
@@ -228,7 +228,7 @@ class CloudFormationDeploy(Deploy):
         if self.default_path and os.path.exists(self.default_path):
             with open(self.default_path, 'r') as defs:
                 defs = json.load(defs)
-                for key_, param in defs.iteritems():
+                for key_, param in defs.items():
                     if key_ in value_to_key:
                         param_key = value_to_key[key_]
                         known_param[param_key]['default_type'] = param['type']
@@ -237,7 +237,7 @@ class CloudFormationDeploy(Deploy):
                         # exists in param file but not in template
                         errors[key_].append("Parameter does not exist in parameter file but defined in defaults file")
         # now loop through the CF defined params
-        for key, value in known_param.iteritems():
+        for key, value in known_param.items():
             # if there is not variable and not a special case then err
             if 'variable' not in value and key not in ssm_keys:
                 errors[key].append("Parameter does not exist in param file but defined in template")
@@ -250,7 +250,7 @@ class CloudFormationDeploy(Deploy):
         with open(self.template_file, 'r') as template:
             template_obj = json.load(template)
             template_exports = pydash.get(template_obj, 'Outputs', {})
-            for key, value in template_exports.iteritems():
+            for key, value in template_exports.items():
                 export = value.get('Export', None)
                 value = value.get('Value', None)
                 description = value.get('Description', None)
@@ -265,12 +265,12 @@ class CloudFormationDeploy(Deploy):
                                       pydash.get(template_obj, 'Description', ''))
 
     def _print_error(self, errors):
-        for key, errs in errors.iteritems():
+        for key, errs in errors.items():
             print_utility.error(pformat(key, indent=4))
             print_utility.banner(pformat(errs, indent=8))
 
     def _print_info(self, errors):
-        for key, errs in errors.iteritems():
+        for key, errs in errors.items():
             print_utility.warn(pformat(key, indent=4))
             print_utility.banner(pformat(errs, indent=8))
 

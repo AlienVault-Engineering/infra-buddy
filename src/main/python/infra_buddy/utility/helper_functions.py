@@ -99,7 +99,7 @@ _valid_fargate_resources = {
     4096: ["{}".format(i*1024) for i in range(8, 31)],
 }
 
-_valid_fargate_memories = set([item for sublist in _valid_fargate_resources.itervalues() for item in sublist])
+_valid_fargate_memories = set([item for sublist in _valid_fargate_resources.values() for item in sublist])
 
 
 def _validate_fargate_resource_allocation(cpu, memory, deploy_ctx):

@@ -74,7 +74,7 @@ class TemplateManager(object):
         template = self.deploy_templates.get(template_name,
                                              self.default_service_modification_templates.get(template_name))
         if not template:
-            for service, template_map in self.service_modification_templates.iteritems():
+            for service, template_map in self.service_modification_templates.items():
                 template = template_map.get(template_name, None)
         if template:
             template.download_template()
@@ -124,7 +124,7 @@ class TemplateManager(object):
         # type: (dict, bool) -> None
         alias_templates = []
         all_service_mods = {}
-        for name, values in templates.iteritems():
+        for name, values in templates.items():
             type_ = values['type']
             if type_ == "github":
                 template = GitHubTemplate(service_type=name, values=values)

@@ -120,7 +120,7 @@ class DeployContext(dict):
         self['DEPLOY_DATE'] = datetime.datetime.now().strftime("%b_%d_%Y_Time_%H_%M")
         for property_name in built_in:
             self.__dict__[property_name.lower()] = self.get(property_name, None)
-        for variable, template in env_variables.iteritems():
+        for variable, template in env_variables.items():
             evaluated_template = self.expandvars(template)
             self[variable] = evaluated_template
             self.__dict__[variable.lower()] = evaluated_template
@@ -241,7 +241,7 @@ class DeployContext(dict):
     def recursive_expand_vars(self,source):
         if isinstance(source,dict):
             ret = {}
-            for key,value in source.iteritems():
+            for key,value in source.items():
                 ret[key] = self.recursive_expand_vars(value)
             return ret
         elif isinstance(source, list):

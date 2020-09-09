@@ -51,7 +51,7 @@ class ParameterLoadTestCase(ParentTestCase):
             2000: 2048,
             10000: 4096,
         }
-        for to_transform, expected in cpu_transforms.iteritems():
+        for to_transform, expected in cpu_transforms.items():
             self.assertEqual(helper_functions.transform_fargate_cpu(ctx,to_transform), expected,
                              'Did not transform correctly')
         memory_transforms = {
@@ -63,7 +63,7 @@ class ParameterLoadTestCase(ParentTestCase):
             2000: '2048',
             10000: '10240',
         }
-        for to_transform, expected in memory_transforms.iteritems():
+        for to_transform, expected in memory_transforms.items():
             self.assertEqual(helper_functions.transform_fargate_memory(ctx,to_transform), expected,
                              'Did not transform correctly')
 

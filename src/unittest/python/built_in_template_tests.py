@@ -14,7 +14,7 @@ class BuilInTemplateTestCase(ParentTestCase):
 
     def test_validate_built_in_templates(self):
         template_manager = TemplateManager()
-        for key,value in template_manager.deploy_templates.iteritems():
+        for key,value in template_manager.deploy_templates.items():
             try:
                 vcommand.do_command(self.test_deploy_ctx,service_type=key)
             except:

@@ -25,7 +25,7 @@ def do_command(deploy_ctx,type_filter):
     cf_buddy = CloudFormationBuddy(deploy_ctx=deploy_ctx)
     stacks = cf_buddy.list_stacks(deploy_ctx.stack_name)
     resources = cf_buddy.load_resources_for_stack_list(stacks)
-    for stack_name, resources in resources.iteritems():
+    for stack_name, resources in resources.items():
         print_utility.banner("Stack: {}".format(stack_name))
         for resource in resources:
             if not type_filter or type_filter in resource['ResourceType']:
