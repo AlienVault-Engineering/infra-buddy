@@ -1,7 +1,6 @@
-pyrsistent==0.16.0
 click
 boto3
 pydash
-jsonschema==3.1.1
+jsonschema
 requests
 datadog
