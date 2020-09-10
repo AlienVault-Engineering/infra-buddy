@@ -20,7 +20,7 @@ def initialize(project):
         project.version = build_number
     else:
         project.version = "0.0.999"
-    #Project Manifest
+    # Project Manifest
     project.summary = "CLI for deploying micro-services"
     project.home_page = "https://github.com/AlienVault-Engineering/infra-buddy"
     project.description = "CLI for deploying micro-services"
@@ -28,10 +28,10 @@ def initialize(project):
     project.license = "Apache 2.0"
     project.url = "https://github.com/AlienVault-Engineering/infra-buddy"
     project.depends_on_requirements("requirements.txt")
-    #Build and test settings
+    # Build and test settings
     project.set_property("run_unit_tests_propagate_stdout", True)
     project.set_property("run_unit_tests_propagate_stderr", True)
     project.set_property("coverage_branch_threshold_warn", 50)
     project.set_property("coverage_branch_partial_threshold_warn", 50)
-    project.include_file('infra_buddy',"template/builtin-templates.json")
-    project.set_property("distutils_upload_repository","pypi")
+    project.include_file('infra_buddy', "template/builtin-templates.json")
+    project.set_property("distutils_upload_repository", "pypi")

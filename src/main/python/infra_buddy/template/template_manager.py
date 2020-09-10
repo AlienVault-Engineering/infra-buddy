@@ -76,17 +76,28 @@ class TemplateManager(object):
             self.default_service_modification_templates.get(template_name)
         )
 
+        service_template_names = []
         if not template:
             for service, template_map in self.service_modification_templates.items():
+                service_template_names.append(
+                    (service, template_map.keys())
+                )
                 template = template_map.get(template_name, None)
+                if template:
+                    break
+
         if template:
             template.download_template()
             return template
         else:
-            print_utility.error("Unknown service template - {} - known templates are {} . {}".format(
-                template_name,
-                self.deploy_templates.keys(), self.default_service_modification_templates.keys(),
-            ), raise_exception=True)
+            print_utility.error(
+                "Unknown service template - {}" 
+                "- known templates are deploy_templates={} default_service_mod_templates={} service_mod_templates={}".format(
+                    template_name,
+                    self.deploy_templates.keys(), self.default_service_modification_templates.keys(), service_template_names
+                ),
+                raise_exception=True
+            )
 
     def get_resource_service(self, artifact_directory):
         # type: (str) -> Template
@@ -147,6 +158,7 @@ class TemplateManager(object):
                 print_utility.error("Can not locate resource. Requested unknown template type - {}".format(type_),
                                     raise_exception=True)
                 raise Exception("")
+
             if service_modification:
                 compatibility = values.get('compatible', [])
                 for service in compatibility:
@@ -154,7 +166,7 @@ class TemplateManager(object):
                         self.default_service_modification_templates[name] = template
                     else:
                         self.service_modification_templates[service][name] = template
-                    all_service_mods[name]=(template)
+                    all_service_mods[name] = (template)
             else:
                 self.deploy_templates[name] = template
         for alias in alias_templates:
