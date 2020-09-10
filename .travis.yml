@@ -6,7 +6,7 @@ script: pyb install_dependencies package -v -P build_number=0.1.${TRAVIS_BUILD_N
 deploy:
   provider: pypi
   user: alienvault_engineering
-  distributions: sdist
+  distributions: "sdist"
   server: https://upload.pypi.org/legacy/
   skip_cleanup: true
   password:
