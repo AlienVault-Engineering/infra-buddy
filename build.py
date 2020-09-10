@@ -10,6 +10,8 @@ use_plugin("python.pylint")
 use_plugin("copy_resources")
 use_plugin("python.pycharm")
 default_task = "publish"
+requires_python = ">=3.6.0"
+
 
 
 @init
@@ -20,7 +22,9 @@ def initialize(project):
         project.version = build_number
     else:
         project.version = "0.0.999"
+
     # Project Manifest
+    project.name = "infra-buddy"
     project.summary = "CLI for deploying micro-services"
     project.home_page = "https://github.com/AlienVault-Engineering/infra-buddy"
     project.description = "CLI for deploying micro-services"
