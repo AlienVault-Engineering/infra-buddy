@@ -12,6 +12,7 @@ use_plugin("python.pycharm")
 default_task = "publish"
 requires_python = ">=3.6.0"
 
+name = "infra-buddy"
 
 
 @init
