@@ -135,10 +135,7 @@ class DeployContext(dict):
         self['DATADOG_KEY'] = ""
         self['ENVIRONMENT'] = environment.lower() if environment else "dev"
         if defaults:
-            print_utility.info("Loading default settings from path: {}".format(defaults))
-            with open(defaults, 'r') as fp:
-                config = json.load(fp)
-                self.update(config)
+            self.update(defaults)
         self.update(os.environ)
         if 'REGION' not in self:
             print_utility.warn("Region not configured using default 'us-west-1'. "
@@ -147,7 +144,7 @@ class DeployContext(dict):
             self['REGION'] = 'us-west-1'
         self.template_manager = TemplateManager(self.get_deploy_templates(),self.get_service_modification_templates())
         self.stack_name_cache = []
-        if self.get('DATADOG_KEY','') is not '':
+        if self.get('DATADOG_KEY','') != '':
             self.notifier = DataDogNotifier(key=self['DATADOG_KEY'],deploy_context=self)
         else:
             self.notifier = None

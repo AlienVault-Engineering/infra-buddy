@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import string
@@ -10,6 +11,11 @@ from infra_buddy.utility import print_utility
 
 DIRNAME = os.path.dirname(os.path.abspath(__file__))
 RESOURCE_DIR = os.path.abspath(os.path.join(DIRNAME, '../resources/'))
+
+
+def load_path_as_json(path):
+    with open(path) as fp:
+        return json.load(fp)
 
 
 class ParentTestCase(unittest.TestCase):
@@ -25,8 +31,9 @@ class ParentTestCase(unittest.TestCase):
         super(ParentTestCase, cls).setUpClass()
         cls.resource_directory = RESOURCE_DIR
         cls.run_random_word = cls.randomWord(5)
-        cls.default_config = ParentTestCase._get_resource_path('default_config.json')
-        cls.east_config = ParentTestCase._get_resource_path('east_config.json')
+        cls.default_config_path = ParentTestCase._get_resource_path('default_config.json')
+        cls.default_config = load_path_as_json(ParentTestCase._get_resource_path('default_config.json'))
+        cls.east_config = load_path_as_json(ParentTestCase._get_resource_path('east_config.json'))
         cls.test_deploy_ctx = DeployContext.create_deploy_context(application="foo", role="bar-{}".format(cls.run_random_word), environment="unit-test",
                                             defaults=cls.default_config)
         print_utility.configure(False)

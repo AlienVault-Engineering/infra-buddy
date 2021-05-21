@@ -34,6 +34,7 @@ class TemplateManager(object):
                 "repo": {"type": "string"},
                 "tag": {"type": "string"},
                 "location": {"type": "string"},
+                "relative-path": {"type": "string"},
                 "url": {"type": "string"}
             },
             "required": ["type"]

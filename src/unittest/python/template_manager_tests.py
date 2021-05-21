@@ -33,7 +33,9 @@ class TemplateManagerTestCase(ParentTestCase):
         template = manager.get_known_service(service_name)
         self.assertIsNotNone(template, "Failed to locate service")
         self.assertIsNotNone(template.get_template_file_path(), "Failed to locate template file")
+        self.assertTrue(os.path.exists(template.get_template_file_path()),"Template does not exist in real life")
         self.assertIsNotNone(template.get_parameter_file_path(), "Failed to locate param file")
+        self.assertTrue(os.path.exists(template.get_parameter_file_path()),"Param file does not exist in real life")
         if has_config_dir:
             self.assertIsNotNone(template.get_config_dir(), "Failed to locate config dir")
 
@@ -45,6 +47,16 @@ class TemplateManagerTestCase(ParentTestCase):
                                     "type": "github",
                                     "owner": "AlienVault-Engineering",
                                     "repo": "infra-buddy-vpc"
+                                })
+    def test_github_relative_path_template(self):
+        self._validate_template(self.test_deploy_ctx.template_manager,
+                                service_name='vpc',
+                                has_config_dir=False,
+                                template_def={
+                                    "type": "github",
+                                    "owner": "rspitler",
+                                    "repo": "cloudformation-templates",
+                                    "relative-path":"vpc"
                                 })
 
     def test_invalid_github_template(self):
