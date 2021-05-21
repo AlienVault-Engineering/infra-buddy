@@ -135,10 +135,7 @@ class DeployContext(dict):
         self['DATADOG_KEY'] = ""
         self['ENVIRONMENT'] = environment.lower() if environment else "dev"
         if defaults:
-            print_utility.info("Loading default settings from path: {}".format(defaults))
-            with open(defaults, 'r') as fp:
-                config = json.load(fp)
-                self.update(config)
+            self.update(defaults)
         self.update(os.environ)
         if 'REGION' not in self:
             print_utility.warn("Region not configured using default 'us-west-1'. "
