@@ -64,7 +64,7 @@ class S3Buddy(object):
 
     def _get_upload_bucket_key_name(self, file, key_name=None):
         key_name = (key_name if key_name else os.path.basename(file))
-        if self.key_root_path and self.key_root_path is not '':
+        if self.key_root_path and self.key_root_path != '':
             return "{path}/{key_name}".format(path=self.key_root_path,
                                               key_name=key_name)
         return key_name

@@ -145,7 +145,10 @@ class GitHubTemplate(URLTemplate):
         super(GitHubTemplate, self).__init__(service_type=service_type, values=values)
         tag = values.pop('tag', 'master')
         self.download_url = "https://github.com/{owner}/{repo}/archive/{tag}.zip".format(tag=tag, **values)
-        self._set_download_relative_path("{repo}-{tag}".format(tag=tag, **values))
+        if 'relative-path' in values:
+            self._set_download_relative_path("{repo}-{tag}/{relative-path}".format(tag=tag, **values))
+        else:
+            self._set_download_relative_path("{repo}-{tag}".format(tag=tag, **values))
 
 
 class NamedLocalTemplate(Template):

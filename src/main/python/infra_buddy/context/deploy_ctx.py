@@ -147,7 +147,7 @@ class DeployContext(dict):
             self['REGION'] = 'us-west-1'
         self.template_manager = TemplateManager(self.get_deploy_templates(),self.get_service_modification_templates())
         self.stack_name_cache = []
-        if self.get('DATADOG_KEY','') is not '':
+        if self.get('DATADOG_KEY','') != '':
             self.notifier = DataDogNotifier(key=self['DATADOG_KEY'],deploy_context=self)
         else:
             self.notifier = None
