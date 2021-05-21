@@ -13,7 +13,7 @@ from infra_buddy.utility import print_utility
                                                                          "the service template.")
 @click.option("--service-type", help="The service-type of an internal template.")
 @click.pass_obj
-def deploy_cloudformation(deploy_ctx, service_template_directory, service_type):
+def validate_template(deploy_ctx, service_template_directory, service_type):
     # type: (DeployContext,str,str) -> None
     do_command(deploy_ctx, service_template_directory, service_type)
 
@@ -21,7 +21,7 @@ def deploy_cloudformation(deploy_ctx, service_template_directory, service_type):
 def do_command(deploy_ctx, service_template_directory=None, service_type=None):
     # type: (DeployContext,[str or None],str) -> None
     if service_template_directory is None:
-        print_utility.warn(
+        print_utility.info(
             "Service template directory was not provided.  Assuming service-type '{}' is built-in.".format(
                 service_type))
         template = deploy_ctx.template_manager.get_known_template(template_name=service_type)
@@ -33,3 +33,5 @@ def do_command(deploy_ctx, service_template_directory=None, service_type=None):
     errs = deploy.analyze()
     if errs > 0:
         print_utility.error("Template raised {} errors ".format(errs), raise_exception=True)
+    else:
+        print_utility.banner_warn("Service Template Validation - {}".format(service_type),"SUCCESS - No errors")

@@ -88,8 +88,8 @@ class DeployContext(dict):
         if len(self.stack_name_cache)>0:
             print_utility.warn("Depth: {}".format(self.stack_name_cache))
         if self.current_deploy:
-            print_utility.banner_warn("Deploy Defaults:",pformat(self.current_deploy.defaults))
-        print_utility.banner_warn("Environment:",pformat(self))
+            print_utility.banner_info("Deploy Defaults:",pformat(self.current_deploy.defaults))
+        print_utility.banner_info("Environment:",pformat(self))
 
     def _initialize_artifact_directory(self, artifact_directory):
         # type: (str) -> None
