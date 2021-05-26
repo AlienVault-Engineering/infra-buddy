@@ -55,7 +55,7 @@ class TemplateManager(object):
         self._load_templates(modification_templates_, service_modification=True)
         if user_default_service_templates: self._load_templates(user_default_service_templates)
         if user_default_service_modification_tempaltes: self._load_templates(
-            user_default_service_modification_tempaltes)
+            user_default_service_modification_tempaltes, service_modification=True)
 
     def get_known_service(self, service_type):
         # type: (str) -> Template

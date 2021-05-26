@@ -31,7 +31,7 @@ def banner_info(msg, data):
 
 def banner_warn(msg, data):
     banner(msg)
-    info_banner(data)
+    click.secho(data, fg='green')
 
 
 def error(err_msg, raise_exception=False):
