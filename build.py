@@ -1,3 +1,5 @@
+import os
+
 from pybuilder.core import init, use_plugin
 
 use_plugin("python.core")
@@ -18,7 +20,8 @@ name = "infra-buddy"
 @init
 def initialize(project):
 
-    build_number = project.get_property("build_number")
+    build_number = project.get_property("build_number",os.environ.get('GITHUB_RUN_NUMBER',
+                                                                      os.environ.get('TRAVIS_BUILD_NUMBER')))
     if build_number is not None and "" != build_number:
         project.version = build_number
     else:
