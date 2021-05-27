@@ -33,4 +33,4 @@ jobs:
         DATADOG_KEY: ${{ secrets.DATADOG_KEY }}
         DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
       run: |
-        pybuilder publish upload
+        pyb publish upload
