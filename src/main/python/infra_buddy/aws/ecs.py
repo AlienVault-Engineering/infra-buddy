@@ -1,5 +1,6 @@
 import boto3
 import pydash
+from botocore.exceptions import WaiterError
 
 from infra_buddy.utility import print_utility, waitfor
 
@@ -123,9 +124,9 @@ class ECSBuddy(object):
                 cluster=self.cluster,
                 services=[self.ecs_service]
             )
-        except Exception as e:
+        except WaiterError as e:
             success = False
-            print_utility.error("Error waiting for service to stabilize - {}".format(e.message), raise_exception=True)
+            print_utility.error("Error waiting for service to stabilize - {}".format(e), raise_exception=True)
         finally:
             self.deploy_ctx.notify_event(
                 title="Update of ecs service {service} completed".format(service=self.ecs_service,
