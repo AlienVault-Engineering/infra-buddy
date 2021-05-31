@@ -8,8 +8,9 @@ import pydash as pydash
 from botocore.exceptions import WaiterError
 
 from infra_buddy.utility import print_utility
-from infra_buddy.utility.exception import NOOPException
 from infra_buddy.utility.waitfor import waitfor
+
+MAX_ATTEMPTS = 5
 
 
 def _load_file_to_json(parameter_file):
@@ -73,8 +74,8 @@ class CloudFormationBuddy(object):
         self.existing_change_set_id = resp['Id']
         self.stack_id = resp['StackId']
         print_utility.info("Created ChangeSet:\nChangeSetID: {}\nStackID: {}\n{}".format(resp['Id'],
-                                                                                        resp['StackId'],
-                                                                                        pformat(resp,indent=1)))
+                                                                                         resp['StackId'],
+                                                                                         pformat(resp, indent=1)))
         waiter = self.client.get_waiter('change_set_create_complete')
         try:
             waiter.wait(ChangeSetName=self.deploy_ctx.change_set_name, StackName=self.stack_id)
@@ -96,7 +97,7 @@ class CloudFormationBuddy(object):
         self.describe_change_set(refresh=refresh)
         return self.change_set_description['Status']
 
-    def describe_change_set(self,refresh=False):
+    def describe_change_set(self, refresh=False):
         self._validate_changeset_operation_ready('describe_change_set')
         if not self.change_set_description or refresh:
             self.change_set_description = self.client.describe_change_set(ChangeSetName=self.existing_change_set_id)
@@ -119,7 +120,7 @@ class CloudFormationBuddy(object):
             success = False
         self._finish_update_event(action, success)
         if not success:
-            self._clean_change_set_and_exit(failed=True,failure_stage='execute')
+            self._clean_change_set_and_exit(failed=True, failure_stage='execute')
 
     def _validate_changeset_operation_ready(self, operation):
         if not self.existing_change_set_id:
@@ -190,14 +191,14 @@ class CloudFormationBuddy(object):
             raise Exception("Cloudformation stack failed to create")
 
     def log_stack_status(self, print_stack_events=False):
-        print_utility.banner_warn("Stack Details: {}".format(self.stack_id), pformat(self.stack_description,indent=2))
+        print_utility.banner_warn("Stack Details: {}".format(self.stack_id), pformat(self.stack_description, indent=2))
         if print_stack_events:
             self._print_stack_events()
 
     def log_changeset_status(self, warn=True):
         if warn:
             print_utility.banner_warn("ChangeSet Details: {}".format(self.existing_change_set_id),
-                                  pformat(self.change_set_description))
+                                      pformat(self.change_set_description))
         else:
             print_utility.info("ChangeSet Details: {}".format(self.existing_change_set_id))
             print_utility.info_banner(pformat(self.change_set_description))
@@ -227,12 +228,29 @@ class CloudFormationBuddy(object):
 
     def get_export_value(self, param=None, fully_qualified_param_name=None):
         if not fully_qualified_param_name:
-            fully_qualified_param_name = "{stack_name}-{param}".format(stack_name=self.stack_name, param=param)
-        if len(self.exports) == 0: self._load_export_values()
+            fully_qualified_param_name = f"{self.stack_name}-{param}"
+        if len(self.exports) == 0:
+            self._load_export_values()
         val = self.exports.get(fully_qualified_param_name, None)
         if val is None:
-            print_utility.warn("Could not locate export value - {}".format(fully_qualified_param_name))
+            print_utility.warn(f"Could not locate export value - {fully_qualified_param_name}")
         return val
+
+    def wait_for_export(self, fully_qualified_param_name):
+        # we are seeing an issue where immediately after stack create the export values are not
+        # immediately available
+        value = waitfor(
+            function_pointer=self.get_export_value,
+            expected_result=None,
+            interval_seconds=2,
+            max_attempts=MAX_ATTEMPTS,
+            negate=True,
+            args={"fully_qualified_param_name": fully_qualified_param_name},
+            exception=False
+        )
+
+        print_utility.info(f"[wait_for_export] {fully_qualified_param_name}={value}")
+        return value
 
     def _load_export_values(self):
         export_results = self.client.list_exports()

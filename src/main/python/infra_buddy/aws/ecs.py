@@ -1,51 +1,40 @@
+import logging
+
 import boto3
 import pydash
 from botocore.exceptions import WaiterError
 
-from infra_buddy.utility import print_utility, waitfor
+from infra_buddy.utility import print_utility
 
 from infra_buddy.aws.cloudformation import CloudFormationBuddy
 
 
 class ECSBuddy(object):
-    def __init__(self, deploy_ctx):
-        # type: (DeployContext) -> None
+    def __init__(self, deploy_ctx, run_task: bool = False):
         super(ECSBuddy, self).__init__()
         self.deploy_ctx = deploy_ctx
+        self.using_fargate = self.deploy_ctx.get('USE_FARGATE') == 'true'
         self.client = boto3.client('ecs', region_name=self.deploy_ctx.region)
-        cf = CloudFormationBuddy(deploy_ctx)
-        ecs_cluster_export_key = "{}-ECSCluster".format(self.deploy_ctx.cluster_stack_name)
-        self.cluster = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_cluster_export_key)
-        ecs_service_export_key = "{}-ECSService".format(self.deploy_ctx.stack_name)
-        self.ecs_service = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_service_export_key)
-        ecs_task_family_export_key = "{}-ECSTaskFamily".format(self.deploy_ctx.stack_name)
-        self.ecs_task_family = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_task_family_export_key)
-        ecs_task_execution_role_export_key = "{}-ECSTaskExecutionRole".format(self.deploy_ctx.stack_name)
-        self.ecs_task_execution_role = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_task_execution_role_export_key)
-        ecs_task_role_export_key = "{}-ECSTaskRole".format(self.deploy_ctx.stack_name)
-        self.ecs_task_role = self._wait_for_export(cf=cf, fully_qualified_param_name=ecs_task_role_export_key)
+        self.cf = CloudFormationBuddy(deploy_ctx)
+        self.cluster = self.cf.wait_for_export(
+            fully_qualified_param_name=f"{self.deploy_ctx.cluster_stack_name}-ECSCluster")
+        self.run_task = run_task
+        if run_task:
+            self.networkConfiguration = self._build_network_configuration()
+        else:
+            self.ecs_service = self.cf.wait_for_export(
+                fully_qualified_param_name=f"{self.deploy_ctx.stack_name}-ECSService")
+        self.ecs_task_family = self.cf.wait_for_export(
+            fully_qualified_param_name=f"{self.deploy_ctx.stack_name}-ECSTaskFamily")
+        self.ecs_task_execution_role = self.cf.wait_for_export(
+            fully_qualified_param_name=f"{self.deploy_ctx.stack_name}-ECSTaskExecutionRole")
+        self.ecs_task_role = self.cf.wait_for_export(
+            fully_qualified_param_name=f"{self.deploy_ctx.stack_name}-ECSTaskRole")
         self.task_definition_description = None
         self.new_image = None
 
-    @classmethod
-    def _wait_for_export(cls, cf, fully_qualified_param_name):
-        # we are seeing an issue where immediately after stack create the export values are not
-        # immediately available
-        value = waitfor.waitfor(
-            function_pointer=cf.get_export_value,
-            expected_result=None,
-            interval_seconds=2,
-            max_attempts=5,
-            negate=True,
-            args={"fully_qualified_param_name": fully_qualified_param_name},
-            exception=False
-        )
-
-        print_utility.info("[wait_for_export] {}={}".format(fully_qualified_param_name, value))
-        return value
-
     def set_container_image(self, location, tag):
-        self.new_image = "{location}:{tag}".format(location=location, tag=tag)
+        self.new_image = f"{location}:{tag}"
 
     def requires_update(self):
         if not self.new_image:
@@ -56,9 +45,9 @@ class ECSBuddy(object):
             return False
         self._describe_task_definition()
         existing = pydash.get(self.task_definition_description, "containerDefinitions[0].image")
-        print_utility.info("ECS task existing image - {}".format(existing))
-        print_utility.info("ECS task desired image - {}".format(self.new_image))
-        return existing != self.new_image
+        print_utility.info(f"ECS task existing image - {existing}")
+        print_utility.info(f"ECS task desired image - {self.new_image}")
+        return self.run_task or existing != self.new_image
 
     def perform_update(self):
         self._describe_task_definition(refresh=True)
@@ -70,8 +59,6 @@ class ECSBuddy(object):
         if 'networkMode' in self.task_definition_description:
             new_task_def['networkMode'] = self.task_definition_description['networkMode']
         new_task_def['containerDefinitions'][0]['image'] = self.new_image
-
-        using_fargate = self.deploy_ctx.get('USE_FARGATE') == 'true'
 
         ctx_memory = self.deploy_ctx.get('TASK_MEMORY')
         if ctx_memory:
@@ -85,7 +72,7 @@ class ECSBuddy(object):
             new_task_def['containerDefinitions'][0]['cpu'] = ctx_cpu
 
         # set at the task level for fargate definitions
-        if using_fargate:
+        if self.using_fargate:
             first_container = new_task_def['containerDefinitions'][0]
             new_task_def['requiresCompatibilities'] = ['FARGATE']
             new_cpu = ctx_cpu or first_container.get('cpu')
@@ -102,16 +89,22 @@ class ECSBuddy(object):
             new_task_def['taskRoleArn'] = self.ecs_task_role
 
         for k, v in self.deploy_ctx.items():
-            print_utility.info('[deploy_ctx] {} = {}'.format(k, repr(v)))
+            print_utility.info(f'[deploy_ctx] {k} = {repr(v)}')
 
         for k, v in new_task_def.items():
-            print_utility.info('[new_task_def] {} = {}'.format(k, repr(v)))
+            print_utility.info(f'[new_task_def] {k} = {repr(v)}')
 
         updated_task_definition = self.client.register_task_definition(**new_task_def)['taskDefinition']
         new_task_def_arn = updated_task_definition['taskDefinitionArn']
 
+        if self.run_task:
+            self.exec_run_task(new_task_def_arn)
+        else:
+            self.update_service(new_task_def_arn)
+
+    def update_service(self, new_task_def_arn):
         self.deploy_ctx.notify_event(
-            title="Update of ecs service {service} started".format(service=self.ecs_service),
+            title=f"Update of ecs service {self.ecs_service} started",
             type="success")
         self.client.update_service(
             cluster=self.cluster,
@@ -126,15 +119,55 @@ class ECSBuddy(object):
             )
         except WaiterError as e:
             success = False
-            print_utility.error("Error waiting for service to stabilize - {}".format(e), raise_exception=True)
+            print_utility.error(f"Error waiting for service to stabilize - {e}", raise_exception=True)
         finally:
             self.deploy_ctx.notify_event(
-                title="Update of ecs service {service} completed".format(service=self.ecs_service,
-                                                                         success="Success" if success else "Failed"),
+                title=f"Update of ecs service {self.ecs_service} completed: {'Success' if success else 'Failed'}",
                 type="success" if success else "error")
 
     def _describe_task_definition(self, refresh=False):
         if self.task_definition_description and not refresh:
             return
-        self.task_definition_description = self.client.describe_task_definition(taskDefinition=self.ecs_task_family)[
-            'taskDefinition']
+        self.task_definition_description = self.client.describe_task_definition(taskDefinition=
+                                                                                self.ecs_task_family)['taskDefinition']
+
+    def exec_run_task(self, new_task_def_arn):
+        self.deploy_ctx.notify_event(
+            title=f"Running one time ecs task with image: {self.new_image}",
+            type="success")
+        ret = self.client.run_task(cluster=self.cluster,
+                                   launchType='FARGATE' if self.using_fargate else 'EC2',
+                                   taskDefinition=new_task_def_arn,
+                                   networkConfiguration=self.networkConfiguration)
+        success = True
+        try:
+            if self.deploy_ctx.wait_for_run_task_finish():
+                waiter_name = 'tasks_stopped'
+            else:
+                waiter_name = 'tasks_running'
+            waiter = self.client.get_waiter(waiter_name=waiter_name)
+            waiter.wait(cluster=self.cluster, tasks=[ret['tasks'][0]['taskArn']])
+        except WaiterError as e:
+            success = False
+            print_utility.error(f"Error waiting for task to run - {e}", raise_exception=True)
+        finally:
+            self.deploy_ctx.notify_event(
+                title=f"Task running with started: {'Success' if success else 'Failed'}: Image - {self.new_image} ",
+                type="success" if success else "error")
+
+    def _build_network_configuration(self):
+        # {'awsvpcConfiguration': {'subnets': ['subnet-030d5ae3a5aed3c30', 'subnet-0058692e292b68211', 'subnet-02ca3729edae57a6a'],
+        # 'securityGroups': ['sg-087a1bbf3463e7614'], 'assignPublicIp': 'DISABLED'}}
+        subnets = []
+        for sub in ['A', 'B', 'C']:
+            subnet = self.cf.wait_for_export(fully_qualified_param_name=f"{self.deploy_ctx.vpc_stack_name}-Subnet{sub}Priv")
+            subnets.append(subnet)
+        sec_group = self.cf.wait_for_export(fully_qualified_param_name=f"{self.deploy_ctx.stack_name}-FargateSecurityGroup")
+        return {
+            'awsvpcConfiguration': {'subnets': subnets, 'securityGroups': [sec_group], 'assignPublicIp': 'DISABLED'}}
+
+    def what_is_your_plan(self):
+        if self.run_task:
+            return f"ECS Deploy running task using image {self.new_image}"
+        else:
+            return f"ECS Deploy updating service {self.ecs_service} to use image {self.new_image}"

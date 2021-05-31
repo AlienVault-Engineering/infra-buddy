@@ -23,7 +23,10 @@ APPLICATION = 'APPLICATION'
 ENVIRONMENT = 'ENVIRONMENT'
 REGION = 'REGION'
 SKIP_ECS = 'SKIP_ECS'
-built_in = [DOCKER_REGISTRY, ROLE, APPLICATION, ENVIRONMENT, REGION, SKIP_ECS]
+WAIT_FOR_ECS_TASK_RUN_FINISH = 'WAIT_FOR_ECS_TASK_RUN_FINISH'
+ECS_TASK_RUN = 'ECS_TASK_RUN'
+# default to env variables on these
+built_in = [DOCKER_REGISTRY, ROLE, APPLICATION, ENVIRONMENT, REGION, SKIP_ECS,ECS_TASK_RUN, WAIT_FOR_ECS_TASK_RUN_FINISH]
 env_variables = OrderedDict()
 env_variables['VPCAPP'] = "${VPCAPP}"
 env_variables['DEPLOY_DATE'] = "${DEPLOY_DATE}"
@@ -59,7 +62,7 @@ class DeployContext(dict):
         :rtype DeployContext
         :param artifact_directory: Path to directory containing service definition.
                 May be a s3 URL pointing at a zip archive
-        :param defaults: Path to json file containing default environment settings
+        :param defaults: Dict containing default environment settings
         """
         ret = DeployContext(defaults=defaults, environment=environment)
         ret._initialize_artifact_directory(artifact_directory)
@@ -184,7 +187,15 @@ class DeployContext(dict):
     def should_skip_ecs_trivial_update(self):
         return self.get(SKIP_ECS, os.environ.get(SKIP_ECS, "True")) == "True"
 
-    def render_template(self, file,destination):
+    def wait_for_run_task_finish(self):
+        return self.get(WAIT_FOR_ECS_TASK_RUN_FINISH,
+                        os.environ.get(WAIT_FOR_ECS_TASK_RUN_FINISH, "True")) == "True"
+
+    def is_task_run_service(self):
+        return self.get(ECS_TASK_RUN,
+                        os.environ.get(ECS_TASK_RUN, "True")) == "True"
+
+    def render_template(self, file, destination):
         with open(file, 'r') as source:
             with open(os.path.join(destination,os.path.basename(file).replace('.tmpl','')),'w+') as destination:
                 temp_file_path = os.path.abspath(destination.name)
