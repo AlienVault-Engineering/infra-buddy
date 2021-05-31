@@ -185,15 +185,15 @@ class DeployContext(dict):
         return self.service_definition.service_modifications
 
     def should_skip_ecs_trivial_update(self):
-        return self.get(SKIP_ECS, os.environ.get(SKIP_ECS, "True")) == "True"
+        return self.get(SKIP_ECS, os.environ.get(SKIP_ECS, "true")) == "true"
 
     def wait_for_run_task_finish(self):
         return self.get(WAIT_FOR_ECS_TASK_RUN_FINISH,
-                        os.environ.get(WAIT_FOR_ECS_TASK_RUN_FINISH, "True")) == "True"
+                        os.environ.get(WAIT_FOR_ECS_TASK_RUN_FINISH, "true")) == "true"
 
     def is_task_run_service(self):
         return self.get(ECS_TASK_RUN,
-                        os.environ.get(ECS_TASK_RUN, "True")) == "True"
+                        os.environ.get(ECS_TASK_RUN, "false")) == "true"
 
     def render_template(self, file, destination):
         with open(file, 'r') as source:
