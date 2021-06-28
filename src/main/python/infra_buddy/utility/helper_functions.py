@@ -158,7 +158,7 @@ def calculate_rule_priority(deploy_ctx, stack_name):
     if cf.does_stack_exist():
         return cf.get_existing_parameter_value('RulePriority')
     else:
-        listenerArn = _get_cluster_stack_export_value(cf, deploy_ctx, "ListenerARN")
+        listenerArn = _get_cluster_stack_export_value(cf, deploy_ctx, "HTTPSListenerARN")
         if listenerArn:
             client = get_boto_client(deploy_ctx)
             rules = client.describe_rules(ListenerArn=listenerArn)['Rules']
