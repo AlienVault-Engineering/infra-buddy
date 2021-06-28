@@ -184,6 +184,8 @@ class TemplateManager(object):
                         self.service_modification_templates[service][name] = template
                     all_service_mods[name] = (template)
             else:
+                if name in self.deploy_templates:
+                    print_utility.info(f"Overwriting existing template for service {name}: {self.deploy_templates[name]}")
                 self.deploy_templates[name] = template
         for alias in alias_templates:
             alias.resolve(all_service_mods if service_modification else self.deploy_templates)

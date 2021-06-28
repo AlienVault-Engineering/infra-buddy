@@ -21,6 +21,9 @@ class Template(object):
         self.valid = False
         self.default_env_values = values.get('default-values', {})
 
+    def __str__(self) -> str:
+        return f"Template for {self.service_type}"
+
     def get_default_env_values(self):
         return self.default_env_values
 
@@ -107,6 +110,9 @@ class AliasTemplate(Template):
         self.lookup = values.get('lookup', None)
         self.delegate = None
 
+    def __str__(self) -> str:
+        return f"{super().__str__()}: Alias {self.lookup} - {self.delegate}"
+
     def resolve(self, templates):
         # type: (dict()) -> None
         if self.lookup in templates:
@@ -154,6 +160,9 @@ class GitHubTemplate(URLTemplate):
         else:
             self._set_download_relative_path("{repo}-{tag}".format(tag=tag, **values))
 
+    def __str__(self) -> str:
+        return f"{super().__str__()}: GitHub {self.download_url}"
+
 
 class GitHubTemplateDefinitionLocation(GitHubTemplate):
 
@@ -171,6 +180,9 @@ class NamedLocalTemplate(Template):
         self.destination = directory
         self._validate_template_dir(err_on_failure_to_locate=err_on_failure_to_locate)
 
+    def __str__(self) -> str:
+        return f"{super().__str__()}: NamedLocalTemplate {self.destination}"
+
 
 class S3Template(Template):
     def __init__(self, service_type, values):
@@ -181,6 +193,9 @@ class S3Template(Template):
         self._prep_download()
         s3.download_zip_from_s3_url(self.s3_location, self.destination)
 
+    def __str__(self) -> str:
+        return f"{super().__str__()}: S3Template {self.s3_location}"
+
 
 class LocalTemplate(Template):
     def __init__(self, template, parameter_file, config_dir=None):
@@ -188,6 +203,9 @@ class LocalTemplate(Template):
         self.config_dir = config_dir
         self.parameter_file = parameter_file
         self.template = template
+
+    def __str__(self) -> str:
+        return f"{super().__str__()}: LocalTemplate {self.template}"
 
     def get_parameter_file_path(self):
         return self.parameter_file
