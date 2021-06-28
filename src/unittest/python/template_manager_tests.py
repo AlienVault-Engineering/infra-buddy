@@ -152,6 +152,11 @@ class TemplateManagerTestCase(ParentTestCase):
         })
         self.assertTrue(template_manager.get_known_template('secret'), "Failed to locate default template")
 
+    def test_remote_defaults_load(self):
+        template_manager = TemplateManager()
+        template_manager.load_additional_templates({"type":"github","owner":"rspitler","repo":"cloudformation-templates"})
+        self.assertTrue(template_manager.get_known_template('secret'), "Failed to locate default template")
+
     def test_service_alias(self):
         template_manager = TemplateManager()
         template = template_manager.get_known_template('default-api-service')

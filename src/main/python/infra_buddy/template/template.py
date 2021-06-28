@@ -81,9 +81,14 @@ class URLTemplate(Template):
 
     def download_template(self):
         self._prep_download()
-        r = requests.get(self.download_url, stream=True)
+        URLTemplate.download_url_to_destination(self.download_url, self.destination)
+        self._validate_template_dir()
+
+    @staticmethod
+    def download_url_to_destination(url, destination):
+        r = requests.get(url, stream=True)
         if r.status_code != 200:
-            print_utility.error("Template could not be downloaded - {url} {status} {body}".format(url=self.download_url,
+            print_utility.error("Template could not be downloaded - {url} {status} {body}".format(url=url,
                                                                                                   status=r.status_code,
                                                                                                   body=r.text))
         temporary_file = tempfile.NamedTemporaryFile()
@@ -92,8 +97,7 @@ class URLTemplate(Template):
                 temporary_file.write(chunk)
         temporary_file.seek(0)
         with ZipFile(temporary_file) as zf:
-            zf.extractall(self.destination)
-        self._validate_template_dir()
+            zf.extractall(destination)
 
 
 class AliasTemplate(Template):
@@ -149,6 +153,15 @@ class GitHubTemplate(URLTemplate):
             self._set_download_relative_path("{repo}-{tag}/{relative-path}".format(tag=tag, **values))
         else:
             self._set_download_relative_path("{repo}-{tag}".format(tag=tag, **values))
+
+
+class GitHubTemplateDefinitionLocation(GitHubTemplate):
+
+    def _validate_template_dir(self, err_on_failure_to_locate=True):
+        if not os.path.exists(self.get_defaults_file_path()):
+            if err_on_failure_to_locate: print_utility.error("Remote Defaults file could not be "
+                                                             "located for service - {service_type}".format(
+                service_type=self.service_type), raise_exception=True)
 
 
 class NamedLocalTemplate(Template):

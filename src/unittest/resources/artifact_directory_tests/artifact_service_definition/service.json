@@ -3,6 +3,7 @@
   "role": "bar",
   "service-type": "pylib-remote",
   "registry-url": "https://docker.io/my-registry",
+  "service-template-definition-locations": [{"type":"github","owner":"rspitler","repo":"cloudformation-templates"}],
   "deployment-parameters": {
     "API_PATH":"bar",
     "OVERRIDE":"unit-testbar"

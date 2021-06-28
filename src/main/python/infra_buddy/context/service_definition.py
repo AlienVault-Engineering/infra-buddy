@@ -18,6 +18,7 @@ _PROD_DEPLOYMENT_PARAMETERS = 'prod-deployment-parameters'
 _DEV_DEPLOYMENT_PARAMETERS = 'dev-deployment-parameters'
 _UNIT_TEST_DEPLOYMENT_PARAMETERS = 'unit-test-deployment-parameters'
 _DOCKER_REGISTRY = 'registry-url'
+_SERVICE_TEMPLATE_DEFINITION_LOCATIONS = 'service-template-definition-locations'
 _SERVICE_TYPE = 'service-type'
 _ROLE = 'role'
 _APPLICATION = 'application'
@@ -31,6 +32,21 @@ class ServiceDefinition(object):
             _ROLE: {"type": "string"},
             _SERVICE_TYPE: {"type": "string"},
             _DOCKER_REGISTRY: {"type": ["string", "null"], 'maxLength': 1000},
+            _SERVICE_TEMPLATE_DEFINITION_LOCATIONS: {
+                    "type":"array",
+                    "items":{
+                        "type": "object",
+                        "properties": {
+                            "type": {"type": "string"},
+                            "owner": {"type": "string"},
+                            "repo": {"type": "string"},
+                            "tag": {"type": "string"},
+                            "relative-path": {"type": "string"},
+                            "url": {"type": "string"}
+                        },
+                        "required": ["type"]
+                    }
+            },
             _DEPLOYMENT_PARAMETERS: {
                 "type": "object",
                 "properties": {
@@ -81,6 +97,7 @@ class ServiceDefinition(object):
             self.role = service_definition[_ROLE]
             self.service_type = service_definition[_SERVICE_TYPE]
             self.docker_registry = service_definition.get(_DOCKER_REGISTRY,"")
+            self.service_template_definition_locations = service_definition.get(_SERVICE_TEMPLATE_DEFINITION_LOCATIONS, [])
             if _DEPLOYMENT_PARAMETERS in service_definition:
                 self.deployment_parameters = service_definition[_DEPLOYMENT_PARAMETERS]
             env_deployment_parameters = '{environment}-deployment-parameters'.format(environment=environment)

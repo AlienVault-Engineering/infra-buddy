@@ -26,7 +26,8 @@ SKIP_ECS = 'SKIP_ECS'
 WAIT_FOR_ECS_TASK_RUN_FINISH = 'WAIT_FOR_ECS_TASK_RUN_FINISH'
 ECS_TASK_RUN = 'ECS_TASK_RUN'
 # default to env variables on these
-built_in = [DOCKER_REGISTRY, ROLE, APPLICATION, ENVIRONMENT, REGION, SKIP_ECS,ECS_TASK_RUN, WAIT_FOR_ECS_TASK_RUN_FINISH]
+built_in = [DOCKER_REGISTRY, ROLE, APPLICATION, ENVIRONMENT, REGION, SKIP_ECS, ECS_TASK_RUN,
+            WAIT_FOR_ECS_TASK_RUN_FINISH]
 env_variables = OrderedDict()
 env_variables['VPCAPP'] = "${VPCAPP}"
 env_variables['DEPLOY_DATE'] = "${DEPLOY_DATE}"
@@ -35,9 +36,10 @@ env_variables['EnvName'] = "${STACK_NAME}"  # alias
 env_variables['ECS_SERVICE_STACK_NAME'] = "${STACK_NAME}"  # alias
 env_variables['VPC_STACK_NAME'] = "${ENVIRONMENT}-${VPCAPP}-vpc"
 env_variables['CF_BUCKET_NAME'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources"
-env_variables['TEMPLATE_BUCKET'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources" # alias
+env_variables['TEMPLATE_BUCKET'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources"  # alias
 env_variables['CF_DEPLOY_RESOURCE_PATH'] = "${STACK_NAME}/${DEPLOY_DATE}"
-env_variables['CONFIG_TEMPLATES_URL'] = "https://s3-${REGION}.amazonaws.com/${CF_BUCKET_NAME}/${CF_DEPLOY_RESOURCE_PATH}"
+env_variables[
+    'CONFIG_TEMPLATES_URL'] = "https://s3-${REGION}.amazonaws.com/${CF_BUCKET_NAME}/${CF_DEPLOY_RESOURCE_PATH}"
 env_variables['CONFIG_TEMPLATES_EAST_URL'] = "https://s3.amazonaws.com/${CF_BUCKET_NAME}/${CF_DEPLOY_RESOURCE_PATH}"
 env_variables['CLUSTER_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-cluster"
 env_variables['RESOURCE_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-${ROLE}-resources"
@@ -46,14 +48,12 @@ env_variables['KEY_NAME'] = "${ENVIRONMENT}-${APPLICATION}"
 env_variables['CHANGE_SET_NAME'] = "${STACK_NAME}-deploy-cloudformation-change-set"
 
 
-
-
 class DeployContext(dict):
     def __init__(self, defaults, environment):
         super(DeployContext, self).__init__()
         self.current_deploy = None
         self.temp_files = []
-        self._initalize_defaults(defaults,environment)
+        self._initalize_defaults(defaults, environment)
 
     @classmethod
     def create_deploy_context_artifact(cls, artifact_directory, environment, defaults=None):
@@ -88,11 +88,11 @@ class DeployContext(dict):
     def print_self(self):
         print_utility.warn("Context:")
         print_utility.warn("Stack: {}".format(self.stack_name))
-        if len(self.stack_name_cache)>0:
+        if len(self.stack_name_cache) > 0:
             print_utility.warn("Depth: {}".format(self.stack_name_cache))
         if self.current_deploy:
-            print_utility.banner_info("Deploy Defaults:",pformat(self.current_deploy.defaults))
-        print_utility.banner_info("Environment:",pformat(self))
+            print_utility.banner_info("Deploy Defaults:", pformat(self.current_deploy.defaults))
+        print_utility.banner_info("Environment:", pformat(self))
 
     def _initialize_artifact_directory(self, artifact_directory):
         # type: (str) -> None
@@ -105,6 +105,7 @@ class DeployContext(dict):
         self[ROLE] = service_definition.role
         self[DOCKER_REGISTRY] = service_definition.docker_registry
         self.update(service_definition.deployment_parameters)
+        self.load_remote_defaults(service_definition.service_template_definition_locations)
         self.service_definition = service_definition
         self.artifact_definition = ArtifactDefinition.create_from_directory(artifact_directory)
         self.monitor_definition = MonitorDefinition.create_from_directory(artifact_directory)
@@ -112,7 +113,8 @@ class DeployContext(dict):
 
     def _initialize_environment_variables(self):
         application = self['APPLICATION']
-        self['VPCAPP'] = application if not application or '-' not in application else application[:application.find('-')]
+        self['VPCAPP'] = application if not application or '-' not in application else application[
+                                                                                       :application.find('-')]
         # allow for partial stack names for validation and introspection usecases
         stack_template = "${ENVIRONMENT}"
         if application:
@@ -127,14 +129,14 @@ class DeployContext(dict):
             evaluated_template = self.expandvars(template)
             self[variable] = evaluated_template
             self.__dict__[variable.lower()] = evaluated_template
-        #s3 has non-standardized behavior in us-east-1 you can not use the region in the url
+        # s3 has non-standardized behavior in us-east-1 you can not use the region in the url
         if self['REGION'] == 'us-east-1':
             self['CONFIG_TEMPLATES_URL'] = self['CONFIG_TEMPLATES_EAST_URL']
             self.__dict__['CONFIG_TEMPLATES_URL'.lower()] = self['CONFIG_TEMPLATES_EAST_URL']
 
         print_utility.info("deploy_ctx = {}".format(repr(self.__dict__)))
 
-    def _initalize_defaults(self, defaults,environment):
+    def _initalize_defaults(self, defaults, environment):
         self['DATADOG_KEY'] = ""
         self['ENVIRONMENT'] = environment.lower() if environment else "dev"
         if defaults:
@@ -145,10 +147,10 @@ class DeployContext(dict):
                                "This is probably not what you want - N. California is slow, like real slow."
                                "  Set the environment variable 'REGION' or pass a default configuration file to override. ")
             self['REGION'] = 'us-west-1'
-        self.template_manager = TemplateManager(self.get_deploy_templates(),self.get_service_modification_templates())
+        self.template_manager = TemplateManager(self.get_deploy_templates(), self.get_service_modification_templates())
         self.stack_name_cache = []
-        if self.get('DATADOG_KEY','') != '':
-            self.notifier = DataDogNotifier(key=self['DATADOG_KEY'],deploy_context=self)
+        if self.get('DATADOG_KEY', '') != '':
+            self.notifier = DataDogNotifier(key=self['DATADOG_KEY'], deploy_context=self)
         else:
             self.notifier = None
 
@@ -177,9 +179,9 @@ class DeployContext(dict):
 
     def notify_event(self, title, type, message=None):
         if self.notifier:
-            self.notifier.notify_event(title,type,message)
+            self.notifier.notify_event(title, type, message)
         else:
-            print_utility.warn("Notify {type}: {title} - {message}".format(type=type,title=title,message=message))
+            print_utility.warn("Notify {type}: {title} - {message}".format(type=type, title=title, message=message))
 
     def get_service_modifications(self):
         return self.service_definition.service_modifications
@@ -197,7 +199,7 @@ class DeployContext(dict):
 
     def render_template(self, file, destination):
         with open(file, 'r') as source:
-            with open(os.path.join(destination,os.path.basename(file).replace('.tmpl','')),'w+') as destination:
+            with open(os.path.join(destination, os.path.basename(file).replace('.tmpl', '')), 'w+') as destination:
                 temp_file_path = os.path.abspath(destination.name)
                 print_utility.info("Rendering template to path: {}".format(temp_file_path))
                 self.temp_files.append(temp_file_path)
@@ -220,24 +222,25 @@ class DeployContext(dict):
             execution_plan.extend(monitor_plan)
         print_utility.progress("Execution Plan:")
         for deploy in execution_plan:
-            print_utility.info_banner("\t"+str(deploy))
+            print_utility.info_banner("\t" + str(deploy))
         return execution_plan
 
     def expandvars(self, template_string, aux_dict=None):
-        if not template_string: return template_string #if you pass none, return none
+        if not template_string: return template_string  # if you pass none, return none
         """Expand ENVIRONMENT variables of form $var and ${var}.
         """
+
         def replace_var(m):
             if aux_dict:
                 val = aux_dict.get(m.group(2) or m.group(1), None)
-                if val is not None:return transform(val)
+                if val is not None: return transform(val)
             # if we are in a deployment values set in that context take precedent
             if self.current_deploy is not None:
                 val = self.current_deploy.defaults.get(m.group(2) or m.group(1), None)
-                if val is not None:return transform(val)
+                if val is not None: return transform(val)
             return transform(self.get(m.group(2) or m.group(1), m.group(0)))
 
-        def transform( val):
+        def transform(val):
             if isinstance(val, bool):
                 return str(val).lower()
             return str(val)
@@ -246,10 +249,10 @@ class DeployContext(dict):
         sub = re.sub(reVar, replace_var, template_string)
         return sub
 
-    def recursive_expand_vars(self,source):
-        if isinstance(source,dict):
+    def recursive_expand_vars(self, source):
+        if isinstance(source, dict):
             ret = {}
-            for key,value in source.items():
+            for key, value in source.items():
                 ret[key] = self.recursive_expand_vars(value)
             return ret
         elif isinstance(source, list):
@@ -261,7 +264,6 @@ class DeployContext(dict):
             return self.expandvars(source)
         else:
             return source
-
 
     def push_deploy_ctx(self, deploy_):
         # type: (CloudFormationDeploy) -> None
@@ -280,3 +282,8 @@ class DeployContext(dict):
             self._update_stack_name(new_val)
         self.current_deploy = None
 
+    def load_remote_defaults(self, service_template_definition_locations):
+        if service_template_definition_locations is None or len(service_template_definition_locations) == 0:
+            return
+        for location in service_template_definition_locations:
+            self.template_manager.load_additional_templates(remote_template_definition_location=location)

@@ -5,7 +5,8 @@ from collections import defaultdict
 import click
 from jsonschema import validate
 
-from infra_buddy.template.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template, AliasTemplate
+from infra_buddy.template.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template, AliasTemplate, \
+    GitHubTemplateDefinitionLocation
 from infra_buddy.utility import print_utility
 
 
@@ -45,17 +46,29 @@ class TemplateManager(object):
     def __init__(self, user_default_service_templates=None, user_default_service_modification_tempaltes=None):
         # type: (DeployContext) -> None
         super(TemplateManager, self).__init__()
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'builtin-templates.json'), 'r') as f:
+        template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'builtin-templates.json')
+        self._load_template_from_file(template_path)
+        if user_default_service_templates:
+            self._load_templates(user_default_service_templates)
+        if user_default_service_modification_tempaltes:
+            self._load_templates(user_default_service_modification_tempaltes, service_modification=True)
+
+    def _load_template_from_file(self, template_path):
+        with open(template_path, 'r') as f:
             built_in = json.load(f)
         service_templates_ = built_in['service-templates']
-        validate(service_templates_, self.schema)
         self._load_templates(service_templates_)
         modification_templates_ = built_in['service-modification-templates']
-        validate(modification_templates_, self.schema)
         self._load_templates(modification_templates_, service_modification=True)
-        if user_default_service_templates: self._load_templates(user_default_service_templates)
-        if user_default_service_modification_tempaltes: self._load_templates(
-            user_default_service_modification_tempaltes, service_modification=True)
+
+    def load_additional_templates(self, remote_template_definition_location):
+        type_ = remote_template_definition_location['type']
+        if type_ != "github":
+            raise Exception("Unsupported type for remote template - only github supported right now!")
+        remote_defaults = GitHubTemplateDefinitionLocation(service_type="remote-defaults",
+                                                           values=remote_template_definition_location)
+        remote_defaults.download_template()
+        self._load_template_from_file(remote_defaults.get_defaults_file_path())
 
     def get_known_service(self, service_type):
         # type: (str) -> Template
@@ -92,10 +105,11 @@ class TemplateManager(object):
             return template
         else:
             print_utility.error(
-                "Unknown service template - {}" 
+                "Unknown service template - {}"
                 "- known templates are deploy_templates={} default_service_mod_templates={} service_mod_templates={}".format(
                     template_name,
-                    self.deploy_templates.keys(), self.default_service_modification_templates.keys(), service_template_names
+                    self.deploy_templates.keys(), self.default_service_modification_templates.keys(),
+                    service_template_names
                 ),
                 raise_exception=True
             )
@@ -134,7 +148,7 @@ class TemplateManager(object):
                     mod_type,
                     service_type,
                     self.get_service_modifications_for_service(
-                    service_type=service_type)
+                        service_type=service_type)
                 ),
                 raise_exception=True)
         template.download_template()
@@ -142,6 +156,7 @@ class TemplateManager(object):
 
     def _load_templates(self, templates, service_modification=False):
         # type: (dict, bool) -> None
+        validate(templates, self.schema)
         alias_templates = []
         all_service_mods = {}
         for name, values in templates.items():
@@ -172,4 +187,3 @@ class TemplateManager(object):
                 self.deploy_templates[name] = template
         for alias in alias_templates:
             alias.resolve(all_service_mods if service_modification else self.deploy_templates)
-
