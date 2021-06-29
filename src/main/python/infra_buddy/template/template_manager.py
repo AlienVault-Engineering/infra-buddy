@@ -65,6 +65,7 @@ class TemplateManager(object):
         type_ = remote_template_definition_location['type']
         if type_ != "github":
             raise Exception("Unsupported type for remote template - only github supported right now!")
+        print_utility.banner_info("Loading additional templates from definition", remote_template_definition_location)
         remote_defaults = GitHubTemplateDefinitionLocation(service_type="remote-defaults",
                                                            values=remote_template_definition_location)
         remote_defaults.download_template()

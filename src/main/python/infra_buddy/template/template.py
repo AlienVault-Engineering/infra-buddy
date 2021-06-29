@@ -49,14 +49,14 @@ class Template(object):
 
     def _validate_template_dir(self, err_on_failure_to_locate=True):
         if not os.path.exists(self.get_template_file_path()):
-            if err_on_failure_to_locate: print_utility.error("Template file could not be "
-                                                             "located for service - {service_type}".format(
-                service_type=self.service_type), raise_exception=True)
+            if err_on_failure_to_locate: print_utility.error(f"Template file could not be located for service - "
+                                                             f"{self.service_type} - {self.__str__()}",
+                                                             raise_exception=True)
             return
         if not os.path.exists(self.get_parameter_file_path()):
-            if err_on_failure_to_locate: print_utility.error("Parameter file could not be "
-                                                             "located for service - {service_type}".format(
-                service_type=self.service_type), raise_exception=True)
+            if err_on_failure_to_locate: print_utility.error(f"Parameter file could not be located for service  - "
+                                                             f"{self.service_type} - {self.__str__()}",
+                                                             raise_exception=True)
             return
         self.valid = True
 
