@@ -13,7 +13,6 @@ class ECSBuddy(object):
     def __init__(self, deploy_ctx, run_task: bool = False):
         super(ECSBuddy, self).__init__()
         self.deploy_ctx = deploy_ctx
-        self.using_fargate = self.deploy_ctx.get('USE_FARGATE') == 'true'
         self.client = boto3.client('ecs', region_name=self.deploy_ctx.region)
         self.cf = CloudFormationBuddy(deploy_ctx)
         self.cluster = self.cf.wait_for_export(
@@ -30,6 +29,8 @@ class ECSBuddy(object):
             fully_qualified_param_name=f"{self.deploy_ctx.stack_name}-ECSTaskExecutionRole")
         self.ecs_task_role = self.cf.wait_for_export(
             fully_qualified_param_name=f"{self.deploy_ctx.stack_name}-ECSTaskRole")
+        self.using_fargate = self.cf.wait_for_export(
+            fully_qualified_param_name=f"{self.deploy_ctx.stack_name}-Fargate")
         self.task_definition_description = None
         self.new_image = None
 
