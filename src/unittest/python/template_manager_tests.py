@@ -152,6 +152,20 @@ class TemplateManagerTestCase(ParentTestCase):
         })
         self.assertTrue(template_manager.get_known_template('secret'), "Failed to locate default template")
 
+    def test_service_alias_compatibility(self):
+        template_manager = TemplateManager(user_default_service_modification_tempaltes={
+            "secret": {
+                "type": "github",
+                "owner": "rspitler",
+                "repo": "cloudformation-templates",
+                "tag": "master/secret",
+                "compatible": [
+                    "ecs-service"
+                ]
+            }
+        })
+        self.assertIsNotNone( template_manager.locate_service_modification('default-api-service',"secret"), "Failed to resolve alias compatibility")
+
     def test_remote_defaults_load(self):
         template_manager = TemplateManager()
         template_manager.load_additional_templates({"type":"github","owner":"rspitler","repo":"cloudformation-templates"})

@@ -149,6 +149,12 @@ class AliasTemplate(Template):
         values.update(self.default_env_values)
         return values
 
+    def get_root_service_type(self):
+        if isinstance(self.delegate, AliasTemplate):
+            return self.delegate.get_root_service_type()
+        else:
+            return self.delegate.service_type
+
 
 class GitHubTemplate(URLTemplate):
     def __init__(self, service_type, values):

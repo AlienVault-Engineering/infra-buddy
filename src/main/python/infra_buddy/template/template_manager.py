@@ -12,6 +12,7 @@ from infra_buddy.utility import print_utility
 
 class TemplateManager(object):
     deploy_templates = {}
+    all_service_mods = {}
     service_modification_templates = defaultdict(dict)
     default_service_modification_templates = {}
 
@@ -82,6 +83,10 @@ class TemplateManager(object):
     def get_service_modifications_for_service(self, service_type):
         ret = {}
         ret.update(self.service_modification_templates.get(service_type, {}))
+        # also get modifications for
+        service = self.get_known_service(service_type=service_type)
+        if isinstance(service, AliasTemplate):
+            ret.update(self.service_modification_templates.get(service.get_root_service_type(),{}))
         ret.update(self.default_service_modification_templates)
         return ret
 
@@ -90,28 +95,16 @@ class TemplateManager(object):
             template_name,
             self.default_service_modification_templates.get(template_name)
         )
-
-        service_template_names = []
         if not template:
-            for service, template_map in self.service_modification_templates.items():
-                service_template_names.append(
-                    (service, template_map.keys())
-                )
-                template = template_map.get(template_name, None)
-                if template:
-                    break
-
+            template = self.all_service_mods.get(template_name)
         if template:
             template.download_template()
             return template
         else:
             print_utility.error(
-                "Unknown service template - {}"
-                "- known templates are deploy_templates={} default_service_mod_templates={} service_mod_templates={}".format(
-                    template_name,
-                    self.deploy_templates.keys(), self.default_service_modification_templates.keys(),
-                    service_template_names
-                ),
+                f"Unknown service template - {template_name} "
+                f"- known templates are deploy_templates={self.deploy_templates.keys()} "
+                f"- service_mod_templates={self.all_service_mods.keys()}",
                 raise_exception=True
             )
 
@@ -139,9 +132,7 @@ class TemplateManager(object):
 
     def locate_service_modification(self, service_type, mod_type):
         # type: (str, str) -> Template
-        template = self.service_modification_templates.get(service_type, {}).get(mod_type, None)
-        if not template:
-            template = self.default_service_modification_templates.get(mod_type, None)
+        template = self.get_service_modifications_for_service(service_type).get(mod_type, None)
         if not template:
             print_utility.error(
                 "Unknown service modification '{}' for type '{}'"
@@ -159,7 +150,6 @@ class TemplateManager(object):
         # type: (dict, bool) -> None
         validate(templates, self.schema)
         alias_templates = []
-        all_service_mods = {}
         for name, values in templates.items():
             type_ = values['type']
             if type_ == "github":
@@ -183,10 +173,10 @@ class TemplateManager(object):
                         self.default_service_modification_templates[name] = template
                     else:
                         self.service_modification_templates[service][name] = template
-                    all_service_mods[name] = (template)
+                    self.all_service_mods[name] = template
             else:
                 if name in self.deploy_templates:
                     print_utility.info(f"Overwriting existing template for service {name}: {self.deploy_templates[name]}")
                 self.deploy_templates[name] = template
         for alias in alias_templates:
-            alias.resolve(all_service_mods if service_modification else self.deploy_templates)
+            alias.resolve(self.all_service_mods if service_modification else self.deploy_templates)
