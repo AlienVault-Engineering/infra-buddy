@@ -17,7 +17,8 @@ class ECSDeploy(Deploy):
             print_utility.warn(f"[Dry Run] ECS Deploy intends to: {self.ecs_buddy.what_is_your_plan()}")
             return None
         if self.ecs_buddy.requires_update():
-            self.ecs_buddy.perform_update()
+            if not self.ecs_buddy.perform_update():
+                print_utility.error(f"Failed to: {self.ecs_buddy.what_is_your_plan()}",raise_exception=True)
             print_utility.progress(self.ecs_buddy.what_is_your_plan())
             return True
         else:

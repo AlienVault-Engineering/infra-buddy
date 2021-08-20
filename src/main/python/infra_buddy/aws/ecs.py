@@ -99,9 +99,9 @@ class ECSBuddy(object):
         new_task_def_arn = updated_task_definition['taskDefinitionArn']
 
         if self.run_task:
-            self.exec_run_task(new_task_def_arn)
+            return self.exec_run_task(new_task_def_arn)
         else:
-            self.update_service(new_task_def_arn)
+            return self.update_service(new_task_def_arn)
 
     def update_service(self, new_task_def_arn):
         self.deploy_ctx.notify_event(
@@ -125,6 +125,7 @@ class ECSBuddy(object):
             self.deploy_ctx.notify_event(
                 title=f"Update of ecs service {self.ecs_service} completed: {'Success' if success else 'Failed'}",
                 type="success" if success else "error")
+            return success
 
     def _describe_task_definition(self, refresh=False):
         if self.task_definition_description and not refresh:
@@ -147,7 +148,13 @@ class ECSBuddy(object):
             else:
                 waiter_name = 'tasks_running'
             waiter = self.client.get_waiter(waiter_name=waiter_name)
-            waiter.wait(cluster=self.cluster, tasks=[ret['tasks'][0]['taskArn']])
+            arn_ = ret['tasks'][0]['taskArn']
+            waiter.wait(cluster=self.cluster, tasks=[arn_])
+            if self.deploy_ctx.wait_for_run_task_finish():
+                description = self.client.describe_tasks(tasks=[arn_],cluster=self.cluster)
+                exit_code_ = pydash.get(description,"tasks.0.containers.0.exitCode",0)
+                if exit_code_>0:
+                    success = False
         except WaiterError as e:
             success = False
             print_utility.error(f"Error waiting for task to run - {e}", raise_exception=True)
@@ -155,6 +162,7 @@ class ECSBuddy(object):
             self.deploy_ctx.notify_event(
                 title=f"Task running with started: {'Success' if success else 'Failed'}: Image - {self.new_image} ",
                 type="success" if success else "error")
+            return success
 
     def _build_network_configuration(self):
         # {'awsvpcConfiguration': {'subnets': ['subnet-030d5ae3a5aed3c30', 'subnet-0058692e292b68211', 'subnet-02ca3729edae57a6a'],
