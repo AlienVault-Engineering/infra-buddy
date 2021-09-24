@@ -153,6 +153,7 @@ class ECSBuddy(object):
             if self.deploy_ctx.wait_for_run_task_finish():
                 description = self.client.describe_tasks(tasks=[arn_],cluster=self.cluster)
                 exit_code_ = pydash.get(description,"tasks.0.containers.0.exitCode",0)
+                print_utility.info(f"Retrieved exit code from container: {exit_code_} - {description}")
                 if exit_code_>0:
                     success = False
         except WaiterError as e:

@@ -1,5 +1,7 @@
 import json
 
+from click import UsageError
+
 from infra_buddy.aws import cloudformation
 from infra_buddy.aws.cloudformation import CloudFormationBuddy
 from infra_buddy.aws.ecs import ECSBuddy
@@ -9,11 +11,17 @@ from testcase_parent import ParentTestCase
 
 
 class FakeEcsClient(object):
-    def __init__(self, testcase):
+    def __init__(self, testcase, task_failed=False):
         # type: (ECSUpdateTemplateTestCase) -> None
         path = testcase._get_resource_path("ecs_tests/task_def.json")
+        if task_failed:
+            describe_def_path = testcase._get_resource_path("ecs_tests/describe_failed_task.json")
+        else:
+            describe_def_path = testcase._get_resource_path("ecs_tests/describe_success_task.json")
         with open(path, 'r') as definition:
             self.test_task_definition = json.load(definition)
+        with open(describe_def_path, 'r') as definition:
+            self.finished_description = json.load(definition)
         self.service_update = []
         self.task_run = []
         self.waiter_name = []
@@ -23,6 +31,9 @@ class FakeEcsClient(object):
 
     def register_task_definition(self, **kwargs):
         return self.test_task_definition
+
+    def describe_tasks(self, **kwargs):
+        return self.finished_description
 
     def update_service(self,
                        cluster,
@@ -40,7 +51,7 @@ class FakeEcsClient(object):
         self.waiter_name.append(waiter_name)
         return self
 
-    def wait(self, cluster, services=None,tasks=None):
+    def wait(self, cluster, services=None, tasks=None):
         return
 
 
@@ -79,18 +90,30 @@ class ECSUpdateTemplateTestCase(ParentTestCase):
         try:
             self.test_deploy_ctx[deploy_ctx.ECS_TASK_RUN] = "True"
             self._do_ecs_run_test('tasks_stopped')
-            self.test_deploy_ctx[deploy_ctx.WAIT_FOR_ECS_TASK_RUN_FINISH] = False
+            self.test_deploy_ctx[deploy_ctx.WAIT_FOR_ECS_TASK_RUN_FINISH] = "False"
             self._do_ecs_run_test('tasks_running')
         finally:
             cloudformation.MAX_ATTEMPTS = 5
             self.test_deploy_ctx[deploy_ctx.ECS_TASK_RUN] = "False"
 
+    def test_ecs_run_task_fail(self):
+        # Set this low as it gets called in the constructor of ECS Deploy
+        cloudformation.MAX_ATTEMPTS = 1
+        try:
+            self.test_deploy_ctx[deploy_ctx.ECS_TASK_RUN] = "True"
+            self._do_ecs_run_test('tasks_stopped', task_failed=True)
+            self.fail("Did not fail ")
+        except Exception as e:
+            self.assertTrue(isinstance(e, UsageError))
+        finally:
+            cloudformation.MAX_ATTEMPTS = 5
+            self.test_deploy_ctx[deploy_ctx.ECS_TASK_RUN] = "False"
 
-    def _do_ecs_run_test(self, expected_waiter):
+    def _do_ecs_run_test(self, expected_waiter, task_failed=False):
         deploy = ECSDeploy(deploy_ctx=self.test_deploy_ctx,
                            artifact_id="1.21",
                            artifact_location="271083817914.dkr.ecr.us-west-2.amazonaws.com/otx/otxb-portal-yara-listener")
-        fake_ecs_client = FakeEcsClient(self)
+        fake_ecs_client = FakeEcsClient(self, task_failed)
         deploy.ecs_buddy.client = fake_ecs_client
         deploy.ecs_buddy.ecs_task_family = "prod-otxb-portal-yara-listener-ECSTaskFamily"
         do_deploy = deploy.do_deploy(dry_run=False)
