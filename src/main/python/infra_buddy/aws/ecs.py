@@ -149,6 +149,7 @@ class ECSBuddy(object):
                 waiter_name = 'tasks_running'
             waiter = self.client.get_waiter(waiter_name=waiter_name)
             arn_ = ret['tasks'][0]['taskArn']
+            print_utility.warn(f"Running task with ARN: {arn_}")
             waiter.wait(cluster=self.cluster, tasks=[arn_])
             if self.deploy_ctx.wait_for_run_task_finish():
                 description = self.client.describe_tasks(tasks=[arn_],cluster=self.cluster)
