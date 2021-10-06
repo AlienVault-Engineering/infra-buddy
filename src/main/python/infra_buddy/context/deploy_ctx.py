@@ -3,6 +3,7 @@ import json
 import os
 import re
 import tempfile
+import zipfile
 from collections import OrderedDict
 from pprint import pformat
 
@@ -199,7 +200,7 @@ class DeployContext(dict):
         return self._assert_true(ECS_TASK_RUN, "false")
 
     def render_template(self, file, destination):
-        if '.tmpl' not in os.path.basename(file): return os.path.abspath(file)
+        if zipfile.is_zipfile(file): return  os.path.abspath(file)
         with open(file, 'r') as source:
             with open(os.path.join(destination, os.path.basename(file).replace('.tmpl', '')), 'w+') as destination:
                 temp_file_path = os.path.abspath(destination.name)
