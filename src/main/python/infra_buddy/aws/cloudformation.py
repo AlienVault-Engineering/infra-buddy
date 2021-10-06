@@ -54,12 +54,11 @@ class CloudFormationBuddy(object):
         self._validate_changeset_operation_ready('delete_change_set')
         if self.get_change_set_execution_status(refresh=True) == 'EXECUTE_FAILED':
             print_utility.info(
-                "Skipping Delete ChangeSet - ChangeSetID: {} Execution Status Failed".format(
-                    self.existing_change_set_id))
+                f"Skipping Delete ChangeSet - ChangeSetID: {self.existing_change_set_id} Execution Status Failed")
             return
         response = self.client.delete_change_set(ChangeSetName=self.existing_change_set_id)
         print_utility.info(
-            "Deleted ChangeSet - ChangeSetID: {} Response: {}".format(self.existing_change_set_id, response))
+            f"Deleted ChangeSet - ChangeSetID: {self.existing_change_set_id} Response: {response}")
 
     def create_change_set(self, template_file_url, parameter_file):
         resp = self.client.create_change_set(
@@ -73,9 +72,8 @@ class CloudFormationBuddy(object):
         )
         self.existing_change_set_id = resp['Id']
         self.stack_id = resp['StackId']
-        print_utility.info("Created ChangeSet:\nChangeSetID: {}\nStackID: {}\n{}".format(resp['Id'],
-                                                                                         resp['StackId'],
-                                                                                         pformat(resp, indent=1)))
+        print_utility.info(
+            f"Created ChangeSet:\nChangeSetID: {resp['Id']}\nStackID: {resp['StackId']}\n{pformat(resp, indent=1)}")
         waiter = self.client.get_waiter('change_set_create_complete')
         try:
             waiter.wait(ChangeSetName=self.deploy_ctx.change_set_name, StackName=self.stack_id)
@@ -138,7 +136,7 @@ class CloudFormationBuddy(object):
                     if self.deploy_ctx.should_skip_ecs_trivial_update():
                         print_utility.info(
                             "WARN: Skipping changeset update because no computed changes except to service & task "
-                            "rerun with SKIP_ECS=True to force")
+                            "rerun with SKIP_ECS=False to force")
                         return False
         return True
 
