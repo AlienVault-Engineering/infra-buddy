@@ -44,7 +44,9 @@ class Template(object):
         return config_path if os.path.exists(config_path) else None
 
     def get_lambda_dir(self):
-        config_path = os.path.join(self._get_template_location(), "lambda")
+        location = self._get_template_location()
+        if not location: return None
+        config_path = os.path.join(location, "lambda")
         return config_path if os.path.exists(config_path) else None
 
     def _get_template_location(self):
