@@ -147,7 +147,11 @@ class CloudFormationDeploy(Deploy):
                         self.deploy_ctx.render_template(os.path.join(function_dir, template), func_dest)
                     lambda_package = shutil.make_archive(function_name, 'zip', func_dest)
                     sha256_hash = hashlib.sha256()
-                    with open(lambda_package,"rb") as f:
+                    to_hash = lambda_package
+                    rendered = os.listdir(func_dest)
+                    if len(rendered) == 1:
+                        to_hash = os.path.join(func_dest, rendered[0])
+                    with open(to_hash,"rb") as f:
                         # Read and update hash string value in blocks of 4K
                         for byte_block in iter(lambda: f.read(4096),b""):
                             sha256_hash.update(byte_block)

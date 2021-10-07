@@ -113,7 +113,9 @@ class CloudFormationTestCase(ParentTestCase):
             with open(os.path.join(mkdtemp,code), 'r') as source:
                 for line in source:
                     self.assertFalse("${" in line,f"Found unrendered variable in source: {line}")
-            self.assertIsNotNone(self.test_deploy_ctx.get(f"security-headers-SHA256",None),"Did not populate SHA256 of function")
+            self.assertEqual(self.test_deploy_ctx.get(f"security-headers-SHA256",None),
+                             "fc72ddd698ceeb3df1f4db4aaba2beb4c3989d4bbce87d6aaf5ce882490d3c24",
+                             "Did not populate SHA256 of function")
         finally:
             ParentTestCase.clean_dir(mkdtemp)
 
