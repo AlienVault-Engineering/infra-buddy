@@ -105,6 +105,7 @@ class DeployContextTestCase(ParentTestCase):
         finally:
             ParentTestCase.clean_dir(mkdtemp)
 
+
     def test_artifact_directory_error_handling(self):
         try:
             empty_artifact_directory = self._get_resource_path('artifact_directory_tests/empty_artifact_directory')

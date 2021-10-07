@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import tempfile
 from collections import defaultdict
 from pprint import pformat
@@ -45,6 +46,7 @@ class CloudFormationDeploy(Deploy):
         super(CloudFormationDeploy, self).__init__(deploy_ctx)
         self.stack_name = stack_name
         self.config_directory = template.get_config_dir()
+        self.lambda_directory = template.get_lambda_dir()
         self.parameter_file = template.get_parameter_file_path()
         self.template_file = template.get_template_file_path()
         self.default_path = template.get_defaults_file_path()
@@ -127,6 +129,23 @@ class CloudFormationDeploy(Deploy):
                 rendered_config_files.append(
                     self.deploy_ctx.render_template(os.path.join(config_dir, template), self.destination))
         return rendered_config_files
+
+    def get_lambda_packages(self):
+        self._prep_render_destination()
+        rendered_lambda_packages = []
+        lambda_directory = self.lambda_directory
+
+        if lambda_directory:
+            for dir_name in os.listdir(lambda_directory):
+                function_dir = os.path.join(lambda_directory, dir_name)
+                if os.path.isdir(function_dir):
+                    function_name = os.path.basename(function_dir)
+                    func_dest = os.path.join(self.destination, function_name)
+                    os.makedirs(func_dest, exist_ok=True)
+                    for template in os.listdir(function_dir):
+                        self.deploy_ctx.render_template(os.path.join(function_dir, template), func_dest)
+                    rendered_lambda_packages.append(shutil.make_archive(function_name,'zip',func_dest))
+        return rendered_lambda_packages
 
     def get_rendered_param_file(self):
         self._prep_render_destination()
@@ -289,6 +308,9 @@ class CloudFormationDeploy(Deploy):
         # Upload all of our config files to S3 rendering any variables
         config_files = self.get_rendered_config_files()
         for rendered in config_files:
+            s3.upload(file=rendered)
+        lambda_packages = self.get_lambda_packages()
+        for rendered in lambda_packages:
             s3.upload(file=rendered)
         # render our parameter files
         parameter_file_rendered = self.get_rendered_param_file()

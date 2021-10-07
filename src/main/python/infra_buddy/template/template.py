@@ -43,6 +43,10 @@ class Template(object):
         config_path = os.path.join(self._get_template_location(), "config")
         return config_path if os.path.exists(config_path) else None
 
+    def get_lambda_dir(self):
+        config_path = os.path.join(self._get_template_location(), "lambda")
+        return config_path if os.path.exists(config_path) else None
+
     def _get_template_location(self):
         return os.path.join(self.destination,
                             self.destination_relative) if self.destination_relative else self.destination
@@ -204,8 +208,9 @@ class S3Template(Template):
 
 
 class LocalTemplate(Template):
-    def __init__(self, template, parameter_file, config_dir=None):
+    def __init__(self, template, parameter_file, config_dir=None, lambda_dir=None):
         super(LocalTemplate, self).__init__("", values={})
+        self.lambda_dir = lambda_dir
         self.config_dir = config_dir
         self.parameter_file = parameter_file
         self.template = template
@@ -224,3 +229,6 @@ class LocalTemplate(Template):
 
     def get_config_dir(self):
         return self.config_dir
+
+    def get_lambda_dir(self):
+        return self.lambda_dir
