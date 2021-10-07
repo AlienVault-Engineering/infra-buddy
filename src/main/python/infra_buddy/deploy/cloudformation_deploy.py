@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import shutil
@@ -130,7 +131,7 @@ class CloudFormationDeploy(Deploy):
                     self.deploy_ctx.render_template(os.path.join(config_dir, template), self.destination))
         return rendered_config_files
 
-    def get_lambda_packages(self):
+    def get_lambda_packages(self, ctx):
         self._prep_render_destination()
         rendered_lambda_packages = []
         lambda_directory = self.lambda_directory
@@ -144,7 +145,15 @@ class CloudFormationDeploy(Deploy):
                     os.makedirs(func_dest, exist_ok=True)
                     for template in os.listdir(function_dir):
                         self.deploy_ctx.render_template(os.path.join(function_dir, template), func_dest)
-                    rendered_lambda_packages.append(shutil.make_archive(function_name,'zip',func_dest))
+                    lambda_package = shutil.make_archive(function_name, 'zip', func_dest)
+                    sha256_hash = hashlib.sha256()
+                    with open(lambda_package,"rb") as f:
+                        # Read and update hash string value in blocks of 4K
+                        for byte_block in iter(lambda: f.read(4096),b""):
+                            sha256_hash.update(byte_block)
+                    self.deploy_ctx[f"{function_name}-SHA256"] = sha256_hash.hexdigest()
+                    rendered_lambda_packages.append(lambda_package)
+
         return rendered_lambda_packages
 
     def get_rendered_param_file(self):
@@ -309,7 +318,7 @@ class CloudFormationDeploy(Deploy):
         config_files = self.get_rendered_config_files()
         for rendered in config_files:
             s3.upload(file=rendered)
-        lambda_packages = self.get_lambda_packages()
+        lambda_packages = self.get_lambda_packages(self.deploy_ctx)
         for rendered in lambda_packages:
             s3.upload(file=rendered)
         # render our parameter files

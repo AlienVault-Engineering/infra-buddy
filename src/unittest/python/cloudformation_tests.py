@@ -92,16 +92,18 @@ class CloudFormationTestCase(ParentTestCase):
         self.test_deploy_ctx['Content-Security-Policy'] = "foo"
         self.test_deploy_ctx['X-Frame-Options'] = "foo"
         self.test_deploy_ctx['X-XSS-Protection'] = "foo"
+        self.test_deploy_ctx['X-Content-Type-Options'] = "foo"
         self.test_deploy_ctx['Referrer-Policy'] = "foo"
         deploy = CloudFormationDeploy(self.test_deploy_ctx.stack_name,
                                       LocalTemplate(template, parameter_file, config_templates,lambda_package_dir),
                                       self.test_deploy_ctx)
         mkdtemp = tempfile.mkdtemp()
         try:
-            template = deploy.get_lambda_packages()
+            template = deploy.get_lambda_packages(self.test_deploy_ctx)
             self.assertEqual(1, len(template),"Failed to return a single package")
             zip_file = template[0]
-            self.assertEqual(os.path.basename(zip_file),"security-headers.zip","Did not render the right name")
+            basename = os.path.basename(zip_file)
+            self.assertEqual(basename, "security-headers.zip", "Did not render the right name")
             self.assertTrue(zipfile.is_zipfile(zip_file),"Did not compress function")
             shutil.unpack_archive(zip_file,mkdtemp)
             files = os.listdir(mkdtemp)
@@ -110,7 +112,8 @@ class CloudFormationTestCase(ParentTestCase):
             self.assertEqual(code,"index.js","Did not find rendered file")
             with open(os.path.join(mkdtemp,code), 'r') as source:
                 for line in source:
-                    self.assertFalse("${" in line,"Found unrendered variable in source")
+                    self.assertFalse("${" in line,f"Found unrendered variable in source: {line}")
+            self.assertIsNotNone(self.test_deploy_ctx.get(f"security-headers-SHA256",None),"Did not populate SHA256 of function")
         finally:
             ParentTestCase.clean_dir(mkdtemp)
 
