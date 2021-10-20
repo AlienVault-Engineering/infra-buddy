@@ -6,7 +6,7 @@ import click
 from jsonschema import validate
 
 from infra_buddy.template.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template, AliasTemplate, \
-    GitHubTemplateDefinitionLocation
+    GitHubTemplateDefinitionLocation, BitbucketTemplateDefinitionLocation, BitbucketTemplate
 from infra_buddy.utility import print_utility
 
 
@@ -64,11 +64,16 @@ class TemplateManager(object):
 
     def load_additional_templates(self, remote_template_definition_location):
         type_ = remote_template_definition_location['type']
-        if type_ != "github":
-            raise Exception("Unsupported type for remote template - only github supported right now!")
         print_utility.banner_info("Loading additional templates from definition", remote_template_definition_location)
-        remote_defaults = GitHubTemplateDefinitionLocation(service_type="remote-defaults",
+        if type_ == "github":
+            remote_defaults = GitHubTemplateDefinitionLocation(service_type="remote-defaults",
                                                            values=remote_template_definition_location)
+        elif type_ == 'bitbucket':
+            remote_defaults = BitbucketTemplateDefinitionLocation(service_type="remote-defaults",
+                                                           values=remote_template_definition_location)
+        else:
+            raise Exception(f"Unsupported type for remote template {type_} - only github and bitbucket supported "
+                            f"right now!")
         remote_defaults.download_template()
         self._load_template_from_file(remote_defaults.get_defaults_file_path())
 
@@ -154,6 +159,8 @@ class TemplateManager(object):
             type_ = values['type']
             if type_ == "github":
                 template = GitHubTemplate(service_type=name, values=values)
+            elif type_ == "bitbucket":
+                template = BitbucketTemplate(service_type=name, values=values)
             elif type_ == "s3":
                 template = S3Template(service_type=name, values=values)
             elif type_ == "url":

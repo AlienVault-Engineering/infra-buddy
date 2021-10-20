@@ -184,6 +184,28 @@ class GitHubTemplateDefinitionLocation(GitHubTemplate):
                                                              "located for service - {service_type}".format(
                 service_type=self.service_type), raise_exception=True)
 
+class BitbucketTemplate(URLTemplate):
+    def __init__(self, service_type, values):
+        super(BitbucketTemplate, self).__init__(service_type=service_type, values=values)
+        tag = values.pop('tag', 'master')
+        self.download_url = "https://bitbucket.org/{owner}/{repo}/get/{tag}.zip".format(tag=tag, **values)
+        if 'relative-path' in values:
+            self._set_download_relative_path("{repo}-{tag}/{relative-path}".format(tag=tag, **values))
+        else:
+            self._set_download_relative_path("{repo}-{tag}".format(tag=tag, **values))
+
+    def __str__(self) -> str:
+        return f"{super().__str__()}: GitHub {self.download_url}"
+
+
+class BitbucketTemplateDefinitionLocation(GitHubTemplate):
+
+    def _validate_template_dir(self, err_on_failure_to_locate=True):
+        if not os.path.exists(self.get_defaults_file_path()):
+            if err_on_failure_to_locate: print_utility.error("Remote Defaults file could not be "
+                                                             "located for service - {service_type}".format(
+                service_type=self.service_type), raise_exception=True)
+
 
 class NamedLocalTemplate(Template):
     def __init__(self, directory, service_type="local-template", err_on_failure_to_locate=True,
