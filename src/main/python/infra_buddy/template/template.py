@@ -198,7 +198,7 @@ class BitbucketTemplate(URLTemplate):
         return f"{super().__str__()}: GitHub {self.download_url}"
 
 
-class BitbucketTemplateDefinitionLocation(GitHubTemplate):
+class BitbucketTemplateDefinitionLocation(BitbucketTemplate):
 
     def _validate_template_dir(self, err_on_failure_to_locate=True):
         if not os.path.exists(self.get_defaults_file_path()):
