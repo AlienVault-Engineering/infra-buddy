@@ -35,6 +35,7 @@ class CloudFormationDeploy(Deploy):
                                                     _PARAM_TYPE_TRANSFORM]},
                 "value": {"type": "string"},
                 "default_value": {"type": "string"},
+                "validate": {"type": "boolean"},
                 "key": {"type": "string"}
             },
             "required": ["type"]
@@ -269,8 +270,9 @@ class CloudFormationDeploy(Deploy):
                         known_param[param_key]['default_type'] = param['type']
                         known_param[param_key].update(param)
                     else:
-                        # exists in param file but not in template
-                        errors[key_].append("Parameter does not exist in parameter file but defined in defaults file")
+                        if  param.get('validate',True):
+                            # exists in param file but not in template
+                            errors[key_].append("Parameter does not exist in parameter file but defined in defaults file")
         # now loop through the CF defined params
         for key, value in known_param.items():
             # if there is not variable and not a special case then err
