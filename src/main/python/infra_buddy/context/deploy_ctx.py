@@ -191,7 +191,7 @@ class DeployContext(dict):
         return self._assert_true(SKIP_ECS, "true")
 
     def _assert_true(self, variable, default_value):
-        return self.get(variable, os.environ.get(variable, default_value)).lower() == "true"
+        return str(self.get(variable, os.environ.get(variable, default_value))).lower() == "true"
 
     def wait_for_run_task_finish(self):
         return self._assert_true(WAIT_FOR_ECS_TASK_RUN_FINISH, "true")
