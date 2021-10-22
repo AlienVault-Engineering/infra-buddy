@@ -53,6 +53,8 @@ class Template(object):
         return config_path if os.path.exists(config_path) else None
 
     def _get_template_location(self):
+        if not self.destination:
+            return None
         parts = [self.destination]
         if self.destination_base_path:
             parts.append(self.destination_base_path)
