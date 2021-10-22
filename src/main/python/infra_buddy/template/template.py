@@ -9,6 +9,7 @@ from infra_buddy.aws import s3
 from infra_buddy.context import monitor_definition
 from infra_buddy.context.monitor_definition import MonitorDefinition
 from infra_buddy.utility import print_utility
+from requests.auth import HTTPDigestAuth, HTTPBasicAuth
 
 
 class Template(object):
@@ -17,9 +18,11 @@ class Template(object):
         self.template_name = template_name
         self.service_type = service_type
         self.destination_relative = None
+        self.destination_base_path=None
         self.destination = None
         self.valid = False
         self.default_env_values = values.get('default-values', {})
+        self.values = values
 
     def __str__(self) -> str:
         return f"Template for {self.service_type}"
@@ -50,8 +53,12 @@ class Template(object):
         return config_path if os.path.exists(config_path) else None
 
     def _get_template_location(self):
-        return os.path.join(self.destination,
-                            self.destination_relative) if self.destination_relative else self.destination
+        parts = [self.destination]
+        if self.destination_base_path:
+            parts.append(self.destination_base_path)
+        if self.destination_relative:
+            parts.append(self.destination_relative)
+        return os.path.join(*parts)
 
     def _validate_template_dir(self, err_on_failure_to_locate=True):
         if not os.path.exists(self.get_template_file_path()):
@@ -70,8 +77,9 @@ class Template(object):
         if not self.destination:
             self.destination = tempfile.mkdtemp()
 
-    def _set_download_relative_path(self, path):
-        self.destination_relative = path
+    def _set_download_relative_path(self, relative_path,base_path):
+        self.destination_relative = relative_path
+        self.destination_base_path = base_path
 
     def has_monitor_definition(self):
         return os.path.exists(self.get_monitor_definition_file())
@@ -88,18 +96,38 @@ class URLTemplate(Template):
         super(URLTemplate, self).__init__(service_type, values)
         self.download_url = values.get('url', None)
 
+        self.auth = None
+        if "private-repo" in values and values.get("private-repo"):
+            auth_type = values.get("auth_type", "basic")
+            user_property = values.get("user_property", "VCS_USER")
+            pass_property = values.get("pass_property", "VCS_PASS")
+            user = os.environ.get(user_property)
+            password = os.environ.get(pass_property)
+            if auth_type == "basic":
+                print_utility.info(f"Auth {user}:{password}")
+                self.auth = HTTPBasicAuth(username=user, password=password)
+            elif auth_type == "digest":
+                self.auth = HTTPDigestAuth(username=user, password=password)
+            else:
+                print_utility.error(f"Tried to use unsupported auth_type for private repo: {auth_type} only "
+                                    f"'basic' and 'digest' supported", raise_exception=True)
+
     def download_template(self):
         self._prep_download()
-        URLTemplate.download_url_to_destination(self.download_url, self.destination)
+        dl_folder_name = URLTemplate.download_url_to_destination(self.download_url, self.destination, self.auth)
+        if dl_folder_name != self.destination_base_path:
+            print_utility.info(f"DL: {dl_folder_name} DR: {self.destination_base_path}")
+            # Bitbucket downloads a folder in the form <repo-name>-<commit-hash> instead of <repo-name>-<tag>
+            self.destination_base_path = dl_folder_name
         self._validate_template_dir()
 
     @staticmethod
-    def download_url_to_destination(url, destination):
-        r = requests.get(url, stream=True)
+    def download_url_to_destination(url, destination, auth=None):
+        r = requests.get(url, stream=True, auth=auth)
         if r.status_code != 200:
             print_utility.error("Template could not be downloaded - {url} {status} {body}".format(url=url,
                                                                                                   status=r.status_code,
-                                                                                                  body=r.text))
+                                                                                                  body=r.text),raise_exception=True)
         temporary_file = tempfile.NamedTemporaryFile()
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:  # filter out keep-alive new chunks
@@ -107,6 +135,7 @@ class URLTemplate(Template):
         temporary_file.seek(0)
         with ZipFile(temporary_file) as zf:
             zf.extractall(destination)
+        return os.listdir(destination)[0]
 
 
 class AliasTemplate(Template):
@@ -161,17 +190,23 @@ class AliasTemplate(Template):
         else:
             return self.delegate.service_type
 
+class GitTemplate(URLTemplate):
 
-class GitHubTemplate(URLTemplate):
-    def __init__(self, service_type, values):
-        super(GitHubTemplate, self).__init__(service_type=service_type, values=values)
+    def __init__(self, service_type, values, url_template):
+        super(GitTemplate, self).__init__(service_type=service_type, values=values)
         tag = values.pop('tag', 'master')
-        self.download_url = "https://github.com/{owner}/{repo}/archive/{tag}.zip".format(tag=tag, **values)
+        self.download_url = url_template.format(tag=tag, **values)
         if 'relative-path' in values:
-            self._set_download_relative_path("{repo}-{tag}/{relative-path}".format(tag=tag, **values))
+            self._set_download_relative_path(
+                base_path="{repo}-{tag}".format(tag=tag, **values),
+                relative_path="{relative-path}".format(tag=tag, **values))
         else:
-            self._set_download_relative_path("{repo}-{tag}".format(tag=tag, **values))
+            self._set_download_relative_path(base_path="{repo}-{tag}".format(tag=tag, **values),relative_path=None)
 
+class GitHubTemplate(GitTemplate):
+    def __init__(self, service_type, values):
+        super(GitHubTemplate, self).__init__(service_type=service_type, values=values,
+                                             url_template="https://github.com/{owner}/{repo}/archive/{tag}.zip")
     def __str__(self) -> str:
         return f"{super().__str__()}: GitHub {self.download_url}"
 
@@ -184,15 +219,11 @@ class GitHubTemplateDefinitionLocation(GitHubTemplate):
                                                              "located for service - {service_type}".format(
                 service_type=self.service_type), raise_exception=True)
 
-class BitbucketTemplate(URLTemplate):
+
+class BitbucketTemplate(GitTemplate):
     def __init__(self, service_type, values):
-        super(BitbucketTemplate, self).__init__(service_type=service_type, values=values)
-        tag = values.pop('tag', 'master')
-        self.download_url = "https://bitbucket.org/{owner}/{repo}/get/{tag}.zip".format(tag=tag, **values)
-        if 'relative-path' in values:
-            self._set_download_relative_path("{repo}-{tag}/{relative-path}".format(tag=tag, **values))
-        else:
-            self._set_download_relative_path("{repo}-{tag}".format(tag=tag, **values))
+        super(BitbucketTemplate, self).__init__(service_type=service_type, values=values,
+                                                url_template="https://bitbucket.org/{owner}/{repo}/get/{tag}.zip")
 
     def __str__(self) -> str:
         return f"{super().__str__()}: GitHub {self.download_url}"
@@ -201,6 +232,7 @@ class BitbucketTemplate(URLTemplate):
 class BitbucketTemplateDefinitionLocation(BitbucketTemplate):
 
     def _validate_template_dir(self, err_on_failure_to_locate=True):
+        print_utility.info(f"Defaults Path: {self.get_defaults_file_path()}")
         if not os.path.exists(self.get_defaults_file_path()):
             if err_on_failure_to_locate: print_utility.error("Remote Defaults file could not be "
                                                              "located for service - {service_type}".format(

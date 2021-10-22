@@ -10,6 +10,10 @@ from botocore.exceptions import WaiterError
 from infra_buddy.utility import print_utility
 from infra_buddy.utility.waitfor import waitfor
 
+CAPABILITIES = [
+    'CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'
+]
+
 MAX_ATTEMPTS = 5
 
 
@@ -65,9 +69,7 @@ class CloudFormationBuddy(object):
             StackName=self.stack_name,
             TemplateURL=template_file_url,
             Parameters=_load_file_to_json(parameter_file),
-            Capabilities=[
-                'CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'
-            ],
+            Capabilities=CAPABILITIES,
             ChangeSetName=self.deploy_ctx.change_set_name
         )
         self.existing_change_set_id = resp['Id']
@@ -157,9 +159,7 @@ class CloudFormationBuddy(object):
             StackName=self.stack_name,
             TemplateURL=template_file_url,
             Parameters=_load_file_to_json(parameter_file),
-            Capabilities=[
-                'CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'
-            ],
+            Capabilities=CAPABILITIES,
             Tags=[
                 {
                     'Key': 'Environment',

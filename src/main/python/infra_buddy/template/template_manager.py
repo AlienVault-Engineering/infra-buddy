@@ -36,6 +36,10 @@ class TemplateManager(object):
                 "repo": {"type": "string"},
                 "tag": {"type": "string"},
                 "location": {"type": "string"},
+                "private-repo": {"type": "boolean"},
+                "auth-type": {"type": "string"},
+                "user-property": {"type": "string"},
+                "pass-property": {"type": "string"},
                 "relative-path": {"type": "string"},
                 "url": {"type": "string"}
             },
@@ -67,10 +71,10 @@ class TemplateManager(object):
         print_utility.banner_info("Loading additional templates from definition", remote_template_definition_location)
         if type_ == "github":
             remote_defaults = GitHubTemplateDefinitionLocation(service_type="remote-defaults",
-                                                           values=remote_template_definition_location)
+                                                               values=remote_template_definition_location)
         elif type_ == 'bitbucket':
             remote_defaults = BitbucketTemplateDefinitionLocation(service_type="remote-defaults",
-                                                           values=remote_template_definition_location)
+                                                                  values=remote_template_definition_location)
         else:
             raise Exception(f"Unsupported type for remote template {type_} - only github and bitbucket supported "
                             f"right now!")
@@ -132,6 +136,7 @@ class TemplateManager(object):
         template = self.deploy_templates.get(service_type, None)
         if not template:
             print_utility.error("Unknown service template - {}".format(service_type), raise_exception=True)
+        print_utility.info(f"Locating service {service_type} - {type(template)} - {template.values}")
         template.download_template()
         return template
 
@@ -172,7 +177,7 @@ class TemplateManager(object):
                 print_utility.error("Can not locate resource. Requested unknown template type - {}".format(type_),
                                     raise_exception=True)
                 raise Exception("")
-
+            print_utility.info(f"Loading template {template.service_type} - {type_}")
             if service_modification:
                 compatibility = values.get('compatible', [])
                 for service in compatibility:
