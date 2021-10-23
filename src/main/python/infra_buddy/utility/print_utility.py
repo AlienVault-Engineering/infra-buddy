@@ -31,7 +31,10 @@ def banner_info(msg, data):
 
 def banner_warn(msg, data):
     banner(msg)
-    click.secho(data, fg='green')
+    if not isinstance(data, list):
+        data = [data]
+    for record in data:
+        click.secho(record, fg='green')
 
 
 def error(err_msg, raise_exception=False):

@@ -4,6 +4,7 @@ import boto3
 import pydash
 from botocore.exceptions import WaiterError
 
+from infra_buddy.aws.cloudwatch_logs import CloudwatchLogsBuddy
 from infra_buddy.utility import print_utility
 
 from infra_buddy.aws.cloudformation import CloudFormationBuddy
@@ -15,6 +16,7 @@ class ECSBuddy(object):
         self.deploy_ctx = deploy_ctx
         self.client = boto3.client('ecs', region_name=self.deploy_ctx.region)
         self.cf = CloudFormationBuddy(deploy_ctx)
+        self.cw_buddy = CloudwatchLogsBuddy(self.deploy_ctx)
         self.cluster = self.cf.wait_for_export(
             fully_qualified_param_name=f"{self.deploy_ctx.cluster_stack_name}-ECSCluster")
         self.run_task = run_task
@@ -161,6 +163,7 @@ class ECSBuddy(object):
             success = False
             print_utility.error(f"Error waiting for task to run - {e}", raise_exception=True)
         finally:
+            self.cw_buddy.print_latest()
             self.deploy_ctx.notify_event(
                 title=f"Task running with started: {'Success' if success else 'Failed'}: Image - {self.new_image} ",
                 type="success" if success else "error")
