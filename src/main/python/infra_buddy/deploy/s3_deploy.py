@@ -14,29 +14,36 @@ class S3Deploy(Deploy):
         self.location = location
         self.artifact_id = artifact_id
         self.cloud_formation_buddy = CloudFormationBuddy(self.deploy_ctx)
+        if self.deploy_ctx.s3_deploy_bucket:
+            self.destination_bucket = self.deploy_ctx.s3_deploy_bucket
+        else:
+            self.destination_bucket = \
+                self.cloud_formation_buddy.get_export_value( param=self.deploy_ctx.s3_deploy_bucket_export)
+        if not self.destination_bucket:
+            print_utility.error("Could not find s3 deploy bucket")
+
 
     def _internal_deploy(self, dry_run):
         mkdtemp = tempfile.mkdtemp()
         if not self.artifact_id.endswith(".zip" ):
             self.artifact_id = "{}.zip".format(self.artifact_id)
         artifact_download = "s3://{location}/{artifact_id}".format(location=self.location,artifact_id=self.artifact_id)
-        destination_bucket = self.cloud_formation_buddy.get_export_value(param="WWW-Files")
         s3util.download_zip_from_s3_url(artifact_download,destination=mkdtemp)
 
         to_upload = self.get_filepaths(mkdtemp)
         if dry_run:
-            print_utility.banner_warn("Dry Run: Uploading files to - {}".format(destination_bucket),
+            print_utility.banner_warn("Dry Run: Uploading files to - {}".format( self.destination_bucket),
                                       str(to_upload))
         else:
-            split = destination_bucket.split("/")
+            split = self.destination_bucket.split("/")
             if len(split)>1:
                 path = "/".join(split[1:])
             else:
                 path = ''
             s3 = S3Buddy(self.deploy_ctx, path, split[0])
-            print_utility.progress("S3 Deploy: Uploading files to - {}".format(destination_bucket))
+            print_utility.progress("S3 Deploy: Uploading files to - {}".format( self.destination_bucket))
             for s3_key, path in to_upload.items():
-                print_utility.info("{} - {}".format(destination_bucket, s3_key))
+                print_utility.info("{} - {}".format( self.destination_bucket, s3_key))
                 s3.upload(key_name=s3_key, file=path)
 
     def get_filepaths(self, local_directory):

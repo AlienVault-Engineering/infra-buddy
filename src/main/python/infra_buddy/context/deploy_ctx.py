@@ -47,6 +47,8 @@ env_variables['RESOURCE_STACK_NAME'] = "${ENVIRONMENT}-${APPLICATION}-${ROLE}-re
 env_variables['ECS_SERVICE_RESOURCE_STACK_NAME'] = "${RESOURCE_STACK_NAME}"  # alias
 env_variables['KEY_NAME'] = "${ENVIRONMENT}-${APPLICATION}"
 env_variables['CHANGE_SET_NAME'] = "${STACK_NAME}-deploy-cloudformation-change-set"
+env_variables['S3-Deploy-Bucket-Export'] = "WWW-Files"
+env_variables['S3-Deploy-Bucket'] = None
 
 
 class DeployContext(dict):
