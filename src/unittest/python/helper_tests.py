@@ -103,13 +103,13 @@ class HelperTestCase(ParentTestCase):
             rp = helper_functions.custom_domain_alias_target(ctx)
             self.assertEqual( rp , "")
             mock_cf.exists = True
-            mock_cf.existing = {'CustomDomain':'false'}
+            mock_cf.existing = {'UseCustomDomain':'false'}
             rp = helper_functions.custom_domain_alias_target(ctx)
             self.assertEqual( rp , "")
-            mock_cf.existing = {'CustomDomain':'true','AliasTarget':'foobar'}
+            mock_cf.existing = {'UseCustomDomain':'true','AliasTarget':'foobar'}
             rp = helper_functions.custom_domain_alias_target(ctx)
             self.assertEqual( rp , "foobar")
-            mock_cf.existing = {'CustomDomain':'true','AliasTarget':''}
+            mock_cf.existing = {'UseCustomDomain':'true','AliasTarget':''}
             mock_cf.exports = {'OAuth-Domain':'foo.bar.com'}
             rp = helper_functions.custom_domain_alias_target(ctx)
             self.assertEqual( rp , "d8je8xsnt59o8.cloudfront.net")
