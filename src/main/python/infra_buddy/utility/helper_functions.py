@@ -197,12 +197,12 @@ def custom_domain_alias_target(deploy_ctx):
     cf = _get_cf_buddy(deploy_ctx)
     # we need some data for the passed stack_name so manually override it
     cf.stack_name = deploy_ctx.service_stack_name
+    if not cf.does_stack_exist():
+        # return "" if we are doing our first pass
+        return ""
     existing = cf.get_existing_parameter_value('UseCustomDomain')
     # return "" if we don't want to use custom domains
     if existing == "false":
-        return ""
-    if not cf.does_stack_exist():
-        # return "" if we are doing our first pass
         return ""
     else:
         # return existing if already set
