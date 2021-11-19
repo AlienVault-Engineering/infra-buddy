@@ -90,6 +90,10 @@ class CloudFormationDeploy(Deploy):
                 return helper_functions.load_balancer_name(self.deploy_ctx)
             elif 'rule_priority' == func_name:
                 return helper_functions.calculate_rule_priority(self.deploy_ctx, self.stack_name)
+            elif 'custom_domain_alias_target' == func_name:
+                return helper_functions.custom_domain_alias_target(self.deploy_ctx)
+            elif 'latest_task_in_family' == func_name:
+                return helper_functions.latest_task_in_family(self.deploy_ctx, self.stack_name)
             else:
                 print_utility.error(
                     "Can not locate function for defaults.json: Stack {} Function {}".format(self.stack_name,

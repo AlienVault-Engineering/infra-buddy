@@ -265,7 +265,8 @@ class CloudFormationBuddy(object):
 
     def get_existing_parameter_value(self, param_val):
         self._describe_stack()
-        for param in self.stack_description.get('Parameters', []):
+        params = self.stack_description.get('Parameters', [])
+        for param in params:
             if param['ParameterKey'] == param_val:
                 return param['ParameterValue']
         print_utility.error("Could not locate parameter value: {}".format(param_val))

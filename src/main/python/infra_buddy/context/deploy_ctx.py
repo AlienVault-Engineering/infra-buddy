@@ -35,6 +35,7 @@ env_variables['DEPLOY_DATE'] = "${DEPLOY_DATE}"
 env_variables[STACK_NAME] = "${ENVIRONMENT}-${APPLICATION}-${ROLE}"
 env_variables['EnvName'] = "${STACK_NAME}"  # alias
 env_variables['ECS_SERVICE_STACK_NAME'] = "${STACK_NAME}"  # alias
+env_variables['SERVICE_STACK_NAME'] = "${STACK_NAME}"  # alias
 env_variables['VPC_STACK_NAME'] = "${ENVIRONMENT}-${VPCAPP}-vpc"
 env_variables['CF_BUCKET_NAME'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources"
 env_variables['TEMPLATE_BUCKET'] = "${ENVIRONMENT}-${VPCAPP}-cloudformation-deploy-resources"  # alias

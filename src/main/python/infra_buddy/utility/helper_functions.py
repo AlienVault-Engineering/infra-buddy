@@ -190,3 +190,42 @@ def calculate_rule_priority(deploy_ctx, stack_name):
 
 def get_boto_client(deploy_ctx):
     return boto3.client('elbv2', region_name=deploy_ctx.region)
+
+
+def custom_domain_alias_target(deploy_ctx):
+    # DescribeUserPoolDomain
+    cf = _get_cf_buddy(deploy_ctx)
+    # we need some data for the passed stack_name so manually override it
+    cf.stack_name = deploy_ctx.service_stack_name
+    existing = cf.get_existing_parameter_value('CustomDomain')
+    # return "" if we don't want to use custom domains
+    if existing == "false":
+        return ""
+    if not cf.does_stack_exist():
+        # return "" if we are doing our first pass
+        return ""
+    else:
+        # return existing if already set
+        existing = cf.get_existing_parameter_value('AliasTarget')
+        if existing and existing != "":
+            return existing
+        custom_domain = cf.get_export_value("OAuth-Domain")
+        client = _get_cognito_client(deploy_ctx)
+        response = client.describe_user_pool_domain(Domain=custom_domain)
+        if "DomainDescription" in response:
+            dd = response['DomainDescription']
+            if "CloudFrontDistribution" in dd:
+                return dd['CloudFrontDistribution']
+    return ""
+
+
+def _get_cf_buddy(deploy_ctx):
+    return CloudFormationBuddy(deploy_ctx)
+
+
+def _get_cognito_client(deploy_ctx):
+    return boto3.client('cognito-idp',region_name=deploy_ctx.region)
+
+
+def latest_task_in_family(deploy_ctx, stack_name):
+    return None
