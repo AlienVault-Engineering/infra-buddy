@@ -39,8 +39,10 @@ class Template(object):
                             "defaults.json".format(service_type=self.service_type))
 
     def get_template_file_path(self):
-        return os.path.join(self._get_template_location(),
-                            "{template_name}.template".format(template_name=self.template_name))
+        for suffix in ['template','json']:
+            path = os.path.join(self._get_template_location(),f"{self.template_name}.{suffix}")
+            if os.path.exists(path):
+                return path
 
     def get_config_dir(self):
         config_path = os.path.join(self._get_template_location(), "config")
