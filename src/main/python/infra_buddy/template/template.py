@@ -43,6 +43,7 @@ class Template(object):
             path = os.path.join(self._get_template_location(),f"{self.template_name}.{suffix}")
             if os.path.exists(path):
                 return path
+        return ""
 
     def get_config_dir(self):
         config_path = os.path.join(self._get_template_location(), "config")
