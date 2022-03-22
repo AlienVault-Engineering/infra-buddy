@@ -67,7 +67,7 @@ class DataDogMonitorDeploy(Deploy):
         return None
 
     def get_all_monitors_by_name(self, name_):
-        get_all = dd.api.Monitor.get_all(name=name_)
+        get_all = dd.api.Monitor.get_all(name=name_.strip())
         print_utility.info(f"All existing monitor: {get_all}")
         return get_all
 
