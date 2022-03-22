@@ -56,16 +56,20 @@ class DataDogMonitorDeploy(Deploy):
         # created as metric alerts so help the user out if they just copy/pasted the datadog output
         if 'query alert' == monitor['type']:
             monitor['type'] = 'metric alert'
-        monitor['name'] = self.deploy_ctx.expandvars("{}: {}".format("${ENVIRONMENT}-${APPLICATION}-${ROLE}", monitor['name']))
+        monitor['name'] = self.deploy_ctx.expandvars("{}: {}".format("${STACK_NAME}", monitor['name']))
 
     def find_monitor_if_exists(self, name_):
         for mon in self.get_all_monitors_by_name(name_):
+            print_utility.info(f"Evaluating existing monitor: {mon}")
             if mon['name'] == name_:
+                print_utility.info(f"Matching existing monitor: {mon['id']}")
                 return mon['id']
         return None
 
     def get_all_monitors_by_name(self, name_):
-        return dd.api.Monitor.get_all(name=name_)
+        get_all = dd.api.Monitor.get_all(name=name_)
+        print_utility.info(f"All existing monitor: {get_all}")
+        return get_all
 
     def delete_all_by_name(self, name):
         to_delete = self.get_all_monitors_by_name(name_=name)
