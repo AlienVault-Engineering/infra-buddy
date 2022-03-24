@@ -144,14 +144,18 @@ class ECSBuddy(object):
                                    taskDefinition=new_task_def_arn,
                                    networkConfiguration=self.networkConfiguration)
         success = True
+
+        if self.deploy_ctx.wait_for_run_task_finish():
+            waiter_name = 'tasks_stopped'
+        else:
+            waiter_name = 'tasks_running'
         try:
-            if self.deploy_ctx.wait_for_run_task_finish():
-                waiter_name = 'tasks_stopped'
-            else:
-                waiter_name = 'tasks_running'
             waiter = self.client.get_waiter(waiter_name=waiter_name)
             arn_ = ret['tasks'][0]['taskArn']
             print_utility.warn(f"Running task with ARN: {arn_}")
+            if self.deploy_ctx.wait_for_run_task_finish():
+                # increase the number of retries
+                waiter.config.max_attempts = self.deploy_ctx.get_task_max_retry()
             waiter.wait(cluster=self.cluster, tasks=[arn_])
             if self.deploy_ctx.wait_for_run_task_finish():
                 description = self.client.describe_tasks(tasks=[arn_],cluster=self.cluster)
@@ -161,7 +165,7 @@ class ECSBuddy(object):
                     success = False
         except WaiterError as e:
             success = False
-            print_utility.error(f"Error waiting for task to run - {e}", raise_exception=True)
+            print_utility.error(f"Error waiting for task to {'finish' if self.deploy_ctx.wait_for_run_task_finish() else 'start'} - {e}", raise_exception=True)
         finally:
             self.cw_buddy.print_latest()
             self.deploy_ctx.notify_event(

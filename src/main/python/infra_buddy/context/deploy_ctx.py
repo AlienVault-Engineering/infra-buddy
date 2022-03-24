@@ -25,6 +25,7 @@ ENVIRONMENT = 'ENVIRONMENT'
 REGION = 'REGION'
 SKIP_ECS = 'SKIP_ECS'
 WAIT_FOR_ECS_TASK_RUN_FINISH = 'WAIT_FOR_ECS_TASK_RUN_FINISH'
+ECS_TASK_RUN_MAX_RETRIES = 'ECS_TASK_RUN_MAX_RETRIES'
 ECS_TASK_RUN = 'ECS_TASK_RUN'
 # default to env variables on these
 built_in = [DOCKER_REGISTRY, ROLE, APPLICATION, ENVIRONMENT, REGION, SKIP_ECS, ECS_TASK_RUN,
@@ -198,6 +199,9 @@ class DeployContext(dict):
 
     def wait_for_run_task_finish(self):
         return self._assert_true(WAIT_FOR_ECS_TASK_RUN_FINISH, "true")
+
+    def get_task_max_retry(self):
+        return self.get(ECS_TASK_RUN_MAX_RETRIES,1200)
 
     def is_task_run_service(self):
         return self._assert_true(ECS_TASK_RUN, "false")
