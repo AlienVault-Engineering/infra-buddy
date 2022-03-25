@@ -15,7 +15,6 @@ class DataDogNotifier(object):
                             tags=self._get_tags())
 
     def _get_tags(self):
-        return ['application:{app},role:{role},environment:{env}'.format(
-            app=self.deploy_context.application,
-            role=self.deploy_context.role,
-            env=self.deploy_context.environment)]
+        return [
+            f'application:{self.deploy_context.application}',f'role:{self.deploy_context.role}',
+            f'environment:{self.deploy_context.environment}']
