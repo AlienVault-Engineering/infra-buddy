@@ -1,0 +1,87 @@
+{
+  "services": [
+    {
+      "serviceArn": "arn:aws:ecs:us-east-1:604633931330:service/prod-nudge-frontend-cluster-ECSCluster-1ggzDaIa3jno/prod-nudge-frontend-user-ELBService-zMao4SebjS87",
+      "serviceName": "prod-nudge-frontend-user-ELBService-zMao4SebjS87",
+      "clusterArn": "arn:aws:ecs:us-east-1:604633931330:cluster/prod-nudge-frontend-cluster-ECSCluster-1ggzDaIa3jno",
+      "loadBalancers": [
+        {
+          "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:604633931330:targetgroup/prod-APITa-1IGJMACHSDELL/d50092127928081e",
+          "containerName": "prod-nudge-frontend-user-Container",
+          "containerPort": 5000
+        }
+      ],
+      "serviceRegistries": [],
+      "status": "ACTIVE",
+      "desiredCount": 1,
+      "runningCount": 1,
+      "pendingCount": 0,
+      "launchType": "FARGATE",
+      "platformVersion": "LATEST",
+      "taskDefinition": "arn:aws:ecs:us-east-1:604633931330:task-definition/prod-nudge-frontend-user-ECSTaskFamily:121",
+      "deploymentConfiguration": {
+        "deploymentCircuitBreaker": {
+          "enable": false,
+          "rollback": false
+        },
+        "maximumPercent": 600,
+        "minimumHealthyPercent": 50
+      },
+      "deployments": [
+        {
+          "id": "ecs-svc/9789073146782518771",
+          "status": "PRIMARY",
+          "taskDefinition": "arn:aws:ecs:us-east-1:604633931330:task-definition/prod-nudge-frontend-user-ECSTaskFamily:121",
+          "desiredCount": 1,
+          "pendingCount": 0,
+          "runningCount": 1,
+          "failedTasks": 0,
+          "createdAt": 1648251068.814,
+          "updatedAt": 1648251244.214,
+          "launchType": "FARGATE",
+          "platformVersion": "1.4.0",
+          "networkConfiguration": {
+            "awsvpcConfiguration": {
+              "subnets": [
+                "subnet-04f3806f19ec68bc4",
+                "subnet-0dd231188aa9e7fea",
+                "subnet-06be4ffd1ae7cf13f"
+              ],
+              "securityGroups": [
+                "sg-006f41ada4794738a"
+              ],
+              "assignPublicIp": "DISABLED"
+            }
+          },
+          "rolloutState": "COMPLETED",
+          "rolloutStateReason": "ECS deployment ecs-svc/9789073146782518771 completed."
+        }
+      ],
+      "roleArn": "arn:aws:iam::604633931330:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+      "events":[],
+      "createdAt": 1626294934.748,
+      "placementConstraints": [],
+      "placementStrategy": [],
+      "networkConfiguration": {
+        "awsvpcConfiguration": {
+          "subnets": [
+            "subnet-04f3806f19ec68bc4",
+            "subnet-0dd231188aa9e7fea",
+            "subnet-06be4ffd1ae7cf13f"
+          ],
+          "securityGroups": [
+            "sg-006f41ada4794738a"
+          ],
+          "assignPublicIp": "DISABLED"
+        }
+      },
+      "healthCheckGracePeriodSeconds": 0,
+      "schedulingStrategy": "REPLICA",
+      "createdBy": "arn:aws:iam::604633931330:user/rspitler@nudgesecurity.com",
+      "enableECSManagedTags": false,
+      "propagateTags": "NONE",
+      "enableExecuteCommand": false
+    }
+  ],
+  "failures": []
+}

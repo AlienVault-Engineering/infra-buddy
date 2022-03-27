@@ -120,6 +120,11 @@ class ECSBuddy(object):
                 cluster=self.cluster,
                 services=[self.ecs_service]
             )
+            description = self.describe_service()
+            running_task_def_arn = pydash.get(description,"deployments.0.taskDefinition",None)
+            print_utility.info(f"Currently running task {running_task_def_arn} - {description}")
+            if running_task_def_arn != new_task_def_arn:
+                success = False
         except WaiterError as e:
             success = False
             print_utility.error(f"Error waiting for service to stabilize - {e}", raise_exception=True)
@@ -134,6 +139,9 @@ class ECSBuddy(object):
             return
         self.task_definition_description = self.client.describe_task_definition(taskDefinition=
                                                                                 self.ecs_task_family)['taskDefinition']
+
+    def describe_service(self):
+        return self.client.describe_service(cluster=self.cluster,services=self.ecs_service)["services"][0]
 
     def exec_run_task(self, new_task_def_arn):
         self.deploy_ctx.notify_event(
@@ -157,12 +165,13 @@ class ECSBuddy(object):
                 # increase the number of retries
                 waiter.config.max_attempts = self.deploy_ctx.get_task_max_retry()
             waiter.wait(cluster=self.cluster, tasks=[arn_])
+            description = self.client.describe_tasks(tasks=[arn_],cluster=self.cluster)
             if self.deploy_ctx.wait_for_run_task_finish():
-                description = self.client.describe_tasks(tasks=[arn_],cluster=self.cluster)
                 exit_code_ = pydash.get(description,"tasks.0.containers.0.exitCode",0)
                 print_utility.info(f"Retrieved exit code from container: {exit_code_} - {description}")
                 if exit_code_>0:
                     success = False
+
         except WaiterError as e:
             success = False
             print_utility.error(f"Error waiting for task to {'finish' if self.deploy_ctx.wait_for_run_task_finish() else 'start'} - {e}", raise_exception=True)

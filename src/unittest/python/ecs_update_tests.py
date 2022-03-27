@@ -22,9 +22,16 @@ class FakeEcsClient(object):
             self.test_task_definition = json.load(definition)
         with open(describe_def_path, 'r') as definition:
             self.finished_description = json.load(definition)
+        service_definition_path = testcase._get_resource_path("ecs_tests/describe_service.json")
+        with open(service_definition_path,'r') as service_def:
+            self.service_definition = json.load(service_def)
+
         self.service_update = []
         self.task_run = []
         self.waiter_name = []
+
+    def describe_service(self, cluster, services):
+        return self.service_definition
 
     def describe_task_definition(self, taskDefinition):
         return self.test_task_definition
@@ -76,13 +83,26 @@ class ECSUpdateTemplateTestCase(ParentTestCase):
         ecs.perform_update()
 
     def test_ecs_deploy(self):
-        deploy = ECSDeploy(deploy_ctx=self.test_deploy_ctx, artifact_id="1.21",
-                           artifact_location="271083817914.dkr.ecr.us-west-2.amazonaws.com/otx/otxb-portal-yara-listener")
-        deploy.ecs_buddy.client = FakeEcsClient(self)
-        do_deploy = deploy.do_deploy(dry_run=False)
-        self.assertFalse(do_deploy, "Failed to recognize update not required")
-        do_deploy = deploy.do_deploy(dry_run=True)
-        self.assertIsNone(do_deploy, "Failed to dry run")
+        # Set this low as it gets called in the constructor of ECS Deploy
+        cloudformation.MAX_ATTEMPTS = 1
+        try:
+            image = "271083817914.dkr.ecr.us-west-2.amazonaws.com/otx/otxb-portal-yara-listener"
+            artifact_id = "1.21"
+            deploy = ECSDeploy(deploy_ctx=self.test_deploy_ctx, artifact_id=artifact_id,
+                               artifact_location=image)
+            deploy.ecs_buddy.client = FakeEcsClient(self)
+            do_deploy = deploy.do_deploy(dry_run=False)
+            do_deploy = deploy.do_deploy(dry_run=True)
+            self.assertIsNone(do_deploy, "Failed to dry run")
+            # test to make sure we are failing when the service isn't running the expected
+            self.assertFalse(do_deploy, "Failed to recognize update not required")
+            deploy.artifact_location = "ci-nudge-frontend-database-maintenance-ECSTaskFamily"
+            deploy.artifact_id = "1.22"
+            deploy.ecs_buddy.ecs_task_family = "ci-nudge-frontend-database-maintenance-ECSTaskFamily"
+            with self.assertRaises(UsageError):
+                deploy.do_deploy(dry_run=False)
+        finally:
+            cloudformation.MAX_ATTEMPTS = 5
 
     def test_ecs_run_task(self):
         # Set this low as it gets called in the constructor of ECS Deploy
