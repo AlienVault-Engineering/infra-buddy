@@ -17,7 +17,7 @@ class DataDogMonitorDeploy(Deploy):
     def _internal_deploy(self, dry_run):
         to_deploy = self.expand_monitors()
         for monitor in to_deploy:
-            print_utility.info("Deploying datadog monitor: {}".format(monitor['name']))
+            print_utility.progress("Deploying datadog monitor: {}".format(monitor['name']))
             if not dry_run:
                 self.init_dd()
                 existing_id = self.find_monitor_if_exists(monitor['name'])
@@ -25,12 +25,12 @@ class DataDogMonitorDeploy(Deploy):
                     response = dd.api.Monitor.create(**monitor)
                     created_name = response.get('name', None)
                     if created_name:
-                        print_utility.info("Created monitor - {}".format(created_name))
+                        print_utility.progress("Created monitor - {}".format(created_name))
                     else:
                         print_utility.error("Error creating monitor - {}".format(response), raise_exception=True)
                 else:
                     response = dd.api.Monitor.update(id=existing_id, **monitor)
-                    print_utility.info("Updated monitor - {}".format(response['name']))
+                    print_utility.progress("Updated monitor - {}".format(response))
 
     def init_dd(self):
         api_key = self.deploy_ctx.get('DATADOG_KEY', None)
