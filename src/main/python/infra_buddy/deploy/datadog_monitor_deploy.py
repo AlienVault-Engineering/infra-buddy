@@ -23,14 +23,16 @@ class DataDogMonitorDeploy(Deploy):
                 existing_id = self.find_monitor_if_exists(monitor['name'])
                 if not existing_id:
                     response = dd.api.Monitor.create(**monitor)
-                    created_name = response.get('name', None)
-                    if created_name:
-                        print_utility.progress("Created monitor - {}".format(created_name))
+                    if response.status_code == 200:
+                        print_utility.progress(f"Created monitor - {response.get('name', None)}")
                     else:
-                        print_utility.error("Error creating monitor - {}".format(response), raise_exception=True)
+                        print_utility.error(f"Error creating monitor - {response}", raise_exception=True)
                 else:
                     response = dd.api.Monitor.update(id=existing_id, **monitor)
-                    print_utility.progress("Updated monitor - {}".format(response))
+                    if response.status_code == 200:
+                        print_utility.progress(f"Updated monitor - {response.get('name', None)}")
+                    else:
+                        print_utility.error(f"Error updating monitor - {response}",raise_exception=True)
 
     def init_dd(self):
         api_key = self.deploy_ctx.get('DATADOG_KEY', None)
