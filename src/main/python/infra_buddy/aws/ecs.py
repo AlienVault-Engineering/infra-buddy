@@ -131,6 +131,7 @@ class ECSBuddy(object):
                 success = False
         except WaiterError as e:
             success = False
+            self.cw_buddy.print_latest()
             print_utility.error(f"Error waiting for service to stabilize - {e}", raise_exception=True)
         finally:
             self.deploy_ctx.notify_event(
