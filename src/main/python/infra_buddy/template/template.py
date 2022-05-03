@@ -108,6 +108,8 @@ class URLTemplate(Template):
             pass_property = values.get("pass_property", "VCS_PASS")
             user = os.environ.get(user_property)
             password = os.environ.get(pass_property)
+            if not password:
+                password = os.environ.get("VCS_PASSWORD")
             if auth_type == "basic":
                 print_utility.info(f"Auth {user}:{password}")
                 self.auth = HTTPBasicAuth(username=user, password=password)
