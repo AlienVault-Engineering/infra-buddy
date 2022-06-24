@@ -148,10 +148,15 @@ class DeployContext(dict):
             self.update(defaults)
         self.update(os.environ)
         if 'REGION' not in self:
-            print_utility.warn("Region not configured using default 'us-west-1'. "
-                               "This is probably not what you want - N. California is slow, like real slow."
-                               "  Set the environment variable 'REGION' or pass a default configuration file to override. ")
-            self['REGION'] = 'us-west-1'
+            default_region = os.environ.get('AWS_DEFAULT_REGION',None)
+            if default_region:
+                print_utility.info("Did not find 'REGION' variable using 'AWS_DEFAULT_REGION'")
+                self['REGION'] = default_region
+            else:
+                print_utility.warn("Region not configured using default 'us-west-1'. "
+                                   "This is probably not what you want - N. California is slow, like real slow."
+                                   "  Set the environment variable 'REGION' or pass a default configuration file to override. ")
+                self['REGION'] = 'us-west-1'
         self.template_manager = TemplateManager(self.get_deploy_templates(), self.get_service_modification_templates())
         self.stack_name_cache = []
         if self.get('DATADOG_KEY', '') != '':
