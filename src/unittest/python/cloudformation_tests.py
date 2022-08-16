@@ -6,13 +6,13 @@ import string
 import tempfile
 import zipfile
 
-from infra_buddy.aws.cloudformation import CloudFormationBuddy
-from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
+from infra_buddy_too.aws.cloudformation import CloudFormationBuddy
+from infra_buddy_too.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
 # noinspection PyUnresolvedReferences
-from infra_buddy import commandline
-from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
-from infra_buddy.template.template import LocalTemplate
-from infra_buddy.utility.exception import NOOPException
+from infra_buddy_too import commandline
+from infra_buddy_too.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy_too.template.template import LocalTemplate
+from infra_buddy_too.utility.exception import NOOPException
 from testcase_parent import ParentTestCase
 
 

@@ -1,11 +1,11 @@
 import os
 import tempfile
 
-from infra_buddy.context.deploy_ctx import DeployContext
+from infra_buddy_too.context.deploy_ctx import DeployContext
 
-from infra_buddy.aws import s3
-from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
-from infra_buddy.deploy.s3_deploy import S3Deploy
+from infra_buddy_too.aws import s3
+from infra_buddy_too.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
+from infra_buddy_too.deploy.s3_deploy import S3Deploy
 from testcase_parent import ParentTestCase
 
 

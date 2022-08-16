@@ -1,15 +1,15 @@
 import os
 import tempfile
 
-from infra_buddy.template.template_manager import TemplateManager
+from infra_buddy_too.template.template_manager import TemplateManager
 
-from infra_buddy.aws.s3 import CloudFormationDeployS3Buddy
-from infra_buddy.context.service_definition import ServiceDefinition
-from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy_too.aws.s3 import CloudFormationDeployS3Buddy
+from infra_buddy_too.context.service_definition import ServiceDefinition
+from infra_buddy_too.deploy.cloudformation_deploy import CloudFormationDeploy
 from testcase_parent import ParentTestCase
 # noinspection PyUnresolvedReferences
-from infra_buddy.commandline import cli
-from infra_buddy.commands.generate_service_definition import command as generate_command
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.commands.generate_service_definition import command as generate_command
 
 
 class TemplateManagerTestCase(ParentTestCase):

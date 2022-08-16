@@ -3,10 +3,10 @@ import os
 import tempfile
 
 # noinspection PyUnresolvedReferences
-from infra_buddy.commandline import cli
-from infra_buddy.commands.deploy_service import command as ds_command
-from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.context.deploy_ctx import REGION
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.commands.deploy_service import command as ds_command
+from infra_buddy_too.context.deploy_ctx import DeployContext
+from infra_buddy_too.context.deploy_ctx import REGION
 from testcase_parent import ParentTestCase
 
 DIRNAME = os.path.dirname(os.path.abspath(__file__))

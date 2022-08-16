@@ -1,7 +1,7 @@
 import json
 
-from infra_buddy.aws.cloudformation import CloudFormationBuddy
-from infra_buddy.deploy.ecs_deploy import ECSDeploy
+from infra_buddy_too.aws.cloudformation import CloudFormationBuddy
+from infra_buddy_too.deploy.ecs_deploy import ECSDeploy
 from testcase_parent import ParentTestCase
 
 
