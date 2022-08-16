@@ -4,7 +4,7 @@ from pybuilder.core import init, use_plugin
 
 use_plugin("python.core")
 use_plugin("python.install_dependencies")
-use_plugin("python.coverage")
+# use_plugin("python.coverage")
 use_plugin("python.distutils")
 use_plugin("exec")
 use_plugin("python.unittest")
@@ -41,6 +41,6 @@ def initialize(project):
     project.set_property('unittest_module_glob', 'test_*')
     # project.set_property("run_unit_tests_propagate_stdout", True)
     # project.set_property("run_unit_tests_propagate_stderr", True)
-    # project.set_property("coverage_branch_threshold_warn", 50)
-    # project.set_property("coverage_branch_partial_threshold_warn", 50)
+    project.set_property("coverage_branch_threshold_warn", 0)
+    project.set_property("coverage_branch_partial_threshold_warn", o)
     project.include_file('infra_buddy', "template/builtin-templates.json")
