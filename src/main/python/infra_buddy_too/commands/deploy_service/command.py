@@ -3,9 +3,9 @@ import time
 
 import datetime
 
-from infra_buddy.commandline import cli
-from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.utility import print_utility
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.context.deploy_ctx import DeployContext
+from infra_buddy_too.utility import print_utility
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 

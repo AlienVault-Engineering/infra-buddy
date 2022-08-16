@@ -1,11 +1,11 @@
 import os
 import tempfile
 
-from infra_buddy.aws import s3 as s3util
-from infra_buddy.aws.cloudformation import CloudFormationBuddy
-from infra_buddy.aws.s3 import S3Buddy
-from infra_buddy.deploy.deploy import Deploy
-from infra_buddy.utility import print_utility
+from infra_buddy_too.aws import s3 as s3util
+from infra_buddy_too.aws.cloudformation import CloudFormationBuddy
+from infra_buddy_too.aws.s3 import S3Buddy
+from infra_buddy_too.deploy.deploy import Deploy
+from infra_buddy_too.utility import print_utility
 import datadog as dd
 
 

@@ -5,9 +5,9 @@ from collections import defaultdict
 import click
 from jsonschema import validate
 
-from infra_buddy.template.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template, AliasTemplate, \
+from infra_buddy_too.template.template import URLTemplate, GitHubTemplate, NamedLocalTemplate, S3Template, AliasTemplate, \
     GitHubTemplateDefinitionLocation, BitbucketTemplateDefinitionLocation, BitbucketTemplate
-from infra_buddy.utility import print_utility
+from infra_buddy_too.utility import print_utility
 
 
 class TemplateManager(object):

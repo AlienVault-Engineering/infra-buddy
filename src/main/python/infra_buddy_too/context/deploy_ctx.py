@@ -7,13 +7,13 @@ import zipfile
 from collections import OrderedDict
 from pprint import pformat
 
-from infra_buddy.aws import s3
-from infra_buddy.context.artifact_definition import ArtifactDefinition
-from infra_buddy.context.monitor_definition import MonitorDefinition
-from infra_buddy.context.service_definition import ServiceDefinition
-from infra_buddy.notifier.datadog_notifier import DataDogNotifier
-from infra_buddy.template.template_manager import TemplateManager
-from infra_buddy.utility import print_utility
+from infra_buddy_too.aws import s3
+from infra_buddy_too.context.artifact_definition import ArtifactDefinition
+from infra_buddy_too.context.monitor_definition import MonitorDefinition
+from infra_buddy_too.context.service_definition import ServiceDefinition
+from infra_buddy_too.notifier.datadog_notifier import DataDogNotifier
+from infra_buddy_too.template.template_manager import TemplateManager
+from infra_buddy_too.utility import print_utility
 
 STACK_NAME = 'STACK_NAME'
 

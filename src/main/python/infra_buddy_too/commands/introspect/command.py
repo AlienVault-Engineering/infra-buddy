@@ -3,13 +3,13 @@ from collections import defaultdict
 
 import boto3
 import click
-from infra_buddy.aws.cloudformation import CloudFormationBuddy
+from infra_buddy_too.aws.cloudformation import CloudFormationBuddy
 
-from infra_buddy.commandline import cli
-from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
-from infra_buddy.template.template import NamedLocalTemplate
-from infra_buddy.utility import print_utility
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.context.deploy_ctx import DeployContext
+from infra_buddy_too.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy_too.template.template import NamedLocalTemplate
+from infra_buddy_too.utility import print_utility
 
 
 @cli.command(name='introspect', short_help="Search infra-buddy managed services for a resource.")

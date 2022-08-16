@@ -1,6 +1,6 @@
-from infra_buddy.aws.ecs import ECSBuddy
-from infra_buddy.deploy.deploy import Deploy
-from infra_buddy.utility import print_utility
+from infra_buddy_too.aws.ecs import ECSBuddy
+from infra_buddy_too.deploy.deploy import Deploy
+from infra_buddy_too.utility import print_utility
 
 
 class ECSDeploy(Deploy):

@@ -1,10 +1,10 @@
 import click
 
-from infra_buddy.commandline import cli
-from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
-from infra_buddy.template.template import NamedLocalTemplate
-from infra_buddy.utility import print_utility
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.context.deploy_ctx import DeployContext
+from infra_buddy_too.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy_too.template.template import NamedLocalTemplate
+from infra_buddy_too.utility import print_utility
 
 
 @cli.command(name='validate-template',short_help="Analyze a service template or built-in service-type for logical "

@@ -4,8 +4,8 @@ import os
 import click
 
 # [ --application <otxb>] [ --role <>] [ --environment <>]
-from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.utility import print_utility
+from infra_buddy_too.context.deploy_ctx import DeployContext
+from infra_buddy_too.utility import print_utility
 
 
 @click.group()
@@ -48,16 +48,16 @@ def cli(ctx, artifact_directory, application, role, environment, configuration_d
 
 
 # noinspection PyUnresolvedReferences
-from infra_buddy.commands.deploy_cloudformation import command
+from infra_buddy_too.commands.deploy_cloudformation import command
 # noinspection PyUnresolvedReferences
-from infra_buddy.commands.deploy_service import command
+from infra_buddy_too.commands.deploy_service import command
 # noinspection PyUnresolvedReferences
-from infra_buddy.commands.validate_template import command
+from infra_buddy_too.commands.validate_template import command
 # noinspection PyUnresolvedReferences
-from infra_buddy.commands.generate_artifact_manifest import command
+from infra_buddy_too.commands.generate_artifact_manifest import command
 # noinspection PyUnresolvedReferences
-from infra_buddy.commands.generate_service_definition import command
+from infra_buddy_too.commands.generate_service_definition import command
 # noinspection PyUnresolvedReferences
-from infra_buddy.commands.bootstrap import command
+from infra_buddy_too.commands.bootstrap import command
 # noinspection PyUnresolvedReferences
-from infra_buddy.commands.introspect import command
+from infra_buddy_too.commands.introspect import command

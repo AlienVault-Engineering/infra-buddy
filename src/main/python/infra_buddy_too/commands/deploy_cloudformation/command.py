@@ -1,10 +1,10 @@
 import os
 import click
-from infra_buddy.aws.cloudformation import CloudFormationBuddy
-from infra_buddy.aws.s3 import S3Buddy
-from infra_buddy.commandline import cli
-from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
-from infra_buddy.template.template import LocalTemplate
+from infra_buddy_too.aws.cloudformation import CloudFormationBuddy
+from infra_buddy_too.aws.s3 import S3Buddy
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy_too.template.template import LocalTemplate
 
 
 @cli.command(name='deploy-cloudformation')

@@ -2,7 +2,7 @@ from pprint import pformat
 
 import boto3
 import pydash
-from infra_buddy.utility import print_utility
+from infra_buddy_too.utility import print_utility
 
 
 

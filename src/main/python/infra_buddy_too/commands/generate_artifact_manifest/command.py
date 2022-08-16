@@ -1,9 +1,9 @@
 import click
 
-from infra_buddy.commandline import cli
-from infra_buddy.context.artifact_definition import ArtifactDefinition
-from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.utility import print_utility
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.context.artifact_definition import ArtifactDefinition
+from infra_buddy_too.context.deploy_ctx import DeployContext
+from infra_buddy_too.utility import print_utility
 
 
 @cli.command(name='generate-artifact-manifest',

@@ -5,10 +5,10 @@ from zipfile import ZipFile
 import requests
 from copy import deepcopy
 
-from infra_buddy.aws import s3
-from infra_buddy.context import monitor_definition
-from infra_buddy.context.monitor_definition import MonitorDefinition
-from infra_buddy.utility import print_utility
+from infra_buddy_too.aws import s3
+from infra_buddy_too.context import monitor_definition
+from infra_buddy_too.context.monitor_definition import MonitorDefinition
+from infra_buddy_too.utility import print_utility
 from requests.auth import HTTPDigestAuth, HTTPBasicAuth
 
 

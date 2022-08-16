@@ -4,10 +4,10 @@ import boto3
 import pydash
 from botocore.exceptions import WaiterError
 
-from infra_buddy.aws.cloudwatch_logs import CloudwatchLogsBuddy
-from infra_buddy.utility import print_utility
+from infra_buddy_too.aws.cloudwatch_logs import CloudwatchLogsBuddy
+from infra_buddy_too.utility import print_utility
 
-from infra_buddy.aws.cloudformation import CloudFormationBuddy
+from infra_buddy_too.aws.cloudformation import CloudFormationBuddy
 
 
 class ECSBuddy(object):

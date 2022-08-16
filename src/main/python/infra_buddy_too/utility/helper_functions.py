@@ -3,8 +3,8 @@ from operator import itemgetter
 
 import boto3
 
-from infra_buddy.aws.cloudformation import CloudFormationBuddy
-from infra_buddy.utility import print_utility
+from infra_buddy_too.aws.cloudformation import CloudFormationBuddy
+from infra_buddy_too.utility import print_utility
 
 
 def _get_all_export_values(client):

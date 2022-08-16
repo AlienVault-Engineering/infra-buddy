@@ -10,10 +10,10 @@ import pydash
 from copy import deepcopy
 from jsonschema import validate
 
-from infra_buddy.aws.cloudformation import CloudFormationBuddy
-from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
-from infra_buddy.deploy.deploy import Deploy
-from infra_buddy.utility import helper_functions, print_utility
+from infra_buddy_too.aws.cloudformation import CloudFormationBuddy
+from infra_buddy_too.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
+from infra_buddy_too.deploy.deploy import Deploy
+from infra_buddy_too.utility import helper_functions, print_utility
 
 _PARAM_TYPE_PROPERTY = "property"
 _PARAM_TYPE_TRANSFORM = "transform"

@@ -3,9 +3,9 @@ import os
 
 from jsonschema import validate
 
-from infra_buddy.deploy.ecs_deploy import ECSDeploy
-from infra_buddy.deploy.s3_deploy import S3Deploy
-from infra_buddy.utility import print_utility
+from infra_buddy_too.deploy.ecs_deploy import ECSDeploy
+from infra_buddy_too.deploy.s3_deploy import S3Deploy
+from infra_buddy_too.utility import print_utility
 
 _ARTIFACT_FILE = "artifact.json"
 

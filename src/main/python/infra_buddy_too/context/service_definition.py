@@ -4,9 +4,9 @@ import os
 import datetime
 from jsonschema import validate
 from pprint import pformat
-from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
-from infra_buddy.template.template_manager import TemplateManager
-from infra_buddy.utility import print_utility
+from infra_buddy_too.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy_too.template.template_manager import TemplateManager
+from infra_buddy_too.utility import print_utility
 
 _SERVICE_DEFINITION_FILE = "service.json"
 

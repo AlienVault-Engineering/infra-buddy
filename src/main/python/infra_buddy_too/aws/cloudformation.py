@@ -7,8 +7,8 @@ import botocore
 import pydash as pydash
 from botocore.exceptions import WaiterError
 
-from infra_buddy.utility import print_utility
-from infra_buddy.utility.waitfor import waitfor
+from infra_buddy_too.utility import print_utility
+from infra_buddy_too.utility.waitfor import waitfor
 
 CAPABILITIES = [
     'CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'

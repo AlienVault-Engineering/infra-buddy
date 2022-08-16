@@ -13,7 +13,7 @@ import boto3
 import botocore
 from boto3.s3.transfer import S3Transfer
 
-from infra_buddy.utility import print_utility
+from infra_buddy_too.utility import print_utility
 
 
 class S3Buddy(object):
