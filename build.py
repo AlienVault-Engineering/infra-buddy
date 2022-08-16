@@ -28,7 +28,7 @@ def initialize(project):
         project.version = "0.0.999"
 
     # Project Manifest
-    project.name = "infra-buddy"
+    project.name = "infra-buddy-too"
     project.summary = "CLI for deploying micro-services"
     project.home_page = "https://github.com/Nudge-Security/infra-buddy"
     project.description = "CLI for deploying micro-services"
