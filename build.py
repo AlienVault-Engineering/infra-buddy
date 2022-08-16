@@ -42,5 +42,5 @@ def initialize(project):
     # project.set_property("run_unit_tests_propagate_stdout", True)
     # project.set_property("run_unit_tests_propagate_stderr", True)
     project.set_property("coverage_branch_threshold_warn", 0)
-    project.set_property("coverage_branch_partial_threshold_warn", o)
+    project.set_property("coverage_branch_partial_threshold_warn", 0)
     project.include_file('infra_buddy', "template/builtin-templates.json")
