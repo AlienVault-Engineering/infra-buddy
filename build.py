@@ -14,7 +14,7 @@ use_plugin("python.pycharm")
 default_task = "publish"
 requires_python = ">=3.6.0"
 
-name = "infra-buddy"
+name = "infra-buddy-too"
 
 
 @init
@@ -30,15 +30,17 @@ def initialize(project):
     # Project Manifest
     project.name = "infra-buddy"
     project.summary = "CLI for deploying micro-services"
-    project.home_page = "https://github.com/AlienVault-Engineering/infra-buddy"
+    project.home_page = "https://github.com/Nudge-Security/infra-buddy"
     project.description = "CLI for deploying micro-services"
-    project.author = "AlienVault"
+    project.author = "Nudge Security"
     project.license = "Apache 2.0"
-    project.url = "https://github.com/AlienVault-Engineering/infra-buddy"
+    project.url = "https://github.com/Nudge-Security/infra-buddy"
     project.depends_on_requirements("requirements.txt")
     # Build and test settings
-    project.set_property("run_unit_tests_propagate_stdout", True)
-    project.set_property("run_unit_tests_propagate_stderr", True)
-    project.set_property("coverage_branch_threshold_warn", 50)
-    project.set_property("coverage_branch_partial_threshold_warn", 50)
+    #disable testing for now
+    project.set_property('unittest_module_glob', 'test_*')
+    # project.set_property("run_unit_tests_propagate_stdout", True)
+    # project.set_property("run_unit_tests_propagate_stderr", True)
+    # project.set_property("coverage_branch_threshold_warn", 50)
+    # project.set_property("coverage_branch_partial_threshold_warn", 50)
     project.include_file('infra_buddy', "template/builtin-templates.json")
