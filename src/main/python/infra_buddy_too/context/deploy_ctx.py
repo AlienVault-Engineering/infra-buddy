@@ -237,6 +237,9 @@ class DeployContext(dict):
             execution_plan.extend(monitor_plan)
         print_utility.progress("Execution Plan:")
         for deploy in execution_plan:
+            # Propogate flag to indicate that we should not actually deploy (see deploy-environments['skip'])
+            if self.service_definition.dry_run:
+                deploy.dry_run = True
             print_utility.info_banner("\t" + str(deploy))
         return execution_plan
 

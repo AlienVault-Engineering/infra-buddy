@@ -154,6 +154,12 @@ class DeployContextTestCase(ParentTestCase):
                                                                   defaults=self.default_config)
         plan = deploy_ctx.get_execution_plan()
         self.assertEqual(len(plan), 4, "Failed to identify all elements of execution - {}".format(plan))
+        self.assertTrue(all([not deploy.dry_run for deploy in plan]))
+        deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
+                                                                  environment="prod",
+                                                                  defaults=self.default_config)
+        plan = deploy_ctx.get_execution_plan()
+        self.assertTrue(all([deploy.dry_run for deploy in plan]))
 
     def test_deploy_validate(self):
         artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_execution_plan_test')
