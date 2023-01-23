@@ -3,6 +3,9 @@
   "role": "bar",
   "service-type": "vpc",
   "registry-url": "https://docker.io/my-registry",
+  "deploy-environments": {
+    "skip": ["prod"]
+  },
   "deployment-parameters": {
     "API_PATH":"bar"
   },

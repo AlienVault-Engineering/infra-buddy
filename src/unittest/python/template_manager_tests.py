@@ -1,15 +1,15 @@
 import os
 import tempfile
 
-from infra_buddy.template.template_manager import TemplateManager
+from infra_buddy_too.template.template_manager import TemplateManager
 
-from infra_buddy.aws.s3 import CloudFormationDeployS3Buddy
-from infra_buddy.context.service_definition import ServiceDefinition
-from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy_too.aws.s3 import CloudFormationDeployS3Buddy
+from infra_buddy_too.context.service_definition import ServiceDefinition
+from infra_buddy_too.deploy.cloudformation_deploy import CloudFormationDeploy
 from testcase_parent import ParentTestCase
 # noinspection PyUnresolvedReferences
-from infra_buddy.commandline import cli
-from infra_buddy.commands.generate_service_definition import command as generate_command
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.commands.generate_service_definition import command as generate_command
 
 
 class TemplateManagerTestCase(ParentTestCase):
@@ -150,6 +150,25 @@ class TemplateManagerTestCase(ParentTestCase):
                 ]
             }
         })
+        self.assertTrue(template_manager.get_known_template('secret'), "Failed to locate default template")
+
+    def test_service_alias_compatibility(self):
+        template_manager = TemplateManager(user_default_service_modification_tempaltes={
+            "secret": {
+                "type": "github",
+                "owner": "rspitler",
+                "repo": "cloudformation-templates",
+                "tag": "master/secret",
+                "compatible": [
+                    "ecs-service"
+                ]
+            }
+        })
+        self.assertIsNotNone( template_manager.locate_service_modification('default-api-service',"secret"), "Failed to resolve alias compatibility")
+
+    def test_remote_defaults_load(self):
+        template_manager = TemplateManager()
+        template_manager.load_additional_templates({"type":"github","owner":"rspitler","repo":"cloudformation-templates"})
         self.assertTrue(template_manager.get_known_template('secret'), "Failed to locate default template")
 
     def test_service_alias(self):

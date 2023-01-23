@@ -1,16 +1,16 @@
 import os
 import tempfile
 
-from infra_buddy.aws import s3
-from infra_buddy.aws.cloudformation import CloudFormationBuddy
-from infra_buddy.aws.s3 import S3Buddy
-from infra_buddy.commandline import cli
-from infra_buddy.commands.generate_artifact_manifest import command
-from infra_buddy.context.artifact_definition import ArtifactDefinition, ECSArtifactDefinition, S3ArtifactDefinition
-from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
-from infra_buddy.template.template import NamedLocalTemplate
-from infra_buddy.utility import helper_functions
+from infra_buddy_too.aws import s3
+from infra_buddy_too.aws.cloudformation import CloudFormationBuddy
+from infra_buddy_too.aws.s3 import S3Buddy
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.commands.generate_artifact_manifest import command
+from infra_buddy_too.context.artifact_definition import ArtifactDefinition, ECSArtifactDefinition, S3ArtifactDefinition
+from infra_buddy_too.context.deploy_ctx import DeployContext
+from infra_buddy_too.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy_too.template.template import NamedLocalTemplate
+from infra_buddy_too.utility import helper_functions
 from testcase_parent import ParentTestCase
 
 

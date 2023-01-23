@@ -1,6 +1,6 @@
-from infra_buddy.commandline import cli
-from infra_buddy.commands.validate_template import command as vcommand
-from infra_buddy.template.template_manager import TemplateManager
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.commands.validate_template import command as vcommand
+from infra_buddy_too.template.template_manager import TemplateManager
 
 from testcase_parent import ParentTestCase
 

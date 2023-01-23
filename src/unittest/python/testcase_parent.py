@@ -6,8 +6,8 @@ import unittest
 
 import boto3
 
-from infra_buddy.context.deploy_ctx import DeployContext
-from infra_buddy.utility import print_utility
+from infra_buddy_too.context.deploy_ctx import DeployContext
+from infra_buddy_too.utility import print_utility
 
 DIRNAME = os.path.dirname(os.path.abspath(__file__))
 RESOURCE_DIR = os.path.abspath(os.path.join(DIRNAME, '../resources/'))

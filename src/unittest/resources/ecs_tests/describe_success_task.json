@@ -1,0 +1,95 @@
+{
+    "tasks": [
+        {
+            "attachments": [
+                {
+                    "id": "2b7dd7c2-c17c-42cf-a9e5-7cc9797d4a3b",
+                    "type": "ElasticNetworkInterface",
+                    "status": "DELETED",
+                    "details": [
+                        {
+                            "name": "subnetId",
+                            "value": "subnet-0058692e292b68211"
+                        },
+                        {
+                            "name": "networkInterfaceId",
+                            "value": "eni-065b5b902def2af5e"
+                        },
+                        {
+                            "name": "macAddress",
+                            "value": "12:67:a9:46:66:51"
+                        },
+                        {
+                            "name": "privateDnsName",
+                            "value": "ip-10-0-75-4.ec2.internal"
+                        },
+                        {
+                            "name": "privateIPv4Address",
+                            "value": "10.0.75.4"
+                        }
+                    ]
+                }
+            ],
+            "availabilityZone": "us-east-1b",
+            "clusterArn": "arn:aws:ecs:us-east-1:604633931330:cluster/ci-nudge-frontend-cluster-ECSCluster-WtrfE9hW2c14",
+            "connectivity": "CONNECTED",
+            "connectivityAt": 1632499497.159,
+            "containers": [
+                {
+                    "containerArn": "arn:aws:ecs:us-east-1:604633931330:container/ci-nudge-frontend-cluster-ECSCluster-WtrfE9hW2c14/7e002d79472c44d992aedad6ff5de7ba/f29044a5-bdbe-4c2d-b564-19323ac2e3f0",
+                    "taskArn": "arn:aws:ecs:us-east-1:604633931330:task/ci-nudge-frontend-cluster-ECSCluster-WtrfE9hW2c14/7e002d79472c44d992aedad6ff5de7ba",
+                    "name": "ci-nudge-frontend-database-maintenance-Container",
+                    "image": "604633931330.dkr.ecr.us-east-1.amazonaws.com/nudge-frontend/database-maintenance:107",
+                    "imageDigest": "sha256:9ec885bc7b5e06444e214a6f809d5b166f9a6a7ccf1c790b4e17f90721c862f7",
+                    "runtimeId": "7e002d79472c44d992aedad6ff5de7ba-2116462720",
+                    "lastStatus": "STOPPED",
+                    "exitCode": 1,
+                    "networkBindings": [],
+                    "networkInterfaces": [
+                        {
+                            "attachmentId": "2b7dd7c2-c17c-42cf-a9e5-7cc9797d4a3b",
+                            "privateIpv4Address": "10.0.75.4"
+                        }
+                    ],
+                    "healthStatus": "UNKNOWN",
+                    "cpu": "256",
+                    "memoryReservation": "512"
+                }
+            ],
+            "cpu": "256",
+            "createdAt": 1632499493.404,
+            "desiredStatus": "STOPPED",
+            "enableExecuteCommand": false,
+            "executionStoppedAt": 1632499552.774,
+            "group": "family:ci-nudge-frontend-database-maintenance-ECSTaskFamily",
+            "healthStatus": "UNKNOWN",
+            "lastStatus": "STOPPED",
+            "launchType": "FARGATE",
+            "memory": "512",
+            "overrides": {
+                "containerOverrides": [
+                    {
+                        "name": "ci-nudge-frontend-database-maintenance-Container"
+                    }
+                ],
+                "inferenceAcceleratorOverrides": []
+            },
+            "platformVersion": "1.4.0",
+            "pullStartedAt": 1632499506.747,
+            "pullStoppedAt": 1632499535.234,
+            "startedAt": 1632499537.322,
+            "stopCode": "EssentialContainerExited",
+            "stoppedAt": 1632499575.774,
+            "stoppedReason": "Essential container in task exited",
+            "stoppingAt": 1632499562.807,
+            "tags": [],
+            "taskArn": "arn:aws:ecs:us-east-1:604633931330:task/ci-nudge-frontend-cluster-ECSCluster-WtrfE9hW2c14/7e002d79472c44d992aedad6ff5de7ba",
+            "taskDefinitionArn": "arn:aws:ecs:us-east-1:604633931330:task-definition/ci-nudge-frontend-database-maintenance-ECSTaskFamily:158",
+            "version": 5,
+            "ephemeralStorage": {
+                "sizeInGiB": 20
+            }
+        }
+    ],
+    "failures": []
+}

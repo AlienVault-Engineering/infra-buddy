@@ -1,15 +1,18 @@
 import json
+import os
 import random
+import shutil
 import string
 import tempfile
+import zipfile
 
-from infra_buddy.aws.cloudformation import CloudFormationBuddy
-from infra_buddy.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
+from infra_buddy_too.aws.cloudformation import CloudFormationBuddy
+from infra_buddy_too.aws.s3 import S3Buddy, CloudFormationDeployS3Buddy
 # noinspection PyUnresolvedReferences
-from infra_buddy import commandline
-from infra_buddy.deploy.cloudformation_deploy import CloudFormationDeploy
-from infra_buddy.template.template import LocalTemplate
-from infra_buddy.utility.exception import NOOPException
+from infra_buddy_too import commandline
+from infra_buddy_too.deploy.cloudformation_deploy import CloudFormationDeploy
+from infra_buddy_too.template.template import LocalTemplate
+from infra_buddy_too.utility.exception import NOOPException
 from testcase_parent import ParentTestCase
 
 
@@ -79,6 +82,42 @@ class CloudFormationTestCase(ParentTestCase):
             cloudformation.change_set_description = json.load(cs)
             cloudformation.existing_change_set_id = cloudformation.change_set_description['ChangeSetId']
         self.assertFalse(cloudformation.should_execute_change_set(),"Failed to skip ecs special case")
+
+    def test_lambda_package(self):
+        lambda_package_dir = self._get_resource_path('lambda_package_tests/lambda')
+        template = ParentTestCase._get_resource_path("cloudformation/aws-resources.template")
+        parameter_file = ParentTestCase._get_resource_path("cloudformation/aws-resources.parameters.json")
+        config_templates = ParentTestCase._get_resource_path("cloudformation/config/")
+        self.test_deploy_ctx['Strict-Transport-Security'] = "foo"
+        self.test_deploy_ctx['Content-Security-Policy'] = "foo"
+        self.test_deploy_ctx['X-Frame-Options'] = "foo"
+        self.test_deploy_ctx['X-XSS-Protection'] = "foo"
+        self.test_deploy_ctx['X-Content-Type-Options'] = "foo"
+        self.test_deploy_ctx['Referrer-Policy'] = "foo"
+        deploy = CloudFormationDeploy(self.test_deploy_ctx.stack_name,
+                                      LocalTemplate(template, parameter_file, config_templates,lambda_package_dir),
+                                      self.test_deploy_ctx)
+        mkdtemp = tempfile.mkdtemp()
+        try:
+            template = deploy.get_lambda_packages(self.test_deploy_ctx)
+            self.assertEqual(1, len(template),"Failed to return a single package")
+            zip_file = template[0]
+            basename = os.path.basename(zip_file)
+            self.assertEqual(basename, "security-headers.zip", "Did not render the right name")
+            self.assertTrue(zipfile.is_zipfile(zip_file),"Did not compress function")
+            shutil.unpack_archive(zip_file,mkdtemp)
+            files = os.listdir(mkdtemp)
+            self.assertEqual(len(files),1,"Did not find expected files")
+            code = files[0]
+            self.assertEqual(code,"index.js","Did not find rendered file")
+            with open(os.path.join(mkdtemp,code), 'r') as source:
+                for line in source:
+                    self.assertFalse("${" in line,f"Found unrendered variable in source: {line}")
+            self.assertEqual(self.test_deploy_ctx.get(f"security-headers-SHA256",None),
+                             "fc72ddd698ceeb3df1f4db4aaba2beb4c3989d4bbce87d6aaf5ce882490d3c24",
+                             "Did not populate SHA256 of function")
+        finally:
+            ParentTestCase.clean_dir(mkdtemp)
 
     def test_changeset_operation_ready(self):
         cloudformation = CloudFormationBuddy(self.test_deploy_ctx)

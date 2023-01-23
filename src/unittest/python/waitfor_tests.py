@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from infra_buddy.utility.waitfor import waitfor
+from infra_buddy_too.utility.waitfor import waitfor
 
 FAIL = "FAIL"
 

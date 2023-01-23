@@ -3,7 +3,7 @@ import json
 import click
 
 from click.testing import CliRunner
-from infra_buddy.commandline import cli
+from infra_buddy_too.commandline import cli
 from testcase_parent import ParentTestCase
 
 

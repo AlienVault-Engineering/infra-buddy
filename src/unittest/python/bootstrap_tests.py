@@ -3,8 +3,8 @@ import tempfile
 import boto3
 import pydash
 # noinspection PyUnresolvedReferences
-from infra_buddy.commandline import cli
-from infra_buddy.commands.bootstrap import command as bcommand
+from infra_buddy_too.commandline import cli
+from infra_buddy_too.commands.bootstrap import command as bcommand
 from testcase_parent import ParentTestCase
 import unittest
 
