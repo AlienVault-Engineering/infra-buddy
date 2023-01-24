@@ -15,7 +15,7 @@ class CloudwatchLogsBuddy:
 
     def _get_cloudwatch_logs_client(self):
         if not self.cwclient:
-            self.cwclient = boto3.client('logs', region_name=self.deploy_ctx.region, client=get_boto_config())
+            self.cwclient = boto3.client('logs', region_name=self.deploy_ctx.region, config=get_boto_config())
         return self.cwclient
 
     def print_latest(self):
