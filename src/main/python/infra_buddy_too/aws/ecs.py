@@ -15,7 +15,7 @@ class ECSBuddy(object):
     def __init__(self, deploy_ctx, run_task: bool = False):
         super(ECSBuddy, self).__init__()
         self.deploy_ctx = deploy_ctx
-        self.client = boto3.client('ecs', region_name=self.deploy_ctx.region, client=get_boto_config())
+        self.client = boto3.client('ecs', region_name=self.deploy_ctx.region, config=get_boto_config())
         self.cf = CloudFormationBuddy(deploy_ctx)
         self.cw_buddy = CloudwatchLogsBuddy(self.deploy_ctx)
         self.cluster = self.cf.wait_for_export(

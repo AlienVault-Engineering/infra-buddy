@@ -30,7 +30,7 @@ class CloudFormationBuddy(object):
         self.exports = {}
         self.resources = []
         self.deploy_ctx = deploy_ctx
-        self.client = boto3.client('cloudformation', region_name=self.deploy_ctx.region, client=get_boto_config())
+        self.client = boto3.client('cloudformation', region_name=self.deploy_ctx.region, config=get_boto_config())
         self.existing_change_set_id = None
         self.stack_id = None
         self.change_set_description = None
