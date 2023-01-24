@@ -4,3 +4,4 @@ pydash
 jsonschema
 requests
 datadog
+botocore
