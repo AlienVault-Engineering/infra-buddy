@@ -3,6 +3,7 @@ from pprint import pformat
 import boto3
 import pydash
 from infra_buddy_too.utility import print_utility
+from infra_buddy_too.aws.config import get_boto_config
 
 
 
@@ -14,7 +15,7 @@ class CloudwatchLogsBuddy:
 
     def _get_cloudwatch_logs_client(self):
         if not self.cwclient:
-            self.cwclient = boto3.client('logs', region_name=self.deploy_ctx.region)
+            self.cwclient = boto3.client('logs', region_name=self.deploy_ctx.region, config=get_boto_config())
         return self.cwclient
 
     def print_latest(self):

@@ -9,6 +9,8 @@ from botocore.exceptions import WaiterError
 
 from infra_buddy_too.utility import print_utility
 from infra_buddy_too.utility.waitfor import waitfor
+from infra_buddy_too.aws.config import get_boto_config
+
 
 CAPABILITIES = [
     'CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'
@@ -28,7 +30,7 @@ class CloudFormationBuddy(object):
         self.exports = {}
         self.resources = []
         self.deploy_ctx = deploy_ctx
-        self.client = boto3.client('cloudformation', region_name=self.deploy_ctx.region)
+        self.client = boto3.client('cloudformation', region_name=self.deploy_ctx.region, config=get_boto_config())
         self.existing_change_set_id = None
         self.stack_id = None
         self.change_set_description = None

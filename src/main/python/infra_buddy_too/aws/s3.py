@@ -14,13 +14,14 @@ import botocore
 from boto3.s3.transfer import S3Transfer
 
 from infra_buddy_too.utility import print_utility
+from infra_buddy_too.aws.config import get_boto_config
 
 
 class S3Buddy(object):
     def __init__(self, deploy_ctx, root_path, bucket_name):
         super(S3Buddy, self).__init__()
         self.deploy_ctx = deploy_ctx
-        self.s3 = boto3.resource('s3', region_name=self.deploy_ctx.region)
+        self.s3 = boto3.resource('s3', region_name=self.deploy_ctx.region, config=get_boto_config())
         self.bucket = self.s3.Bucket(bucket_name)
         try:
             print_utility.info("S3Buddy using bucket_name={}, root_path={}".format(bucket_name, root_path))
