@@ -7,7 +7,7 @@ from infra_buddy_too.commandline import cli
 from infra_buddy_too.commands.deploy_service import command as ds_command
 from infra_buddy_too.context.deploy_ctx import DeployContext
 from infra_buddy_too.context.deploy_ctx import REGION
-from testcase_parent import ParentTestCase
+from testcase_parent import ParentTestCase, load_path_as_json
 
 DIRNAME = os.path.dirname(os.path.abspath(__file__))
 
@@ -153,13 +153,30 @@ class DeployContextTestCase(ParentTestCase):
                                                                   environment="unit-test",
                                                                   defaults=self.default_config)
         plan = deploy_ctx.get_execution_plan()
-        self.assertEqual(len(plan), 4, "Failed to identify all elements of execution - {}".format(plan))
+        self.assertEqual(len(plan), 6, "Failed to identify all elements of execution - {}".format(plan))
         self.assertTrue(all([not deploy.dry_run for deploy in plan]))
+        self._assert_stack_has_parameter_value(plan, "unit-test-foo-bar-rds-aurora-extended", 'DatabaseName', 'bar.lol')
+        self._assert_stack_has_parameter_value(plan, "unit-test-foo-bar-rds-aurora-blazer", 'DatabaseName', 'baz.lol')
+        self._assert_stack_has_parameter_value(plan, "unit-test-foo-bar-rds-aurora", 'DatabaseName', 'me.lol')
+
         deploy_ctx = DeployContext.create_deploy_context_artifact(artifact_directory=artifact_directory,
                                                                   environment="prod",
                                                                   defaults=self.default_config)
         plan = deploy_ctx.get_execution_plan()
         self.assertTrue(all([deploy.dry_run for deploy in plan]))
+
+    def _assert_stack_has_parameter_value(self, plan, stack_name, parameter_key, parameter_value):
+        for deploy in plan:
+            if deploy.stack_name == stack_name:
+                # mimic a deployment
+                deploy.deploy_ctx.push_deploy_ctx(deploy)
+                params = load_path_as_json(deploy.get_rendered_param_file())
+                for p_dict in params:
+                    if p_dict.get('ParameterKey') == parameter_key:
+                        assert p_dict.get('ParameterValue') == parameter_value
+                        return
+                self.fail(f"did not find parameter {parameter_key}")
+        self.fail(f"Did not find stack {stack_name}")
 
     def test_deploy_validate(self):
         artifact_directory = self._get_resource_path('artifact_directory_tests/artifact_execution_plan_test')

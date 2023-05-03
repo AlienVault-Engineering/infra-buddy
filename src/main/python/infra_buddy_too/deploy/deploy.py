@@ -4,11 +4,11 @@ class Deploy(object):
 
 
     
-    def __init__(self,deploy_ctx):
+    def __init__(self,deploy_ctx, defaults=None):
         super(Deploy, self).__init__()
         self.deploy_ctx = deploy_ctx
         self.stack_name = None
-        self.defaults = {}
+        self.defaults = defaults if defaults else {}
         # Flag to indicate that we should not actually deploy (see deploy-environments['skip'])
         self.dry_run = False
 

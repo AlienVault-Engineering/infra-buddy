@@ -170,8 +170,9 @@ class DeployContext(dict):
     def get_service_modification_templates(self):
         return self.get('service-modification-templates', {})
 
-    def generate_modification_stack_name(self, mod_name):
-        return "{ENVIRONMENT}-{APPLICATION}-{ROLE}-{mod_name}".format(mod_name=mod_name, **self)
+    def generate_modification_stack_name(self, mod_name, ending=None):
+        name__format = '{ENVIRONMENT}-{APPLICATION}-{ROLE}-{mod_name}'.format(mod_name=mod_name, **self)
+        return name__format if not ending else f"{name__format}-{ending}"
 
     def generate_modification_resource_stack_name(self, mod_name):
         return "{ENVIRONMENT}-{APPLICATION}-{ROLE}-{mod_name}-resources".format(mod_name=mod_name, **self)

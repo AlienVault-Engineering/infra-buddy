@@ -7,9 +7,27 @@
     "skip": ["prod"]
   },
   "deployment-parameters": {
-    "API_PATH":"bar"
+    "API_PATH":"bar",
+    "DATABASE_NAME": "me.lol"
+
   },
   "service-modifications": [
     "rds-aurora"
+  ],
+  "service-modification-definitions": [
+    {
+      "name": "rds-aurora",
+      "stack-name-suffix": "extended",
+      "deployment-parameters": {
+        "DATABASE_NAME": "bar.lol"
+      }
+    },
+    {
+      "name": "rds-aurora",
+      "stack-name-suffix": "blazer",
+      "deployment-parameters": {
+        "DATABASE_NAME": "baz.lol"
+      }
+    }
   ]
 }

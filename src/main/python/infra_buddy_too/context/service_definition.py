@@ -8,9 +8,12 @@ from infra_buddy_too.deploy.cloudformation_deploy import CloudFormationDeploy
 from infra_buddy_too.template.template_manager import TemplateManager
 from infra_buddy_too.utility import print_utility
 
+STACK_NAME_SUFFIX = "stack-name-suffix"
+
 _SERVICE_DEFINITION_FILE = "service.json"
 
 _MODIFICATIONS = 'service-modifications'
+_MODIFICATIONS_EXT = 'service-modification-definitions'
 _ENVIRONMENTS = 'deploy-environments'
 
 _DEPLOYMENT_PARAMETERS = 'deployment-parameters'
@@ -51,37 +54,60 @@ class ServiceDefinition(object):
             _ENVIRONMENTS: {
                 "type": "object",
                 "properties": {
-                    "skip": {"type": "array", "items": {
-                        "type": "string"
-                    }
-                 }
+                    "skip": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                     }
                 },
                 "additionalProperties": True
             },
-            _DEPLOYMENT_PARAMETERS: {
-                "type": "object",
-                "properties": {
-                },
-                "additionalProperties": True
+            _MODIFICATIONS:{
+                "type": "array", "items": {
+                    "type": "string"
+                }
             },
-            _CI_DEPLOYMENT_PARAMETERS: {
-                "type": "object",
-                "properties": {
-                },
-                "additionalProperties": True
-            },
-            _PROD_DEPLOYMENT_PARAMETERS: {
-                "type": "object",
-                "properties": {
-                },
-                "additionalProperties": True
-            },
-            _DEV_DEPLOYMENT_PARAMETERS: {
-                "type": "object",
-                "properties": {
-                },
-                "additionalProperties": True
-            }
+             _MODIFICATIONS_EXT:{
+                 "type": "array",
+                  "items": {
+                      "type": "object",
+                      "properties": {
+                          "name": {"type": "string"},
+                          STACK_NAME_SUFFIX: {"type": "string"},
+                          _DEPLOYMENT_PARAMETERS: {
+                              "type": "object",
+                              "properties": {},
+                              "additionalProperties": True
+                          }
+                      },
+                      "required": [
+                          STACK_NAME_SUFFIX
+                      ],
+                      "additionalProperties": True
+                  }
+              },
+             _DEPLOYMENT_PARAMETERS: {
+                 "type": "object",
+                 "properties": {},
+                 "additionalProperties": True
+             },
+             _CI_DEPLOYMENT_PARAMETERS: {
+                 "type": "object",
+                 "properties": {},
+                 "additionalProperties": True
+             },
+             _PROD_DEPLOYMENT_PARAMETERS: {
+                 "type": "object",
+                 "properties": {},
+                 "additionalProperties": True
+             },
+             _DEV_DEPLOYMENT_PARAMETERS: {
+                 "type": "object",
+                 "properties": {},
+                 "additionalProperties": True
+             }
+
         },
         "required": [
             _APPLICATION,
@@ -125,6 +151,7 @@ class ServiceDefinition(object):
                 self.deployment_parameters.update(service_definition[env_deployment_parameters])
             print_utility.info("Loaded deployment parameters: " + pformat(self.deployment_parameters, indent=4))
             self.service_modifications = service_definition.get(_MODIFICATIONS, [])
+            self.service_modifications_ext = service_definition.get(_MODIFICATIONS_EXT, [])
 
     def generate_execution_plan(self, template_manager, deploy_ctx):
         # type: (TemplateManager) -> list(Deploy)
@@ -147,8 +174,17 @@ class ServiceDefinition(object):
             ret.append(CloudFormationDeploy(stack_name=deploy_ctx.generate_modification_stack_name(mod),
                                             template=template,
                                             deploy_ctx=deploy_ctx))
-            if template.has_monitor_definition():
-                ret.extend(template.get_monitor_artifact().generate_execution_plan(deploy_ctx))
+        for definition in self.service_modifications_ext:
+            mod = definition.get('name')
+            ending = definition.get(STACK_NAME_SUFFIX)
+            parameters = definition.get(_DEPLOYMENT_PARAMETERS)
+            template = template_manager.get_known_service_modification(self.service_type, mod)
+            ret.append(CloudFormationDeploy(stack_name=deploy_ctx.generate_modification_stack_name(mod,ending),
+                                            template=template,
+                                            deploy_ctx=deploy_ctx,
+                                            deployment_specific_parameters=parameters))
+        if template.has_monitor_definition():
+            ret.extend(template.get_monitor_artifact().generate_execution_plan(deploy_ctx))
         return ret
 
     @classmethod

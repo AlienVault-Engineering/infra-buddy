@@ -43,9 +43,9 @@ class CloudFormationDeploy(Deploy):
 
     }
 
-    def __init__(self, stack_name, template, deploy_ctx):
+    def __init__(self, stack_name, template, deploy_ctx, deployment_specific_parameters=None):
         # type: (str, Template,DeployContext) -> None
-        super(CloudFormationDeploy, self).__init__(deploy_ctx)
+        super(CloudFormationDeploy, self).__init__(deploy_ctx,deployment_specific_parameters)
         self.stack_name = stack_name
         self.config_directory = template.get_config_dir()
         self.lambda_directory = template.get_lambda_dir()
@@ -55,7 +55,7 @@ class CloudFormationDeploy(Deploy):
         self._load_defaults(template.get_default_env_values())
 
     def _load_defaults(self, default_env_values):
-        self.defaults = {}
+        self.defaults = {} if not self.defaults else self.defaults
         if self.default_path and os.path.exists(self.default_path):
             with open(self.default_path, 'r') as default_fp:
                 def_obj = json.load(default_fp)
