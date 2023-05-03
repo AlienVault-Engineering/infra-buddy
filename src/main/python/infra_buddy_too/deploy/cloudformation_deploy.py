@@ -45,17 +45,20 @@ class CloudFormationDeploy(Deploy):
 
     def __init__(self, stack_name, template, deploy_ctx, deployment_specific_parameters=None):
         # type: (str, Template,DeployContext) -> None
-        super(CloudFormationDeploy, self).__init__(deploy_ctx,deployment_specific_parameters)
+        super(CloudFormationDeploy, self).__init__(deploy_ctx)
         self.stack_name = stack_name
         self.config_directory = template.get_config_dir()
         self.lambda_directory = template.get_lambda_dir()
         self.parameter_file = template.get_parameter_file_path()
         self.template_file = template.get_template_file_path()
         self.default_path = template.get_defaults_file_path()
-        self._load_defaults(template.get_default_env_values())
+        values = template.get_default_env_values()
+        if deployment_specific_parameters:
+            values.update(deployment_specific_parameters)
+        self._load_defaults(values)
 
     def _load_defaults(self, default_env_values):
-        self.defaults = {} if not self.defaults else self.defaults
+        self.defaults = {}
         if self.default_path and os.path.exists(self.default_path):
             with open(self.default_path, 'r') as default_fp:
                 def_obj = json.load(default_fp)
