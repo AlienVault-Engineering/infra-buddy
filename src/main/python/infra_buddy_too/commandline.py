@@ -18,7 +18,7 @@ from infra_buddy_too.utility import print_utility
 @click.option("--environment", envvar='ENVIRONMENT', help='The environment the deployment should target.')
 @click.option("--configuration-defaults", envvar='CONFIG_DEFAULTS', type=click.Path(exists=True),
               help='A json file with a dictionary of the default values, if defaults.json is in CWD it will be used.')
-@click.option("--verbose", is_flag=True, help='Print verbose status messages')
+@click.option("--verbose", envvar='IB_DEBUG', is_flag=True, help='Print verbose status messages')
 @click.pass_context
 def cli(ctx, artifact_directory, application, role, environment, configuration_defaults, verbose):
     # type: (object, str, str, str, str, str, bool) -> None
