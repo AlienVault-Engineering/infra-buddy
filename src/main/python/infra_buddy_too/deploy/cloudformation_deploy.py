@@ -198,10 +198,14 @@ class CloudFormationDeploy(Deploy):
         known_param, warnings, errors = self._analyze_parameters()
         print_utility.banner_info("Parameters Details", pformat(known_param))
         if warnings:
-            print_utility.banner_warn("Parameter Warnings", pformat(warnings, indent=1))
+            print_utility.banner_warn("Parameter Warnings")
+            for key, value in warnings.items():
+                print_utility.banner_warn(f"\t{key} - ",pformat(value))
 
         if errors:
-            print_utility.banner_warn("Parameter Errors", pformat(errors, indent=1))
+            print_utility.banner_warn("Parameter Errors")
+            for key, value in warnings.items():
+                print_utility.banner_warn(f"\t{key} - ",pformat(errors))
 
         return len(errors)
 
