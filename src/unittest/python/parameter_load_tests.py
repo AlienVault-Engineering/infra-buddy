@@ -21,6 +21,19 @@ class ParameterLoadTestCase(ParentTestCase):
     def setUpClass(cls):
         super(ParameterLoadTestCase, cls).setUpClass()
 
+    def test_parameter_load_transformation(self):
+        os.environ.setdefault("OS_VAR","BAR")
+        ctx = DeployContext.create_deploy_context(application="dev-{}".format(self.run_random_word), role="cluster",
+                                                  environment="unit-test",
+                                                  defaults=self.default_config)
+        try:
+            template_dir = ParentTestCase._get_resource_path("parameter_load_tests/param_load")
+            deploy = CloudFormationDeploy(ctx.stack_name, NamedLocalTemplate(template_dir), ctx)
+            self.assertEqual(deploy.defaults['OS_VAR'], "BAR", 'Did not respect defaut')
+            self.assertEqual(deploy.defaults['FOO'], "unit-test-bar", 'Did not respect defaut')
+        finally:
+            pass
+
     def test_parameter_transformation(self):
         ctx = DeployContext.create_deploy_context(application="dev-{}".format(self.run_random_word), role="cluster",
                                                   environment="unit-test",

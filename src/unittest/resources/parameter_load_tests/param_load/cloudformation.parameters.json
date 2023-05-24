@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey": "Foo",
+        "ParameterValue": "${FOO}"
+    },
+    {
+        "ParameterKey": "OsVar",
+        "ParameterValue": "${OS_VAR}"
+    },
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "${ENVIRONMENT}"
+    }
+]

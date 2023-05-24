@@ -1,0 +1,12 @@
+{
+
+  "FOO": {
+    "type": "property",
+    "key": "FOO"
+  },
+  "OS_VAR": {
+    "type": "property",
+    "key": "OS_VAR",
+    "default": false
+  }
+}

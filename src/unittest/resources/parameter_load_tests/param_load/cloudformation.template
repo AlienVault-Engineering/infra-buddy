@@ -1,0 +1,26 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "",
+  "Parameters": {
+    "Environment": {
+      "Description": "The environment parameter for the docker container",
+      "Type": "String"
+    },
+    "Foo": {
+      "Description": "The relative path for the applciation load balancer routing rule. Must use param 'CreateAPI' to be applied.",
+      "Type": "String"
+    },
+    "OsVar": {
+      "Description": "Number of instances to launch in your ECS cluster - and number of containers to run of primary container",
+      "Type": "String"
+    }
+  },
+  "Conditions": {
+
+  },
+  "Resources": {
+    "Foo": {
+      "Type": "AWS::S3::Bucket"
+    }
+  }
+}
