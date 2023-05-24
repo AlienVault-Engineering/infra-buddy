@@ -204,7 +204,7 @@ class CloudFormationDeploy(Deploy):
 
         if errors:
             print_utility.warn("Parameter Errors")
-            for key, value in warnings.items():
+            for key, value in errors.items():
                 print_utility.banner_warn(f"\t{key} - ",pformat(errors))
 
         return len(errors)
