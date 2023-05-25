@@ -103,7 +103,7 @@ class CloudFormationDeploy(Deploy):
                                                                                              func_name))
         elif type_ == _PARAM_TYPE_PROPERTY:
             default_value = value.get('default', None)
-            if isinstance(default_value, str):
+            if not isinstance(default_value, str):
                 default_value = self.deploy_ctx.expandvars(str(default_value), self.defaults)
             return self.deploy_ctx.expandvars(self.deploy_ctx.get(value['key'], default_value), self.defaults)
         elif type_ == _PARAM_TYPE_TRANSFORM:
