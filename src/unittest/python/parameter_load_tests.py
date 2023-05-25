@@ -31,6 +31,7 @@ class ParameterLoadTestCase(ParentTestCase):
             deploy = CloudFormationDeploy(ctx.stack_name, NamedLocalTemplate(template_dir), ctx)
             self.assertEqual(deploy.defaults['OS_VAR'], "BAR", 'Did not respect defaut')
             self.assertEqual(deploy.defaults['FOO'], "unit-test-bar", 'Did not respect defaut')
+            self.assertEqual(deploy.defaults['NUM'], 3, 'Did not respect defaut')
         finally:
             pass
 

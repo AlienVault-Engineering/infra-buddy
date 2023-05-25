@@ -1,4 +1,5 @@
 {
   "REGION":"us-west-1",
-  "FOO": "${ENVIRONMENT}-bar"
+  "FOO": "${ENVIRONMENT}-bar",
+  "NUM": 3
 }

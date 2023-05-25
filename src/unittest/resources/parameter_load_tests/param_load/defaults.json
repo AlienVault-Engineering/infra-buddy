@@ -8,5 +8,10 @@
     "type": "property",
     "key": "OS_VAR",
     "default": false
+  },
+  "NUM": {
+    "type": "property",
+    "key": "NUM",
+    "default": 3
   }
 }
