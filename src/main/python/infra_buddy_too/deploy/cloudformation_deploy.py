@@ -103,9 +103,12 @@ class CloudFormationDeploy(Deploy):
                                                                                              func_name))
         elif type_ == _PARAM_TYPE_PROPERTY:
             default_value = value.get('default', None)
-            if not isinstance(default_value, str):
+            if isinstance(default_value, str):
                 default_value = self.deploy_ctx.expandvars(str(default_value), self.defaults)
-            return self.deploy_ctx.expandvars(self.deploy_ctx.get(value['key'], default_value), self.defaults)
+            param_value = self.deploy_ctx.get(value['key'], default_value)
+            if isinstance(param_value, str):
+                param_value =self.deploy_ctx.expandvars(param_value, self.defaults)
+            return param_value
         elif type_ == _PARAM_TYPE_TRANSFORM:
             # add it to the list of properties to transform after load
             transformations[key] = value
